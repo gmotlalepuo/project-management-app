@@ -1,26 +1,34 @@
 import {
   forwardRef,
-  InputHTMLAttributes,
+  TextareaHTMLAttributes,
+  useEffect,
   useImperativeHandle,
   useRef,
 } from "react";
 
-export default forwardRef(function SelectInput(
+export default forwardRef(function TextAreaInput(
   {
     className = "",
+    isFocused = false,
     children,
     ...props
-  }: InputHTMLAttributes<HTMLSelectElement> & { isFocused?: boolean },
+  }: TextareaHTMLAttributes<HTMLTextAreaElement> & { isFocused?: boolean },
   ref,
 ) {
-  const localRef = useRef<HTMLSelectElement>(null);
+  const localRef = useRef<HTMLTextAreaElement>(null);
 
   useImperativeHandle(ref, () => ({
     focus: () => localRef.current?.focus(),
   }));
 
+  useEffect(() => {
+    if (isFocused) {
+      localRef.current?.focus();
+    }
+  }, [isFocused]);
+
   return (
-    <select
+    <textarea
       {...props}
       className={
         "rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600 " +
@@ -29,6 +37,6 @@ export default forwardRef(function SelectInput(
       ref={localRef}
     >
       {children}
-    </select>
+    </textarea>
   );
 });

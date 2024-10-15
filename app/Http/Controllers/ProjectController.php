@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Project;
+use Illuminate\Support\Str;
+use App\Http\Resources\TaskResource;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\ProjectResource;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-use App\Http\Resources\ProjectResource;
-use App\Http\Resources\TaskResource;
-use Inertia\Inertia;
 
 class ProjectController extends Controller {
     /**
@@ -35,6 +37,7 @@ class ProjectController extends Controller {
         return Inertia::render('Project/Index', [
             'projects' => ProjectResource::collection($projects),
             'queryParams' => request()->query() ?: null,
+            'success' => session('success'),
         ]);
     }
 
@@ -42,14 +45,26 @@ class ProjectController extends Controller {
      * Show the form for creating a new resource.
      */
     public function create() {
-        //
+        return Inertia::render('Project/Create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProjectRequest $request) {
-        //
+        $data = $request->validated();
+        /** @var $image \Illuminate\Http\UploadedFile */
+        $image = $data['image'] ?? null;
+        $data['created_by'] = Auth::id();
+        $data['updated_by'] = Auth::id();
+
+        if ($image) {
+            $data['image_path'] = $image->store('project/' . Str::random(10), 'public');
+        }
+
+        Project::create($data);
+
+        return to_route('project.index')->with('success', 'Project created successfully.');
     }
 
     /**

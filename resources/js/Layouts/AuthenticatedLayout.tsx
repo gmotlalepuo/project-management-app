@@ -1,15 +1,16 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
-import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link, usePage } from '@inertiajs/react';
-import { PropsWithChildren, ReactNode, useState } from 'react';
+import ApplicationLogo from "@/Components/ApplicationLogo";
+import Dropdown from "@/Components/Dropdown";
+import NavLink from "@/Components/NavLink";
+import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
+import { PageProps } from "@/types";
+import { Link, usePage } from "@inertiajs/react";
+import { PropsWithChildren, ReactNode, useState } from "react";
 
 export default function AuthenticatedLayout({
   header,
   children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
-  const user = usePage().props.auth.user;
+  const user = usePage<PageProps>().props.auth.user;
 
   const [showingNavigationDropdown, setShowingNavigationDropdown] =
     useState(false);
@@ -28,26 +29,26 @@ export default function AuthenticatedLayout({
 
               <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                 <NavLink
-                  href={route('dashboard')}
-                  active={route().current('dashboard')}
+                  href={route("dashboard")}
+                  active={route().current("dashboard")}
                 >
                   Dashboard
                 </NavLink>
                 <NavLink
-                  href={route('project.index')}
-                  active={route().current('project.index')}
+                  href={route("project.index")}
+                  active={route().current("project.index")}
                 >
                   Projects
                 </NavLink>
                 <NavLink
-                  href={route('task.index')}
-                  active={route().current('task.index')}
+                  href={route("task.index")}
+                  active={route().current("task.index")}
                 >
                   All Tasks
                 </NavLink>
                 <NavLink
-                  href={route('user.index')}
-                  active={route().current('user.index')}
+                  href={route("user.index")}
+                  active={route().current("user.index")}
                 >
                   Users
                 </NavLink>
@@ -82,11 +83,11 @@ export default function AuthenticatedLayout({
                   </Dropdown.Trigger>
 
                   <Dropdown.Content>
-                    <Dropdown.Link href={route('profile.edit')}>
+                    <Dropdown.Link href={route("profile.edit")}>
                       Profile
                     </Dropdown.Link>
                     <Dropdown.Link
-                      href={route('logout')}
+                      href={route("logout")}
                       method="post"
                       as="button"
                     >
@@ -114,7 +115,7 @@ export default function AuthenticatedLayout({
                 >
                   <path
                     className={
-                      !showingNavigationDropdown ? 'inline-flex' : 'hidden'
+                      !showingNavigationDropdown ? "inline-flex" : "hidden"
                     }
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -123,7 +124,7 @@ export default function AuthenticatedLayout({
                   />
                   <path
                     className={
-                      showingNavigationDropdown ? 'inline-flex' : 'hidden'
+                      showingNavigationDropdown ? "inline-flex" : "hidden"
                     }
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -138,13 +139,13 @@ export default function AuthenticatedLayout({
 
         <div
           className={
-            (showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'
+            (showingNavigationDropdown ? "block" : "hidden") + " sm:hidden"
           }
         >
           <div className="space-y-1 pb-3 pt-2">
             <ResponsiveNavLink
-              href={route('dashboard')}
-              active={route().current('dashboard')}
+              href={route("dashboard")}
+              active={route().current("dashboard")}
             >
               Dashboard
             </ResponsiveNavLink>
@@ -161,12 +162,12 @@ export default function AuthenticatedLayout({
             </div>
 
             <div className="mt-3 space-y-1">
-              <ResponsiveNavLink href={route('profile.edit')}>
+              <ResponsiveNavLink href={route("profile.edit")}>
                 Profile
               </ResponsiveNavLink>
               <ResponsiveNavLink
                 method="post"
-                href={route('logout')}
+                href={route("logout")}
                 as="button"
               >
                 Log Out
