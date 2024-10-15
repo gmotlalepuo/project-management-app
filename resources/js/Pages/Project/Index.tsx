@@ -4,11 +4,11 @@ import TextInput from "@/Components/TextInput";
 import TableHeading from "@/Components/TableHeading";
 import { PROJECT_STATUS_CLASS_MAP, PROJECT_STATUS_TEXT_MAP } from "@/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Project } from "@/types";
 import { Head, Link, router } from "@inertiajs/react";
+import { PaginatedProject } from "@/types/project";
 
 type IndexProps = {
-  projects: Project;
+  projects: PaginatedProject;
   queryParams: { [key: string]: any } | null;
 };
 
@@ -160,7 +160,11 @@ export default function Index({ projects, queryParams }: IndexProps) {
                             alt={project.name}
                           />
                         </td>
-                        <td className="px-3 py-2">{project.name}</td>
+                        <th className="text-nowrap px-3 py-2 text-white hover:underline">
+                          <Link href={route("project.show", project.id)}>
+                            {project.name}
+                          </Link>
+                        </th>
                         <td className="px-3 py-2">
                           <span
                             className={`rounded px-2 py-1 text-white ${PROJECT_STATUS_CLASS_MAP[project.status]}`}
