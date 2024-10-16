@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use App\Http\Resources\TaskResource;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 
@@ -99,20 +100,43 @@ class ProjectController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Project $project) {
-        //
+        return Inertia::render('Project/Edit', [
+            'project' => new ProjectResource($project),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateProjectRequest $request, Project $project) {
-        //
+        $data = $request->validated();
+        $name = $project->name;
+        /** @var $image \Illuminate\Http\UploadedFile */
+        $image = $data['image'] ?? null;
+        $data['updated_by'] = Auth::id();
+
+        if ($image) {
+            if ($project->image_path) {
+                Storage::disk('public')->deleteDirectory(dirname($project->image_path));
+            }
+            $data['image_path'] = $image->store('project/' . Str::random(10), 'public');
+        }
+        $project->update($data);
+
+        return to_route('project.index')->with('success', "Project '$name' updated successfully.");
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Project $project) {
-        //
+        $name = $project->name;
+
+        if ($project->image_path) {
+            Storage::disk('public')->deleteDirectory(dirname($project->image_path));
+        }
+        $project->delete();
+
+        return to_route('project.index')->with('success', "Project '$name' deleted successfully.");
     }
 }
