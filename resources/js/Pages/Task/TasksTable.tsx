@@ -175,7 +175,7 @@ export default function TasksTable({
                 </th>
                 <td className="px-3 py-2">
                   <span
-                    className={`rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[task.status]}`}
+                    className={`text-nowrap rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[task.status]}`}
                   >
                     {TASK_STATUS_TEXT_MAP[task.status]}
                   </span>
