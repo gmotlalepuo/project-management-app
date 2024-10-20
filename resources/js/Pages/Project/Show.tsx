@@ -8,10 +8,11 @@ import { PaginatedTask } from "@/types/task";
 type Props = {
   project: Project;
   tasks: PaginatedTask;
+  success: string | null;
   queryParams: { [key: string]: any };
 };
 
-export default function Show({ project, tasks, queryParams }: Props) {
+export default function Show({ project, tasks, success, queryParams }: Props) {
   return (
     <AuthenticatedLayout
       header={
@@ -25,14 +26,16 @@ export default function Show({ project, tasks, queryParams }: Props) {
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            <img
-              src={project.image_path}
-              alt=""
-              className="d-block h-64 w-full object-cover"
-            />
+            {project.image_path && (
+              <img
+                src={project.image_path}
+                alt="Project Image"
+                className="d-block mb-2 h-64 w-full object-cover"
+              />
+            )}
 
             <div className="p-6 text-gray-900 dark:text-gray-100">
-              <div className="mt-2 grid grid-cols-2 gap-1">
+              <div className="grid grid-cols-2 gap-1">
                 <div>
                   <div>
                     <label className="text-lg font-bold">Project ID</label>
@@ -91,6 +94,7 @@ export default function Show({ project, tasks, queryParams }: Props) {
               </h2>
               <TasksTable
                 tasks={tasks}
+                success={success}
                 queryParams={queryParams}
                 hideProjectColumn
               />

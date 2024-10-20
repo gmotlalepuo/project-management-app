@@ -5,10 +5,12 @@ export type Task = {
   created_at: string;
   due_date: string;
   status: "completed" | "pending" | "in_progress";
-  priority: string;
+  priority: "low" | "medium" | "high";
   image_path: string;
   project: Project;
   assignedUser: User | null;
+  assigned_user_id: number;
+  project_id: number;
   createdBy: User;
   updatedBy: User;
 };

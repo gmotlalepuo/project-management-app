@@ -8,12 +8,14 @@ import { Link, router } from "@inertiajs/react";
 
 type TasksTableProps = {
   tasks: PaginatedTask;
+  success?: string | null;
   queryParams: { [key: string]: any } | null;
   hideProjectColumn?: boolean;
 };
 
 export default function TasksTable({
   tasks,
+  success,
   queryParams = null,
   hideProjectColumn = false,
 }: TasksTableProps) {
@@ -53,8 +55,20 @@ export default function TasksTable({
     router.get(route("task.index"), queryParams, { preserveState: true });
   };
 
+  const deleteTask = (id: number) => {
+    if (!confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+    router.delete(route("task.destroy", id));
+  };
+
   return (
     <>
+      {success && (
+        <div className="mb-4 rounded bg-emerald-500 px-4 py-2 text-white">
+          {success}
+        </div>
+      )}
       <div className="overflow-auto">
         <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 rtl:text-right">
           <thead className="border-b-2 border-gray-500 bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
@@ -156,7 +170,9 @@ export default function TasksTable({
                 {!hideProjectColumn && (
                   <td className="px-3 py-2">{task.project.name}</td>
                 )}
-                <td className="px-3 py-2">{task.name}</td>
+                <th className="px-3 py-2 text-white hover:underline">
+                  <Link href={route("task.show", task.id)}>{task.name}</Link>
+                </th>
                 <td className="px-3 py-2">
                   <span
                     className={`rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[task.status]}`}
@@ -167,19 +183,19 @@ export default function TasksTable({
                 <td className="text-nowrap px-3 py-2">{task.created_at}</td>
                 <td className="text-nowrap px-3 py-2">{task.due_date}</td>
                 <td className="px-3 py-2">{task.createdBy.name}</td>
-                <td className="px-3 py-2">
+                <td className="text-nowrap px-3 py-2">
                   <Link
                     href={route("task.edit", task.id)}
                     className="mx-1 font-medium text-blue-600 hover:underline dark:text-blue-500"
                   >
                     Edit
                   </Link>
-                  <Link
-                    href={route("task.destroy", task.id)}
+                  <button
+                    onClick={() => deleteTask(task.id)}
                     className="mx-1 font-medium text-red-600 hover:underline dark:text-red-500"
                   >
                     Delete
-                  </Link>
+                  </button>
                 </td>
               </tr>
             ))}
