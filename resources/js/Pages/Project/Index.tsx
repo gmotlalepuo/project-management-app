@@ -2,10 +2,14 @@ import Pagination from "@/Components/Pagination";
 import SelectInput from "@/Components/SelectInput";
 import TextInput from "@/Components/TextInput";
 import TableHeading from "@/Components/TableHeading";
-import { PROJECT_STATUS_CLASS_MAP, PROJECT_STATUS_TEXT_MAP } from "@/constants";
+import {
+  PROJECT_STATUS_CLASS_MAP,
+  PROJECT_STATUS_TEXT_MAP,
+} from "@/utils/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { PaginatedProject } from "@/types/project";
+import { formatDate } from "@/utils/helpers";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -15,6 +19,7 @@ type IndexProps = {
 
 export default function Index({ projects, queryParams, success }: IndexProps) {
   queryParams = queryParams || {};
+
   const searchFieldChanged = (name: string, value: string) => {
     if (value) {
       queryParams[name] = value;
@@ -96,7 +101,6 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                       >
                         ID
                       </TableHeading>
-                      <th className="px-3 py-3">Image</th>
                       <TableHeading
                         name="name"
                         sort_field={queryParams.sort_field}
@@ -136,7 +140,6 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                   <thead className="border-b-2 border-gray-500 bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
                     <tr className="text-nowrap">
                       <th className="px-3 py-3"></th>
-                      <th className="px-3 py-3"></th>
                       <th className="px-3 py-3">
                         <TextInput
                           className="w-full"
@@ -175,13 +178,6 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                         key={project.id}
                       >
                         <td className="px-3 py-2">{project.id}</td>
-                        <td className="px-3 py-2">
-                          <img
-                            src={project.image_path}
-                            style={{ width: 100 }}
-                            alt={project.name}
-                          />
-                        </td>
                         <th className="text-nowrap px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
                           <Link href={route("project.show", project.id)}>
                             {project.name}
@@ -195,10 +191,10 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                           </span>
                         </td>
                         <td className="text-nowrap px-3 py-2">
-                          {project.created_at}
+                          {formatDate(project.created_at)}
                         </td>
                         <td className="text-nowrap px-3 py-2">
-                          {project.due_date}
+                          {formatDate(project.due_date)}
                         </td>
                         <td className="px-3 py-2">{project.createdBy.name}</td>
                         <td className="text-nowrap px-3 py-2">

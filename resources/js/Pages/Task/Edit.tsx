@@ -132,7 +132,7 @@ export default function Edit({ task, projects, users }: Props) {
 
                 <TextInput
                   id="task_due_date"
-                  type="date"
+                  type="datetime-local"
                   name="due_date"
                   value={data.due_date}
                   className="mt-1 block w-full"

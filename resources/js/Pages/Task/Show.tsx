@@ -5,7 +5,7 @@ import {
   TASK_PRIORITY_TEXT_MAP,
   TASK_STATUS_CLASS_MAP,
   TASK_STATUS_TEXT_MAP,
-} from "@/constants";
+} from "@/utils/constants";
 import { Task } from "@/types/task";
 
 type Props = {

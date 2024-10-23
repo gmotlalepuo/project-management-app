@@ -2,9 +2,10 @@ import Pagination from "@/Components/Pagination";
 import SelectInput from "@/Components/SelectInput";
 import TableHeading from "@/Components/TableHeading";
 import TextInput from "@/Components/TextInput";
-import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/constants";
+import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
 import { PaginatedTask } from "@/types/task";
 import { Link, router } from "@inertiajs/react";
+import { formatDate } from "@/utils/helpers";
 
 type TasksTableProps = {
   tasks: PaginatedTask;
@@ -81,7 +82,6 @@ export default function TasksTable({
               >
                 ID
               </TableHeading>
-              <th className="px-3 py-3">Image</th>
               {!hideProjectColumn && (
                 <th className="px-3 py-3">Project Name</th>
               )}
@@ -124,7 +124,6 @@ export default function TasksTable({
           <thead className="border-b-2 border-gray-500 bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
             <tr className="text-nowrap">
               <th className="px-3 py-3"></th>
-              <th className="px-3 py-3"></th>
               {!hideProjectColumn && <th className="px-3 py-3"></th>}
               <th className="px-3 py-3">
                 <TextInput
@@ -160,13 +159,6 @@ export default function TasksTable({
                 key={task.id}
               >
                 <td className="px-3 py-2">{task.id}</td>
-                <td className="px-3 py-2">
-                  <img
-                    src={task.image_path}
-                    style={{ width: 100 }}
-                    alt={task.name}
-                  />
-                </td>
                 {!hideProjectColumn && (
                   <td className="px-3 py-2">{task.project.name}</td>
                 )}
@@ -180,8 +172,12 @@ export default function TasksTable({
                     {TASK_STATUS_TEXT_MAP[task.status]}
                   </span>
                 </td>
-                <td className="text-nowrap px-3 py-2">{task.created_at}</td>
-                <td className="text-nowrap px-3 py-2">{task.due_date}</td>
+                <td className="text-nowrap px-3 py-2">
+                  {formatDate(task.created_at)}
+                </td>
+                <td className="text-nowrap px-3 py-2">
+                  {formatDate(task.due_date)}
+                </td>
                 <td className="px-3 py-2">{task.createdBy.name}</td>
                 <td className="text-nowrap px-3 py-2">
                   <Link

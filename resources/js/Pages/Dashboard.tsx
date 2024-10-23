@@ -1,4 +1,4 @@
-import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/constants";
+import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PaginatedTask } from "@/types/task";
 import { Head, Link } from "@inertiajs/react";
