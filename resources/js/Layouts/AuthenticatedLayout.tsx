@@ -1,5 +1,6 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import Dropdown from "@/Components/Dropdown";
+import { ModeToggle } from "@/Components/ModeToggle";
 import NavLink from "@/Components/NavLink";
 import ResponsiveNavLink from "@/Components/ResponsiveNavLink";
 import { PageProps } from "@/types";
@@ -62,6 +63,7 @@ export default function AuthenticatedLayout({
             </div>
 
             <div className="hidden sm:ms-6 sm:flex sm:items-center">
+              <ModeToggle />
               <div className="relative ms-3">
                 <Dropdown>
                   <Dropdown.Trigger>

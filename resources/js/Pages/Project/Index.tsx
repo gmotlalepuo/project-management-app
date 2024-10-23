@@ -182,7 +182,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                             alt={project.name}
                           />
                         </td>
-                        <th className="text-nowrap px-3 py-2 text-white hover:underline">
+                        <th className="text-nowrap px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
                           <Link href={route("project.show", project.id)}>
                             {project.name}
                           </Link>

@@ -12,7 +12,7 @@ export default function Pagination({ links }: Props) {
           preserveScroll
           key={`${link.label}-${link.url}`}
           href={link.url || ""}
-          className={`${link.active ? "bg-gray-900" : ""} ${!link.url ? "cursor-not-allowed !text-gray-500" : "hover:bg-gray-900"} mx-0.5 inline-block rounded-lg px-3 py-2 text-xs text-gray-200`}
+          className={`${link.active ? "bg-gray-300 dark:bg-gray-900" : ""} ${!link.url ? "cursor-not-allowed !text-gray-400 dark:!text-gray-500" : "dark:hover:bg-gray-900"} mx-0.5 inline-block rounded-lg px-3 py-2 text-xs text-gray-900 dark:text-gray-200`}
           dangerouslySetInnerHTML={{ __html: link.label }}
         ></Link>
       ))}

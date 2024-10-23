@@ -71,7 +71,7 @@ export default function Dashboard({
         <div className="mx-auto mt-4 max-w-7xl sm:px-6 lg:px-8">
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
             <div className="p-6 text-gray-900 dark:text-gray-100">
-              <h3 className="text-xl font-semibold text-gray-200">
+              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
                 My Active Tasks
               </h3>
 
@@ -89,12 +89,12 @@ export default function Dashboard({
                   {activeTasks.data.map((task) => (
                     <tr key={task.id}>
                       <td className="px-3 py-2">{task.id}</td>
-                      <td className="px-3 py-2 text-white hover:underline">
+                      <td className="px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
                         <Link href={route("project.show", task.project.id)}>
                           {task.project.name}
                         </Link>
                       </td>
-                      <td className="px-3 py-2 text-white hover:underline">
+                      <td className="px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
                         <Link href={route("task.show", task.id)}>
                           {task.name}
                         </Link>
