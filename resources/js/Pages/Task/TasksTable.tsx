@@ -2,7 +2,12 @@ import Pagination from "@/Components/Pagination";
 import SelectInput from "@/Components/SelectInput";
 import TableHeading from "@/Components/TableHeading";
 import TextInput from "@/Components/TextInput";
-import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
+import {
+  TASK_STATUS_CLASS_MAP,
+  TASK_STATUS_TEXT_MAP,
+  TASK_PRIORITY_TEXT_MAP,
+  TASK_PRIORITY_CLASS_MAP,
+} from "@/utils/constants";
 import { PaginatedTask } from "@/types/task";
 import { Link, router } from "@inertiajs/react";
 import { formatDate } from "@/utils/helpers";
@@ -94,20 +99,20 @@ export default function TasksTable({
                 Name
               </TableHeading>
               <TableHeading
+                name="priority"
+                sort_field={queryParams.sort_field}
+                sort_direction={queryParams.sort_direction}
+                sortChanged={sortChanged}
+              >
+                Priority
+              </TableHeading>
+              <TableHeading
                 name="status"
                 sort_field={queryParams.sort_field}
                 sort_direction={queryParams.sort_direction}
                 sortChanged={sortChanged}
               >
                 Status
-              </TableHeading>
-              <TableHeading
-                name="created_at"
-                sort_field={queryParams.sort_field}
-                sort_direction={queryParams.sort_direction}
-                sortChanged={sortChanged}
-              >
-                Create Date
               </TableHeading>
               <TableHeading
                 name="due_date"
@@ -137,6 +142,20 @@ export default function TasksTable({
               <th className="px-3 py-3">
                 <SelectInput
                   className="w-full"
+                  defaultValue={queryParams.priority}
+                  onChange={(e) =>
+                    searchFieldChanged("priority", e.target.value)
+                  }
+                >
+                  <option value="">Select Priority</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </SelectInput>
+              </th>
+              <th className="px-3 py-3">
+                <SelectInput
+                  className="w-full"
                   defaultValue={queryParams.status}
                   onChange={(e) => searchFieldChanged("status", e.target.value)}
                 >
@@ -146,7 +165,6 @@ export default function TasksTable({
                   <option value="completed">Completed</option>
                 </SelectInput>
               </th>
-              <th className="px-3 py-3"></th>
               <th className="px-3 py-3"></th>
               <th className="px-3 py-3"></th>
               <th className="px-3 py-3 text-right"></th>
@@ -167,13 +185,17 @@ export default function TasksTable({
                 </th>
                 <td className="px-3 py-2">
                   <span
+                    className={`text-nowrap rounded px-2 py-1 text-white ${TASK_PRIORITY_CLASS_MAP[task.priority]}`}
+                  >
+                    {TASK_PRIORITY_TEXT_MAP[task.priority]}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  <span
                     className={`text-nowrap rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[task.status]}`}
                   >
                     {TASK_STATUS_TEXT_MAP[task.status]}
                   </span>
-                </td>
-                <td className="text-nowrap px-3 py-2">
-                  {formatDate(task.created_at)}
                 </td>
                 <td className="text-nowrap px-3 py-2">
                   {formatDate(task.due_date)}
