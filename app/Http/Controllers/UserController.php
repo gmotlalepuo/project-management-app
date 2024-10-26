@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Project;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
@@ -103,5 +105,30 @@ class UserController extends Controller {
         $user->delete();
 
         return to_route('user.index')->with('success', "User '$name' deleted successfully.");
+    }
+
+    public function search(Request $request, Project $project) {
+        $query = $request->input('email');
+
+        // Validate the email input
+        $request->validate([
+            'email' => 'required|string|email',
+        ]);
+
+        // Get the current user ID
+        $currentUserId = Auth::id();
+
+        // Get the IDs of users already participating in the project
+        $projectUserIds = $project->invitedUsers->pluck('id')->toArray();
+        $projectUserIds[] = $project->created_by; // Include project creator
+
+        // Search for users excluding the current user and users already participating in the project
+        $users = User::where('email', 'like', '%' . $query . '%')
+            ->whereNotIn('id', array_merge([$currentUserId], $projectUserIds)) // Exclude current user and project users
+            ->get();
+
+        return response()->json([
+            'users' => $users,
+        ]);
     }
 }

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Project;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
@@ -72,6 +74,12 @@ class ProjectController extends Controller {
      * Display the specified resource.
      */
     public function show(Project $project) {
+        // Check if the user is authorized to view the project
+        $user = Auth::user();
+        if ($user->id !== $project->created_by && !$project->invitedUsers->contains($user)) {
+            abort(403, 'You are not authorized to view this project.');
+        }
+
         $query = $project->tasks();
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
@@ -139,5 +147,21 @@ class ProjectController extends Controller {
         $project->delete();
 
         return to_route('project.index')->with('success', "Project '$name' deleted successfully.");
+    }
+
+    public function inviteUser(Request $request, Project $project) {
+        $request->validate(['email' => 'required|email']);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->with('error', 'User does not exist.');
+        }
+
+        // Add user to invited users
+        if (!$project->invitedUsers()->where('user_id', $user->id)->exists()) {
+            $project->invitedUsers()->attach($user->id);
+        }
+
+        return back()->with('success', 'User invited successfully.');
     }
 }

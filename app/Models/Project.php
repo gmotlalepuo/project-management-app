@@ -30,4 +30,8 @@ class Project extends Model {
     public function updatedBy() {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function invitedUsers() {
+        return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id');
+    }
 }

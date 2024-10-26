@@ -25,6 +25,7 @@ class ProjectResource extends JsonResource {
             'image_path' => $this->image_path ? Storage::url($this->image_path) : "",
             'createdBy' => new UserResource($this->createdBy),
             'updatedBy' => new UserResource($this->updatedBy),
+            'invitedUsers' => UserResource::collection($this->invitedUsers),
         ];
     }
 }

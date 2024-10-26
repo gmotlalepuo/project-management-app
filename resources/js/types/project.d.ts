@@ -16,6 +16,11 @@ export type Project = {
     name: string;
     email: string;
   };
+  invitedUsers: {
+    id: number;
+    name: string;
+    email: string;
+  }[];
 };
 
 export type PaginatedProject = {

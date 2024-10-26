@@ -12,9 +12,17 @@ Route::redirect('/', '/dashboard');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Project routes
+    Route::post('/project/{project}/invite', [ProjectController::class, 'inviteUser'])->name('project.invite');
+    // Route::delete('/project/{project}/remove/{user}', [ProjectController::class, 'removeUser'])->name('project.remove');
+    Route::get('/project/{project}/search-users', [UserController::class, 'search'])->name('user.search');
     Route::resource('project', ProjectController::class);
+
+    // Task routes
     Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
     Route::resource('task', TaskController::class);
+
+    // User routes
     Route::resource('user', UserController::class);
 });
 

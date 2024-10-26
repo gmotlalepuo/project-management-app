@@ -32,8 +32,6 @@ export default function Login({
     <GuestLayout>
       <Head title="Log in" />
 
-      <p>random word</p>
-
       {status && (
         <div className="mb-4 text-sm font-medium text-green-600">{status}</div>
       )}
