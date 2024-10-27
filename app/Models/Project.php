@@ -31,7 +31,10 @@ class Project extends Model {
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    // Relation for invited users
     public function invitedUsers() {
-        return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id');
+        return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
+            ->withPivot('status')  // Ensure the status field is loaded
+            ->withTimestamps();  // Ensure timestamps are handled
     }
 }

@@ -21,6 +21,13 @@ export type Project = {
     name: string;
     email: string;
   }[];
+  pivot?: {
+    user_id: number;
+    project_id: number;
+    status: "pending" | "accepted" | "rejected";
+    created_at: string;
+    updated_at: string;
+  };
 };
 
 export type PaginatedProject = {

@@ -59,6 +59,12 @@ export default function AuthenticatedLayout({
                 >
                   My Tasks
                 </NavLink>
+                <NavLink
+                  href={route("project.invitations")}
+                  active={route().current("project.invitations")}
+                >
+                  Invitations
+                </NavLink>
               </div>
             </div>
 

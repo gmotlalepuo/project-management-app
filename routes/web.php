@@ -14,8 +14,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Project routes
     Route::post('/project/{project}/invite', [ProjectController::class, 'inviteUser'])->name('project.invite');
-    // Route::delete('/project/{project}/remove/{user}', [ProjectController::class, 'removeUser'])->name('project.remove');
+    Route::get('/project/invitations', [ProjectController::class, 'showInvitations'])->name('project.invitations');  // Show user invitations
+    Route::post('/project/{project}/accept-invitation', [ProjectController::class, 'acceptInvitation'])->name('project.acceptInvitation');
+    Route::post('/project/{project}/reject-invitation', [ProjectController::class, 'rejectInvitation'])->name('project.rejectInvitation');
     Route::get('/project/{project}/search-users', [UserController::class, 'search'])->name('user.search');
+
+    // The resource route for project management
     Route::resource('project', ProjectController::class);
 
     // Task routes

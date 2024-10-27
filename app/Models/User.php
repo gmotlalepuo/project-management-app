@@ -45,7 +45,14 @@ class User extends Authenticatable implements MustVerifyEmail {
         ];
     }
 
-    public function invitedProjects() {
-        return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id');
+    /**
+     * This relationship will handle both accepted and pending projects.
+     * - If you want accepted projects, you can filter by `accepted` status.
+     * - If you want pending invitations, you can filter by `pending` status.
+     */
+    public function projectInvitations() {
+        return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
+            ->withPivot('status')
+            ->withTimestamps();
     }
 }

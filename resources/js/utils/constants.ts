@@ -33,3 +33,18 @@ export const TASK_PRIORITY_TEXT_MAP = {
   medium: "Medium",
   high: "High",
 };
+
+export const INVITATION_STATUS_BADGE_MAP: Record<
+  "pending" | "accepted" | "rejected",
+  "warning" | "success" | "destructive"
+> = {
+  pending: "warning",
+  accepted: "success",
+  rejected: "destructive",
+};
+
+export const INVITATION_STATUS_TEXT_MAP = {
+  pending: "Pending",
+  accepted: "Accepted",
+  rejected: "Rejected",
+};

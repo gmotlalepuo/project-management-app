@@ -157,11 +157,47 @@ class ProjectController extends Controller {
             return back()->with('error', 'User does not exist.');
         }
 
-        // Add user to invited users
-        if (!$project->invitedUsers()->where('user_id', $user->id)->exists()) {
-            $project->invitedUsers()->attach($user->id);
+        // Check if the user is already invited and the invitation is pending
+        if ($project->invitedUsers()->where('user_id', $user->id)->wherePivot('status', 'pending')->exists()) {
+            return back()->with('error', 'User has already been invited and is awaiting response.');
         }
 
+        // Add user to invited users with a status of 'pending'
+        $project->invitedUsers()->attach($user->id, [
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
         return back()->with('success', 'User invited successfully.');
+    }
+
+    public function showInvitations() {
+        $user = Auth::user();
+        // Get all pending invitations for the user
+        $invitations = $user->projectInvitations()->wherePivot('status', 'pending')->get();
+
+        return Inertia::render('Project/Invite', [
+            'invitations' => $invitations,
+        ]);
+    }
+
+
+    public function acceptInvitation(Project $project) {
+        $user = Auth::user();
+
+        // Update the invitation status to 'accepted'
+        $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'accepted']);
+
+        return redirect()->back()->with('success', 'Invitation accepted.');
+    }
+
+    public function rejectInvitation(Project $project) {
+        $user = Auth::user();
+
+        // Update the invitation status to 'rejected'
+        $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'rejected']);
+
+        return redirect()->back()->with('success', 'Invitation rejected.');
     }
 }
