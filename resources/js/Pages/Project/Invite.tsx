@@ -80,7 +80,6 @@ export default function Invite({ invitations }: PageProps) {
                               <div className="flex space-x-2">
                                 <Button
                                   onClick={() => handleAccept(invitation.id)}
-                                  variant="emerald"
                                   size="sm"
                                 >
                                   Accept

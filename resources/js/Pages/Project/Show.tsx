@@ -195,9 +195,7 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
               </h2>
 
               {!isInviteFormVisible && (
-                <Button variant="emerald" onClick={toggleInviteForm}>
-                  Invite Users
-                </Button>
+                <Button onClick={toggleInviteForm}>Invite Users</Button>
               )}
 
               {isInviteFormVisible && (
@@ -246,14 +244,14 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
                   )}
 
                   <div className="flex gap-2">
-                    <Button
-                      type="submit"
-                      variant="emerald"
-                      disabled={!selectedUser}
-                    >
+                    <Button type="submit" disabled={!selectedUser}>
                       Invite
                     </Button>
-                    <Button type="button" onClick={toggleInviteForm}>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      onClick={toggleInviteForm}
+                    >
                       Cancel
                     </Button>
                   </div>
