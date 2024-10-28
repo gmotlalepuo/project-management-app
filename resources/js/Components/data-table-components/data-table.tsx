@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import {
   ColumnDef,
@@ -27,15 +25,18 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { FilterableColumn } from "@/types/utils";
 
-interface DataTableProps<TData, TValue> {
+type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-}
+  filterableColumns: FilterableColumn[]; // Ensure proper typing for filterableColumns
+};
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  filterableColumns,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -69,7 +70,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} filterableColumns={filterableColumns} />
       <div className="overflow-y-auto rounded-md border">
         <Table>
           <TableHeader>
@@ -77,7 +78,7 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
-                    className="px-4 py-2"
+                    className="px-4 py-2 dark:text-gray-300"
                     key={header.id}
                     colSpan={header.colSpan}
                   >
