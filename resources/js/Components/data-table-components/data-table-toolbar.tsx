@@ -7,6 +7,7 @@ import { DataTableViewOptions } from "./data-table-view-options";
 import { TrashIcon } from "lucide-react";
 import { CalendarDatePicker } from "../CalendarDatePicker";
 import { useState } from "react";
+import { router } from "@inertiajs/react";
 
 interface FilterOption {
   label: string;
@@ -22,24 +23,40 @@ interface FilterableColumn {
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  filterableColumns: FilterableColumn[]; // Pass filterable columns as props
+  filterableColumns: FilterableColumn[];
+  queryParams: { [key: string]: any }; // Include queryParams to handle initial filter state
+  routeName: string; // Dynamic route to pass in Inertia router
 }
 
 export function DataTableToolbar<TData>({
   table,
   filterableColumns,
+  queryParams,
+  routeName, // Dynamic route
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0;
+  const isFiltered = Object.keys(queryParams).length > 0;
 
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(new Date().getFullYear(), 0, 1),
     to: new Date(),
   });
 
+  const updateQuery = (name: string, value: string | string[]) => {
+    const updatedParams = { ...queryParams, [name]: value };
+
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      delete updatedParams[name]; // Remove param if value is empty
+    }
+
+    router.get(route(routeName), updatedParams, {
+      preserveState: true, // Preserve state to avoid a full page reload
+      preserveScroll: true, // Maintain scroll position
+    });
+  };
+
   const handleDateSelect = ({ from, to }: { from: Date; to: Date }) => {
     setDateRange({ from, to });
-    // Apply date range filter for a date column if applicable
-    table.getColumn("date")?.setFilterValue([from, to]);
+    updateQuery("created_at", [from.toISOString(), to.toISOString()]); // Apply date range query
   };
 
   return (
@@ -52,15 +69,20 @@ export function DataTableToolbar<TData>({
               <Input
                 key={column.accessorKey}
                 placeholder={`Filter by ${column.title}`}
-                value={
-                  (table
-                    .getColumn(column.accessorKey)
-                    ?.getFilterValue() as string) ?? ""
-                }
-                onChange={(event) => {
-                  table
-                    .getColumn(column.accessorKey)
-                    ?.setFilterValue(event.target.value);
+                defaultValue={queryParams[column.accessorKey] || ""}
+                onBlur={(event) => {
+                  updateQuery(
+                    column.accessorKey,
+                    (event.target as HTMLInputElement).value,
+                  );
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    updateQuery(
+                      column.accessorKey,
+                      (event.target as HTMLInputElement).value,
+                    );
+                  }
                 }}
                 className="h-8 w-[150px] lg:w-[250px]"
               />
@@ -74,6 +96,10 @@ export function DataTableToolbar<TData>({
                 column={table.getColumn(column.accessorKey)}
                 title={column.title}
                 options={column.options}
+                onSelect={(selectedValues: string[]) => {
+                  updateQuery(column.accessorKey, selectedValues);
+                }}
+                initialSelectedValues={queryParams[column.accessorKey] || []}
               />
             );
           }
@@ -96,7 +122,9 @@ export function DataTableToolbar<TData>({
         {isFiltered && (
           <Button
             variant="ghost"
-            onClick={() => table.resetColumnFilters()}
+            onClick={() => {
+              router.get(route(routeName), {}, { replace: true });
+            }}
             className="h-8 px-2 lg:px-3"
           >
             Reset

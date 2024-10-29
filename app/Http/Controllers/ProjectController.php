@@ -13,6 +13,7 @@ use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use Carbon\Carbon;
 
 class ProjectController extends Controller {
     /**
@@ -28,9 +29,24 @@ class ProjectController extends Controller {
             $query->where("name", "like", "%" . request("name") . "%");
         }
 
-        if (request("status")) {
-            $query->where("status", request("status"));
+        if (request()->has('status')) {
+            // Check if status is an array and apply filtering
+            $statuses = request()->input('status');
+            if (is_array($statuses)) {
+                $query->whereIn("status", $statuses); // Use whereIn for multiple values
+            } else {
+                $query->where("status", $statuses);
+            }
         }
+
+        if (request("created_at")) {
+            $createdAtRange = request("created_at");
+            $startDate = Carbon::parse($createdAtRange[0])->startOfDay();
+            $endDate = Carbon::parse($createdAtRange[1])->endOfDay();
+
+            $query->whereBetween("created_at", [$startDate, $endDate]);
+        }
+
 
         $projects = $query
             ->orderBy($sortField, $sortDirection)

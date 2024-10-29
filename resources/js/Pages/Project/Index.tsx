@@ -144,7 +144,9 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               <DataTable
                 columns={columns}
                 data={projects.data}
-                filterableColumns={filterableColumns} // Pass the filterable columns here
+                filterableColumns={filterableColumns}
+                queryParams={queryParams}
+                routeName="project.index"
               />
             </div>
           </div>

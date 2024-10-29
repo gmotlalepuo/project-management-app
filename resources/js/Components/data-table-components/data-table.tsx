@@ -30,13 +30,17 @@ import { FilterableColumn } from "@/types/utils";
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filterableColumns: FilterableColumn[]; // Ensure proper typing for filterableColumns
+  filterableColumns: FilterableColumn[];
+  queryParams: { [key: string]: any };
+  routeName: string;
 };
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   filterableColumns,
+  queryParams,
+  routeName,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -70,7 +74,12 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} filterableColumns={filterableColumns} />
+      <DataTableToolbar
+        table={table}
+        filterableColumns={filterableColumns}
+        queryParams={queryParams}
+        routeName={routeName}
+      />
       <div className="overflow-y-auto rounded-md border">
         <Table>
           <TableHeader>
