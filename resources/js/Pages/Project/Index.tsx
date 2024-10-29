@@ -11,7 +11,6 @@ import {
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
-import { DataTablePagination } from "@/Components/data-table-components/data-table-pagination";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -148,13 +147,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                 filterableColumns={filterableColumns}
                 queryParams={queryParams}
                 routeName="project.index"
-              >
-                <DataTablePagination
-                  paginationData={projects}
-                  queryParams={queryParams}
-                  routeName="project.index"
-                />
-              </DataTable>
+              />
             </div>
           </div>
         </div>

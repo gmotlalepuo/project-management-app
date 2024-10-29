@@ -13,10 +13,10 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { router } from "@inertiajs/react";
-import { PaginatedProject } from "@/types/project";
+import { PaginationData } from "@/types/utils";
 
 interface DataTablePaginationProps {
-  paginationData: PaginatedProject; // Accept pagination data from the backend
+  paginationData: PaginationData;
   queryParams: { [key: string]: any }; // For Inertia query state
   routeName: string; // Route for Inertia requests
 }

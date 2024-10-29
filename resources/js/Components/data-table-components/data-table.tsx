@@ -24,27 +24,20 @@ import {
 } from "@/Components/ui/table";
 
 import { DataTableToolbar } from "./data-table-toolbar";
-import { FilterableColumn } from "@/types/utils";
+import { DataTablePagination } from "./data-table-pagination";
+import {
+  FilterableColumn,
+  PaginationLinks,
+  PaginationMeta,
+} from "@/types/utils";
 import { router } from "@inertiajs/react";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   entity: {
     data: TData[];
-    meta: {
-      current_page: number;
-      from: number;
-      last_page: number;
-      links: Array<{
-        url: string | null;
-        label: string;
-        active: boolean;
-      }>;
-      path: string;
-      per_page: number;
-      to: number;
-      total: number;
-    };
+    meta: PaginationMeta;
+    links: PaginationLinks;
   };
   filterableColumns: FilterableColumn[];
   queryParams: { [key: string]: any };
@@ -58,7 +51,6 @@ export function DataTable<TData, TValue>({
   filterableColumns,
   queryParams,
   routeName,
-  children,
 }: DataTableProps<TData, TValue>) {
   const { data, meta } = entity;
   const [rowSelection, setRowSelection] = React.useState({});
@@ -171,7 +163,11 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {children}
+      <DataTablePagination
+        paginationData={entity}
+        queryParams={queryParams}
+        routeName={routeName}
+      />
     </div>
   );
 }
