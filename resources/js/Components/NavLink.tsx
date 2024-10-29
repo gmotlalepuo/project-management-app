@@ -15,14 +15,12 @@ export const NavLink = ({
     <Link
       href={href}
       className={cn(
-        "relative rounded-md px-3 py-2 text-gray-600 transition-colors duration-200 hover:bg-violet-100 hover:text-violet-600 dark:text-gray-300 dark:hover:bg-violet-950 dark:hover:text-violet-300",
-        isActive && "dark:!text-primary-light font-bold !text-primary",
+        "relative rounded-md px-4 py-3 text-sm text-gray-600 transition-colors duration-200 hover:bg-violet-100 hover:text-violet-600 dark:text-gray-300 dark:hover:bg-violet-950 dark:hover:text-violet-300",
+        isActive &&
+          "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-300",
       )}
     >
       {children}
-      {isActive && (
-        <span className="dark:bg-primary-light absolute bottom-[-14px] left-0 right-0 h-0.5 bg-primary" />
-      )}
     </Link>
   );
 };

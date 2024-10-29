@@ -18,6 +18,7 @@ import {
   NavigationMenuList,
 } from "@/Components/ui/navigation-menu";
 import { NavLink } from "@/Components/NavLink";
+import { cn } from "@/lib/utils";
 
 export default function AuthenticatedLayout({
   header,
@@ -36,7 +37,7 @@ export default function AuthenticatedLayout({
                 <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
               </Link>
               <NavigationMenu>
-                <NavigationMenuList className="hidden space-x-3 md:flex">
+                <NavigationMenuList className="hidden space-x-2 md:flex">
                   <NavigationMenuItem>
                     <NavLink
                       href={route("dashboard")}
@@ -45,44 +46,91 @@ export default function AuthenticatedLayout({
                       Dashboard
                     </NavLink>
                   </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink
-                      href={route("project.index")}
-                      isActive={route().current("project.index")}
-                    >
-                      Projects
-                    </NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink
-                      href={route("task.index")}
-                      isActive={route().current("task.index")}
-                    >
-                      All Tasks
-                    </NavLink>
-                  </NavigationMenuItem>
+
+                  {/* Projects and Invitations Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="violetNav"
+                        className={cn(
+                          (route().current("project.index") ||
+                            route().current("project.invitations")) &&
+                            "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-100",
+                        )}
+                      >
+                        <span>Projects</span>
+                        <svg
+                          className="ml-1 h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem asChild>
+                        <Link href={route("project.index")}>All Projects</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={route("project.invitations")}>
+                          Invitations
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Tasks Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="violetNav"
+                        className={cn(
+                          (route().current("task.index") ||
+                            route().current("task.myTasks")) &&
+                            "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-100",
+                        )}
+                      >
+                        <span>Tasks</span>
+                        <svg
+                          className="ml-1 h-4 w-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem asChild>
+                        <Link href={route("task.index")}>All Tasks</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={route("task.myTasks")}>My Tasks</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   <NavigationMenuItem>
                     <NavLink
                       href={route("user.index")}
                       isActive={route().current("user.index")}
                     >
                       Users
-                    </NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink
-                      href={route("task.myTasks")}
-                      isActive={route().current("task.myTasks")}
-                    >
-                      My Tasks
-                    </NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink
-                      href={route("project.invitations")}
-                      isActive={route().current("project.invitations")}
-                    >
-                      Invitations
                     </NavLink>
                   </NavigationMenuItem>
                 </NavigationMenuList>
@@ -95,8 +143,11 @@ export default function AuthenticatedLayout({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
-                    variant="ghost"
-                    className="flex items-center space-x-2"
+                    variant="violetNav"
+                    className={cn(
+                      route().current("profile.edit") &&
+                        "bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-100",
+                    )}
                   >
                     <span>{user.name}</span>
                     <svg
@@ -120,7 +171,12 @@ export default function AuthenticatedLayout({
                     <Link href={route("profile.edit")}>Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={route("logout")} method="post" as="button">
+                    <Link
+                      href={route("logout")}
+                      method="post"
+                      as="button"
+                      className="w-full"
+                    >
                       Log Out
                     </Link>
                   </DropdownMenuItem>
@@ -157,17 +213,17 @@ export default function AuthenticatedLayout({
                     <Link href={route("project.index")} className="block">
                       Projects
                     </Link>
+                    <Link href={route("project.invitations")} className="block">
+                      Invitations
+                    </Link>
                     <Link href={route("task.index")} className="block">
                       All Tasks
-                    </Link>
-                    <Link href={route("user.index")} className="block">
-                      Users
                     </Link>
                     <Link href={route("task.myTasks")} className="block">
                       My Tasks
                     </Link>
-                    <Link href={route("project.invitations")} className="block">
-                      Invitations
+                    <Link href={route("user.index")} className="block">
+                      Users
                     </Link>
                     <Separator />
                     <Link href={route("profile.edit")} className="block">
