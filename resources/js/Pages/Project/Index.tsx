@@ -11,6 +11,9 @@ import {
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
+import { Button } from "@/Components/ui/button";
+import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Check } from "lucide-react";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -121,11 +124,8 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
           <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             Projects
           </h2>
-          <Link
-            href={route("project.create")}
-            className="rounded bg-emerald-500 px-3 py-1 text-white shadow transition-all hover:bg-emerald-600"
-          >
-            Create Project
+          <Link href={route("project.create")}>
+            <Button>Create Project</Button>
           </Link>
         </div>
       }
@@ -134,9 +134,10 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           {success && (
-            <div className="mb-4 rounded bg-emerald-500 px-4 py-2 text-white">
-              {success}
-            </div>
+            <Alert className="mb-4" variant="success">
+              <Check className="h-4 w-4" />
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
           )}
 
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
