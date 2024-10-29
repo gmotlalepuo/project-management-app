@@ -23,25 +23,44 @@ import {
   TableRow,
 } from "@/Components/ui/table";
 
-import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { FilterableColumn } from "@/types/utils";
+import { router } from "@inertiajs/react";
 
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  entity: {
+    data: TData[];
+    meta: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+      }>;
+      path: string;
+      per_page: number;
+      to: number;
+      total: number;
+    };
+  };
   filterableColumns: FilterableColumn[];
   queryParams: { [key: string]: any };
   routeName: string;
+  children?: React.ReactNode;
 };
 
 export function DataTable<TData, TValue>({
   columns,
-  data,
+  entity,
   filterableColumns,
   queryParams,
   routeName,
+  children,
 }: DataTableProps<TData, TValue>) {
+  const { data, meta } = entity;
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -49,6 +68,7 @@ export function DataTable<TData, TValue>({
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
 
   const table = useReactTable({
     data,
@@ -58,6 +78,10 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      pagination: {
+        pageIndex: meta.current_page - 1, // React Table uses 0-based index
+        pageSize, // Pass pageSize from state
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -70,7 +94,21 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualPagination: true, // Important
+    pageCount: meta.last_page, // Use last_page from meta data
   });
+
+  // Sort change function
+  const sortChanged = (columnId: string) => {
+    if (columnId === queryParams.sort_field) {
+      queryParams.sort_direction =
+        queryParams.sort_direction === "asc" ? "desc" : "asc";
+    } else {
+      queryParams.sort_field = columnId;
+      queryParams.sort_direction = "asc";
+    }
+    router.get(route(routeName), queryParams, { preserveState: true });
+  };
 
   return (
     <div className="space-y-4">
@@ -87,9 +125,10 @@ export function DataTable<TData, TValue>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
-                    className="px-4 py-2 dark:text-gray-300"
+                    className="cursor-pointer px-4 py-2 dark:text-gray-300"
                     key={header.id}
                     colSpan={header.colSpan}
+                    onClick={() => sortChanged(header.column.id)}
                   >
                     {header.isPlaceholder
                       ? null
@@ -132,7 +171,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      {children}
     </div>
   );
 }

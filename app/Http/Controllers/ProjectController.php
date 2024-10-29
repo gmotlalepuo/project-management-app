@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Project;
 use Illuminate\Support\Str;
@@ -13,7 +14,6 @@ use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
-use Carbon\Carbon;
 
 class ProjectController extends Controller {
     /**
@@ -50,8 +50,8 @@ class ProjectController extends Controller {
 
         $projects = $query
             ->orderBy($sortField, $sortDirection)
-            ->paginate(10)
-            ->onEachSide(1);
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
 
         return Inertia::render('Project/Index', [
             'projects' => ProjectResource::collection($projects),
