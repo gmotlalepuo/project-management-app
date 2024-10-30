@@ -92,6 +92,11 @@ export function DataTable<TData, TValue>({
 
   // Sort change function
   const sortChanged = (columnId: string) => {
+    const column = table.getColumn(columnId);
+
+    // Skip sorting if the column does not allow sorting
+    if (!column || !column.getCanSort()) return;
+
     if (columnId === queryParams.sort_field) {
       queryParams.sort_direction =
         queryParams.sort_direction === "asc" ? "desc" : "asc";

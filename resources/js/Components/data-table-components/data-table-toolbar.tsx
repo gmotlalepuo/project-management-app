@@ -36,10 +36,22 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = Object.keys(queryParams).length > 0;
 
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(new Date().getFullYear(), 0, 1),
-    to: new Date(),
-  });
+  const [dateRanges, setDateRanges] = useState<{
+    [key: string]: { from: Date; to: Date };
+  }>(
+    filterableColumns
+      .filter((col) => col.filterType === "date")
+      .reduce(
+        (acc, col) => {
+          acc[col.accessorKey] = {
+            from: new Date(new Date().getFullYear(), 0, 1),
+            to: new Date(),
+          };
+          return acc;
+        },
+        {} as { [key: string]: { from: Date; to: Date } },
+      ),
+  );
 
   const updateQuery = (name: string, value: string | string[]) => {
     const updatedParams = { ...queryParams, [name]: value };
@@ -54,9 +66,15 @@ export function DataTableToolbar<TData>({
     });
   };
 
-  const handleDateSelect = ({ from, to }: { from: Date; to: Date }) => {
-    setDateRange({ from, to });
-    updateQuery("created_at", [from.toISOString(), to.toISOString()]); // Apply date range query
+  const handleDateSelect = (
+    accessorKey: string,
+    { from, to }: { from: Date; to: Date },
+  ) => {
+    setDateRanges((prev) => ({
+      ...prev,
+      [accessorKey]: { from, to },
+    }));
+    updateQuery(accessorKey, [from.toISOString(), to.toISOString()]); // Apply date range query
   };
 
   return (
@@ -108,8 +126,10 @@ export function DataTableToolbar<TData>({
             return (
               <CalendarDatePicker
                 key={column.accessorKey}
-                date={dateRange}
-                onDateSelect={handleDateSelect}
+                date={dateRanges[column.accessorKey]}
+                onDateSelect={(dateRange) =>
+                  handleDateSelect(column.accessorKey, dateRange)
+                }
                 className="h-9 w-[250px]"
                 variant="outline"
               />

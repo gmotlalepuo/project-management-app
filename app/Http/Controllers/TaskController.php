@@ -14,6 +14,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateTaskRequest;
+use Carbon\Carbon;
 
 class TaskController extends Controller {
     /**
@@ -25,16 +26,51 @@ class TaskController extends Controller {
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
 
+        // Filter by task name
         if (request("name")) {
             $query->where("name", "like", "%" . request("name") . "%");
         }
 
-        if (request("status")) {
-            $query->where("status", request("status"));
+        // Filter by project name with a relation to project_id
+        if (request("project_name")) {
+            $query->whereHas("project", function ($query) {
+                $query->where("name", "like", "%" . request("project_name") . "%");
+            });
         }
 
-        if (request("priority")) {
-            $query->where("priority", request("priority"));
+        if (request()->has('status')) {
+            // Check if status is an array and apply filtering
+            $statuses = request()->input('status');
+            if (is_array($statuses)) {
+                $query->whereIn("status", $statuses); // Use whereIn for multiple values
+            } else {
+                $query->where("status", $statuses);
+            }
+        }
+
+        if (request()->has('priority')) {
+            // Check if priority is an array and apply filtering
+            $priorities = request()->input('priority');
+            if (is_array($priorities)) {
+                $query->whereIn("priority", $priorities); // Use whereIn for multiple values
+            } else {
+                $query->where("priority", $priorities);
+            }
+        }
+
+        if (request("due_date")) {
+            $dueDateRange = request("due_date");
+            $startDate = Carbon::parse($dueDateRange[0])->startOfDay();
+            $endDate = Carbon::parse($dueDateRange[1])->endOfDay();
+
+            $query->whereBetween("due_date", [$startDate, $endDate]);
+        }
+
+        // Filter by "Created By" user name with a relation to created_by (User model)
+        if (request("created_by_name")) {
+            $query->whereHas("createdBy", function ($query) {
+                $query->where("name", "like", "%" . request("created_by_name") . "%");
+            });
         }
 
         $tasks = $query
