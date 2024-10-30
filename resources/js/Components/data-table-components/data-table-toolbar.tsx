@@ -6,7 +6,7 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { DataTableViewOptions } from "./data-table-view-options";
 import { TrashIcon } from "lucide-react";
 import { CalendarDatePicker } from "../CalendarDatePicker";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 
 interface FilterOption {
@@ -53,6 +53,23 @@ export function DataTableToolbar<TData>({
       ),
   );
 
+  const [showAllFilters, setShowAllFilters] = useState(false); // State to control filter visibility
+  const [isMobile, setIsMobile] = useState(false); // State to track if the screen is below "md"
+
+  useEffect(() => {
+    // Handler to detect screen width changes and set mobile state
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // 'md' breakpoint is usually 768px
+    };
+
+    handleResize(); // Initialize on component mount
+    window.addEventListener("resize", handleResize); // Attach the event listener
+
+    return () => {
+      window.removeEventListener("resize", handleResize); // Cleanup on component unmount
+    };
+  }, []);
+
   const updateQuery = (name: string, value: string | string[]) => {
     const updatedParams = { ...queryParams, [name]: value };
 
@@ -77,90 +94,107 @@ export function DataTableToolbar<TData>({
     updateQuery(accessorKey, [from.toISOString(), to.toISOString()]); // Apply date range query
   };
 
+  const visibleFilters =
+    showAllFilters || isMobile
+      ? filterableColumns
+      : filterableColumns.slice(0, 4); // Show only first 4 if not toggled or on mobile
+
   return (
-    <div className="flex flex-wrap items-center justify-between">
-      <div className="flex flex-1 flex-wrap items-center gap-2">
-        {/* Loop through filterable columns */}
-        {filterableColumns.map((column) => {
-          if (column.filterType === "text") {
-            return (
-              <Input
-                key={column.accessorKey}
-                placeholder={`Filter by ${column.title}`}
-                defaultValue={queryParams[column.accessorKey] || ""}
-                onBlur={(event) => {
-                  updateQuery(
-                    column.accessorKey,
-                    (event.target as HTMLInputElement).value,
-                  );
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between">
+        <div
+          className={`flex flex-1 flex-wrap items-center gap-2 ${isMobile && !showAllFilters ? "hidden" : ""}`}
+        >
+          {/* Loop through visible filterable columns */}
+          {visibleFilters.map((column) => {
+            if (column.filterType === "text") {
+              return (
+                <Input
+                  key={column.accessorKey}
+                  placeholder={`Filter by ${column.title}`}
+                  defaultValue={queryParams[column.accessorKey] || ""}
+                  onBlur={(event) => {
                     updateQuery(
                       column.accessorKey,
                       (event.target as HTMLInputElement).value,
                     );
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      updateQuery(
+                        column.accessorKey,
+                        (event.target as HTMLInputElement).value,
+                      );
+                    }
+                  }}
+                  className="h-8 w-[150px] lg:w-[170px]"
+                />
+              );
+            }
+
+            if (column.filterType === "select" && column.options) {
+              return (
+                <DataTableFacetedFilter
+                  key={column.accessorKey}
+                  column={table.getColumn(column.accessorKey)}
+                  title={column.title}
+                  options={column.options}
+                  onSelect={(selectedValues: string[]) => {
+                    updateQuery(column.accessorKey, selectedValues);
+                  }}
+                  initialSelectedValues={queryParams[column.accessorKey] || []}
+                />
+              );
+            }
+
+            if (column.filterType === "date") {
+              return (
+                <CalendarDatePicker
+                  key={column.accessorKey}
+                  date={dateRanges[column.accessorKey]}
+                  onDateSelect={(dateRange) =>
+                    handleDateSelect(column.accessorKey, dateRange)
                   }
-                }}
-                className="h-8 w-[150px] lg:w-[250px]"
-              />
-            );
-          }
+                  className="h-8 w-[250px]"
+                  variant="outline"
+                />
+              );
+            }
 
-          if (column.filterType === "select" && column.options) {
-            return (
-              <DataTableFacetedFilter
-                key={column.accessorKey}
-                column={table.getColumn(column.accessorKey)}
-                title={column.title}
-                options={column.options}
-                onSelect={(selectedValues: string[]) => {
-                  updateQuery(column.accessorKey, selectedValues);
-                }}
-                initialSelectedValues={queryParams[column.accessorKey] || []}
-              />
-            );
-          }
+            return null;
+          })}
 
-          if (column.filterType === "date") {
-            return (
-              <CalendarDatePicker
-                key={column.accessorKey}
-                date={dateRanges[column.accessorKey]}
-                onDateSelect={(dateRange) =>
-                  handleDateSelect(column.accessorKey, dateRange)
-                }
-                className="h-9 w-[250px]"
-                variant="outline"
-              />
-            );
-          }
+          {isFiltered && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                router.get(route(routeName), {}, { replace: true });
+              }}
+              className="h-8 px-2 lg:px-3"
+            >
+              Reset
+              <Cross2Icon className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+        </div>
 
-          return null;
-        })}
-
-        {isFiltered && (
+        <div className="flex items-center gap-2">
+          {table.getFilteredSelectedRowModel().rows.length > 0 ? (
+            <Button variant="outline" size="sm">
+              <TrashIcon className="mr-2 size-4" aria-hidden="true" />
+              Delete ({table.getFilteredSelectedRowModel().rows.length})
+            </Button>
+          ) : null}
           <Button
-            variant="ghost"
-            onClick={() => {
-              router.get(route(routeName), {}, { replace: true });
-            }}
-            className="h-8 px-2 lg:px-3"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAllFilters(!showAllFilters)}
+            className={`h-8 w-full ${isMobile && "mt-2"}`}
           >
-            Reset
-            <Cross2Icon className="ml-2 h-4 w-4" />
+            {showAllFilters ? "Hide Filters" : "Show All Filters"}
           </Button>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2">
-        {table.getFilteredSelectedRowModel().rows.length > 0 ? (
-          <Button variant="outline" size="sm">
-            <TrashIcon className="mr-2 size-4" aria-hidden="true" />
-            Delete ({table.getFilteredSelectedRowModel().rows.length})
-          </Button>
-        ) : null}
-        <DataTableViewOptions table={table} />
+          <DataTableViewOptions table={table} />
+        </div>
       </div>
     </div>
   );
