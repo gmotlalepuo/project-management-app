@@ -5,7 +5,7 @@ import { Input } from "@/Components/ui/input";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { DataTableViewOptions } from "./data-table-view-options";
 import { TrashIcon } from "lucide-react";
-import { CalendarDatePicker } from "../CalendarDatePicker";
+import { CalendarDatePicker } from "../ui/calendar-datetime-picker";
 import { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
 

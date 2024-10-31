@@ -13,7 +13,7 @@ import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
-import { Check } from "lucide-react";
+import { Check, CirclePlus, UsersRound } from "lucide-react";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -120,14 +120,31 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
   return (
     <AuthenticatedLayout
       header={
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            Projects
-          </h2>
-          <Link href={route("project.create")}>
-            <Button>Create Project</Button>
-          </Link>
-        </div>
+        <>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+              Projects
+            </h2>
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center">
+              <Link href={route("project.create")}>
+                <Button className="w-full sm:w-auto">
+                  <CirclePlus className="h-5 w-5" />
+                  <span>Create Project</span>
+                </Button>
+              </Link>
+              <Link href={route("project.invitations")}>
+                <Button variant="secondary" className="w-full sm:w-auto">
+                  <UsersRound className="h-5 w-5" />
+                  <span>Invitations</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Take charge of your projects and actively manage your participation
+            in them.
+          </p>
+        </>
       }
     >
       <Head title="Projects" />
@@ -141,7 +158,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
           )}
 
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="p-6 text-gray-900 dark:text-gray-100">
+            <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
               <DataTable
                 columns={columns}
                 entity={projects}

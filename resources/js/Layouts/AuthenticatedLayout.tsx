@@ -247,7 +247,7 @@ export default function AuthenticatedLayout({
 
       {/* Header */}
       {header && (
-        <header className="bg-background shadow">
+        <header className="rounded-bl-lg rounded-br-lg bg-background shadow">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
             {header}
           </div>
