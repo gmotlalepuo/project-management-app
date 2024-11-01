@@ -14,6 +14,8 @@ import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
 import { Check, CirclePlus, UsersRound } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -116,6 +118,19 @@ const filterableColumns: FilterableColumn[] = [
 // Main component for the Project index page
 export default function Index({ projects, queryParams, success }: IndexProps) {
   queryParams = queryParams || {};
+
+  const { toast } = useToast(); // Initialize the toast hook
+
+  // Trigger the toast notification if there's a success message on load
+  useEffect(() => {
+    if (success) {
+      toast({
+        title: "Success",
+        variant: "success",
+        description: success,
+      });
+    }
+  }, [success]);
 
   return (
     <AuthenticatedLayout

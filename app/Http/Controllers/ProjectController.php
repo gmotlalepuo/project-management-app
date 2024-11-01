@@ -76,6 +76,7 @@ class ProjectController extends Controller {
         $image = $data['image'] ?? null;
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
+        $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
 
         if ($image) {
             $data['image_path'] = $image->store('project/' . Str::random(10), 'public');
@@ -139,6 +140,7 @@ class ProjectController extends Controller {
         /** @var $image \Illuminate\Http\UploadedFile */
         $image = $data['image'] ?? null;
         $data['updated_by'] = Auth::id();
+        $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
 
         if ($image) {
             if ($project->image_path) {

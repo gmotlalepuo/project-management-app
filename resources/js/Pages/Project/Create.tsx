@@ -14,6 +14,7 @@ import {
 import InputError from "@/Components/InputError";
 import { useToast } from "@/hooks/use-toast";
 import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
+import { PROJECT_STATUS_TEXT_MAP } from "@/utils/constants";
 
 type Props = {};
 
@@ -35,9 +36,16 @@ export default function Create({}: Props) {
       preserveState: true,
       onSuccess: () => {
         reset(); // Reset the form on success
+      },
+      onError: (error) => {
+        // Concatenate all error messages into a single string
+        const errorMessage = Object.values(error).join(" ");
+
         toast({
-          title: "Project created successfully!",
-          description: "Your new project has been created.",
+          title: "Failed to create project",
+          variant: "destructive",
+          description: errorMessage,
+          duration: 5000,
         });
       },
     });
@@ -128,9 +136,13 @@ export default function Create({}: Props) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value>Select Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    {Object.entries(PROJECT_STATUS_TEXT_MAP).map(
+                      ([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
                 <InputError message={errors.status} className="mt-2" />
