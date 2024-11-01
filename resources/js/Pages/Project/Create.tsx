@@ -34,13 +34,9 @@ export default function Create({}: Props) {
 
     post(route("project.store"), {
       preserveState: true,
-      onSuccess: () => {
-        reset(); // Reset the form on success
-      },
+      onSuccess: () => reset(),
       onError: (error) => {
-        // Concatenate all error messages into a single string
         const errorMessage = Object.values(error).join(" ");
-
         toast({
           title: "Failed to create project",
           variant: "destructive",

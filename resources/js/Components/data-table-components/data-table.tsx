@@ -42,6 +42,7 @@ type DataTableProps<TData, TValue> = {
   filterableColumns: FilterableColumn[];
   queryParams: { [key: string]: any };
   routeName: string;
+  entityId?: string | number;
   children?: React.ReactNode;
 };
 
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   filterableColumns,
   queryParams,
   routeName,
+  entityId,
 }: DataTableProps<TData, TValue>) {
   const { data, meta } = entity;
   const [rowSelection, setRowSelection] = React.useState({});
@@ -91,6 +93,7 @@ export function DataTable<TData, TValue>({
   });
 
   // Sort change function
+  // Updated sortChanged function in DataTable
   const sortChanged = (columnId: string) => {
     const column = table.getColumn(columnId);
 
@@ -104,7 +107,15 @@ export function DataTable<TData, TValue>({
       queryParams.sort_field = columnId;
       queryParams.sort_direction = "asc";
     }
-    router.get(route(routeName), queryParams, { preserveState: true });
+
+    if (entityId) {
+      queryParams.entityId = entityId; // Include entityId if provided
+    }
+
+    router.get(route(routeName, { id: entityId }), queryParams, {
+      preserveState: true,
+      preserveScroll: true,
+    });
   };
 
   return (
@@ -114,6 +125,7 @@ export function DataTable<TData, TValue>({
         filterableColumns={filterableColumns}
         queryParams={queryParams}
         routeName={routeName}
+        entityId={entityId}
       />
       <div className="overflow-y-auto rounded-md border">
         <Table>
@@ -172,6 +184,7 @@ export function DataTable<TData, TValue>({
         paginationData={entity}
         queryParams={queryParams}
         routeName={routeName}
+        entityId={entityId}
       />
     </div>
   );

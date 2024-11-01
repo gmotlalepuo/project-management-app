@@ -12,8 +12,7 @@ import {
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
-import { Alert, AlertDescription } from "@/Components/ui/alert";
-import { Check, CirclePlus, UsersRound } from "lucide-react";
+import { CirclePlus, UsersRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 
@@ -165,13 +164,6 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
       <Head title="Projects" />
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          {success && (
-            <Alert className="mb-4" variant="success">
-              <Check className="h-4 w-4" />
-              <AlertDescription>{success}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
               <DataTable

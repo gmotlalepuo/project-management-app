@@ -26,13 +26,15 @@ interface DataTableToolbarProps<TData> {
   filterableColumns: FilterableColumn[];
   queryParams: { [key: string]: any }; // Include queryParams to handle initial filter state
   routeName: string; // Dynamic route to pass in Inertia router
+  entityId?: string | number;
 }
 
 export function DataTableToolbar<TData>({
   table,
   filterableColumns,
   queryParams,
-  routeName, // Dynamic route
+  routeName,
+  entityId,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = Object.keys(queryParams).length > 0;
 
@@ -77,9 +79,13 @@ export function DataTableToolbar<TData>({
       delete updatedParams[name]; // Remove param if value is empty
     }
 
-    router.get(route(routeName), updatedParams, {
-      preserveState: true, // Preserve state to avoid a full page reload
-      preserveScroll: true, // Maintain scroll position
+    if (entityId) {
+      updatedParams.entityId = entityId; // Include entityId if provided
+    }
+
+    router.get(route(routeName, { id: entityId }), updatedParams, {
+      preserveState: true,
+      preserveScroll: true,
     });
   };
 
@@ -163,12 +169,16 @@ export function DataTableToolbar<TData>({
 
             return null;
           })}
-
           {isFiltered && (
             <Button
               variant="ghost"
               onClick={() => {
-                router.get(route(routeName), {}, { replace: true });
+                const updatedParams = entityId ? { id: entityId } : {}; // Include entityId if available
+                router.get(
+                  route(routeName, updatedParams),
+                  {},
+                  { replace: true },
+                );
               }}
               className="h-8 px-2 lg:px-3"
             >

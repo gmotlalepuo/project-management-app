@@ -19,12 +19,14 @@ interface DataTablePaginationProps {
   paginationData: PaginationData;
   queryParams: { [key: string]: any }; // For Inertia query state
   routeName: string; // Route for Inertia requests
+  entityId?: string | number; // Optional entity ID (e.g., project ID)
 }
 
 export function DataTablePagination({
   paginationData,
   queryParams,
   routeName,
+  entityId,
 }: DataTablePaginationProps) {
   const { meta, links } = paginationData;
 
@@ -42,17 +44,26 @@ export function DataTablePagination({
     const page = extractPageNumber(link);
     if (page) {
       const updatedParams = { ...queryParams, page };
-      router.get(route(routeName), updatedParams, {
-        preserveState: true, // Keep the state during page navigation
-        preserveScroll: true, // Keep the scroll position
+      if (entityId)
+        (updatedParams as { [key: string]: any }).entityId = entityId; // Include entityId if provided
+
+      router.get(route(routeName, { id: entityId }), updatedParams, {
+        preserveState: true,
+        preserveScroll: true,
       });
     }
   };
 
   // Function to handle rows per page change
   const handlePageSizeChange = (pageSize: number) => {
-    const updatedParams = { ...queryParams, per_page: pageSize, page: 1 }; // Reset to first page on page size change
-    router.get(route(routeName), updatedParams, {
+    const updatedParams: { [key: string]: any } = {
+      ...queryParams,
+      per_page: pageSize,
+      page: 1,
+    };
+    if (entityId) updatedParams.entityId = entityId; // Include entityId if provided
+
+    router.get(route(routeName, { id: entityId }), updatedParams, {
       preserveState: true,
       preserveScroll: true,
     });
