@@ -1,10 +1,19 @@
-import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
-import SelectInput from "@/Components/SelectInput";
-import TextAreaInput from "@/Components/TextAreaInput";
-import TextInput from "@/Components/TextInput";
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
+import InputError from "@/Components/InputError";
+import { useToast } from "@/hooks/use-toast";
+import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
 
 type Props = {};
 
@@ -17,11 +26,20 @@ export default function Create({}: Props) {
     due_date: "",
   });
 
+  const { toast } = useToast();
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     post(route("project.store"), {
       preserveState: true,
+      onSuccess: () => {
+        reset(); // Reset the form on success
+        toast({
+          title: "Project created successfully!",
+          description: "Your new project has been created.",
+        });
+      },
     });
   };
 
@@ -40,17 +58,14 @@ export default function Create({}: Props) {
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
             <form
               onSubmit={onSubmit}
-              className="bg-white p-4 shadow dark:bg-gray-800 sm:rounded-lg sm:p-8"
+              className="space-y-6 bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8"
             >
+              {/* Project Image */}
               <div>
-                <InputLabel
-                  htmlFor="project_image_path"
-                  value="Project Image"
-                />
-                <TextInput
+                <Label htmlFor="project_image_path">Project Image</Label>
+                <Input
                   id="project_image_path"
                   type="file"
-                  name="image"
                   className="mt-1 block w-full"
                   accept=".jpg,.jpeg,.png,.webp,.svg"
                   onChange={(e) => {
@@ -61,82 +76,72 @@ export default function Create({}: Props) {
                 />
                 <InputError message={errors.image} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="project_name" value="Project Name" />
 
-                <TextInput
+              {/* Project Name */}
+              <div className="space-y-2">
+                <Label htmlFor="project_name">Project Name</Label>
+                <Input
                   id="project_name"
                   type="text"
-                  name="name"
                   value={data.name}
-                  className="mt-1 block w-full"
-                  isFocused={true}
                   onChange={(e) => setData("name", e.target.value)}
                   required
+                  autoFocus
                 />
-
                 <InputError message={errors.name} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel
-                  htmlFor="project_description"
-                  value="Project Description"
-                />
 
-                <TextAreaInput
+              {/* Project Description */}
+              <div className="space-y-2">
+                <Label htmlFor="project_description">Project Description</Label>
+                <Textarea
                   id="project_description"
-                  name="description"
                   value={data.description}
-                  className="mt-1 block w-full"
                   onChange={(e) => setData("description", e.target.value)}
+                  required
                 />
-
                 <InputError message={errors.description} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel
-                  htmlFor="project_due_date"
-                  value="Project Deadline"
-                />
 
-                <TextInput
-                  id="project_due_date"
-                  type="datetime-local"
-                  name="due_date"
-                  value={data.due_date}
-                  className="mt-1 block w-full"
-                  onChange={(e) => setData("due_date", e.target.value)}
+              {/* Project Deadline with DateTime Picker */}
+              <div className="space-y-2">
+                <Label htmlFor="project_due_date">Project Deadline</Label>
+                <DateTimePicker
+                  className="w-full"
+                  value={data.due_date ? new Date(data.due_date) : undefined}
+                  onChange={(date) => setData("due_date", date.toISOString())}
+                  required
                 />
-
                 <InputError message={errors.due_date} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="project_status" value="Project Status" />
 
-                <SelectInput
-                  name="status"
-                  id="project_status"
-                  className="mt-1 block w-full"
-                  onChange={(e) => setData("status", e.target.value)}
+              {/* Project Status */}
+              <div className="space-y-2">
+                <Label htmlFor="project_status">Project Status</Label>
+                <Select
+                  onValueChange={(value) => setData("status", value)}
+                  defaultValue={data.status}
                   required
                 >
-                  <option value="">Select Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </SelectInput>
-
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value>Select Status</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
                 <InputError message={errors.status} className="mt-2" />
               </div>
-              <div className="mt-4 text-right">
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-4">
                 <Link href={route("project.index")}>
-                  <button className="mr-3 rounded bg-gray-100 px-3 py-1 text-gray-800 shadow transition-all hover:bg-gray-200">
-                    Cancel
-                  </button>
+                  <Button variant="secondary">Cancel</Button>
                 </Link>
-                <button className="rounded bg-emerald-500 px-3 py-1 text-white shadow transition-all hover:bg-emerald-600">
-                  Submit
-                </button>
+                <Button type="submit">Submit</Button>
               </div>
             </form>
           </div>
