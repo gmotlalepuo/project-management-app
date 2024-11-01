@@ -135,7 +135,6 @@ export default function Create({}: Props) {
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value>Select Status</SelectItem>
                     {Object.entries(PROJECT_STATUS_TEXT_MAP).map(
                       ([value, label]) => (
                         <SelectItem key={value} value={value}>
