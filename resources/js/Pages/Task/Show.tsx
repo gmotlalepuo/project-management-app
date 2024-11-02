@@ -1,12 +1,13 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 import {
-  TASK_PRIORITY_CLASS_MAP,
+  TASK_PRIORITY_BADGE_MAP,
   TASK_PRIORITY_TEXT_MAP,
-  TASK_STATUS_CLASS_MAP,
+  TASK_STATUS_BADGE_MAP,
   TASK_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { Task } from "@/types/task";
+import { Badge } from "@/Components/ui/badge";
 
 type Props = {
   task: Task;
@@ -48,21 +49,17 @@ export default function Show({ task }: Props) {
                   <div className="mt-4">
                     <label className="text-lg font-bold">Task Status</label>
                     <p className="mt-1">
-                      <span
-                        className={`rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[task.status]}`}
-                      >
+                      <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
                         {TASK_STATUS_TEXT_MAP[task.status]}
-                      </span>
+                      </Badge>
                     </p>
                   </div>
                   <div className="mt-4">
                     <label className="text-lg font-bold">Task Priority</label>
                     <p className="mt-1">
-                      <span
-                        className={`rounded px-2 py-1 text-white ${TASK_PRIORITY_CLASS_MAP[task.priority]}`}
-                      >
+                      <Badge variant={TASK_PRIORITY_BADGE_MAP[task.priority]}>
                         {TASK_PRIORITY_TEXT_MAP[task.priority]}
-                      </span>
+                      </Badge>
                     </p>
                   </div>
                   <div className="mt-4">

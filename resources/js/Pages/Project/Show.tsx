@@ -9,23 +9,28 @@ import { DataTable } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import InputError from "@/Components/InputError";
 import {
-  PROJECT_STATUS_CLASS_MAP,
+  PROJECT_STATUS_BADGE_MAP,
   PROJECT_STATUS_TEXT_MAP,
+  TASK_PRIORITY_BADGE_MAP,
+  TASK_PRIORITY_TEXT_MAP,
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
 import { PageProps } from "@/types";
 import { Project } from "@/types/project";
 import { PaginatedTask, Task } from "@/types/task";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { User } from "@/types/user";
 import { FilterableColumn } from "@/types/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/Components/ui/badge";
 
 type Props = {
   project: Project;
   tasks: PaginatedTask;
   error: string | null;
+  success: string | null;
   queryParams: { [key: string]: any };
 };
 
@@ -43,16 +48,25 @@ const columns: ColumnDef<Task>[] = [
     ),
   },
   {
+    accessorKey: "priority",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Priority" />
+    ),
+    cell: ({ row }) => (
+      <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
+        {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
+      </Badge>
+    ),
+  },
+  {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <span
-        className={`rounded px-2 py-1 text-white ${PROJECT_STATUS_CLASS_MAP[row.original.status]}`}
-      >
+      <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
         {PROJECT_STATUS_TEXT_MAP[row.original.status]}
-      </span>
+      </Badge>
     ),
   },
   {
@@ -72,6 +86,15 @@ const columns: ColumnDef<Task>[] = [
 const filterableColumns: FilterableColumn[] = [
   { accessorKey: "name", title: "Task Name", filterType: "text" },
   {
+    accessorKey: "priority",
+    title: "Priority",
+    filterType: "select",
+    options: Object.entries(TASK_PRIORITY_TEXT_MAP).map(([value, label]) => ({
+      value,
+      label,
+    })),
+  },
+  {
     accessorKey: "status",
     title: "Status",
     filterType: "select",
@@ -90,6 +113,7 @@ const filterableColumns: FilterableColumn[] = [
 export default function Show({
   project,
   tasks,
+  success,
   queryParams,
   error: serverError,
 }: Props) {
@@ -104,6 +128,19 @@ export default function Show({
     email: "",
     currentUserEmail: user.email,
   });
+
+  const { toast } = useToast(); // Initialize the toast hook
+
+  // Trigger the toast notification if there's a success message on load
+  useEffect(() => {
+    if (success) {
+      toast({
+        title: "Success",
+        variant: "success",
+        description: success,
+      });
+    }
+  }, [success]);
 
   const toggleInviteForm = () => {
     setInviteFormVisible(!isInviteFormVisible);
@@ -222,11 +259,9 @@ export default function Show({
                   </div>
                   <div className="flex flex-col items-baseline space-y-3">
                     <Label>Project Status</Label>
-                    <span
-                      className={`rounded px-2 py-1 text-white ${PROJECT_STATUS_CLASS_MAP[project.status]}`}
-                    >
+                    <Badge variant={PROJECT_STATUS_BADGE_MAP[project.status]}>
                       {PROJECT_STATUS_TEXT_MAP[project.status]}
-                    </span>
+                    </Badge>
                   </div>
 
                   <div>

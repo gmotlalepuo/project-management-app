@@ -1,7 +1,8 @@
-import { TASK_STATUS_CLASS_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
+import { TASK_STATUS_BADGE_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PaginatedTask } from "@/types/task";
 import { Head, Link } from "@inertiajs/react";
+import { Badge } from "@/Components/ui/badge";
 
 type Props = {
   totalPendingTasks: number;
@@ -100,14 +101,9 @@ export default function Dashboard({
                         </Link>
                       </td>
                       <td className="px-3 py-2">
-                        <span
-                          className={
-                            "text-nowrap rounded px-2 py-1 text-white " +
-                            TASK_STATUS_CLASS_MAP[task.status]
-                          }
-                        >
+                        <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
                           {TASK_STATUS_TEXT_MAP[task.status]}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="text-nowrap px-3 py-2">{task.due_date}</td>
                     </tr>

@@ -5,15 +5,16 @@ import { DataTable } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import {
-  TASK_STATUS_CLASS_MAP,
   TASK_STATUS_TEXT_MAP,
-  TASK_PRIORITY_CLASS_MAP,
   TASK_PRIORITY_TEXT_MAP,
+  TASK_STATUS_BADGE_MAP,
+  TASK_PRIORITY_BADGE_MAP,
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/Components/ui/badge";
 
 type IndexProps = {
   tasks: PaginatedTask;
@@ -58,11 +59,9 @@ const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Priority" />
     ),
     cell: ({ row }) => (
-      <span
-        className={`text-nowrap rounded px-2 py-1 text-white ${TASK_PRIORITY_CLASS_MAP[row.original.priority]}`}
-      >
+      <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
         {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
-      </span>
+      </Badge>
     ),
   },
   {
@@ -71,11 +70,9 @@ const columns: ColumnDef<Task>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <span
-        className={`text-nowrap rounded px-2 py-1 text-white ${TASK_STATUS_CLASS_MAP[row.original.status]}`}
-      >
+      <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
         {TASK_STATUS_TEXT_MAP[row.original.status]}
-      </span>
+      </Badge>
     ),
   },
   {

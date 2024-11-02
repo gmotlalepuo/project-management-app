@@ -7,7 +7,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import {
   PROJECT_STATUS_TEXT_MAP,
-  PROJECT_STATUS_CLASS_MAP,
+  PROJECT_STATUS_BADGE_MAP,
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
@@ -15,6 +15,7 @@ import { Button } from "@/Components/ui/button";
 import { CirclePlus, UsersRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { Badge } from "@/Components/ui/badge"; // Ensure correct import
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -47,11 +48,9 @@ const columns: ColumnDef<Project>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <span
-        className={`rounded px-2 py-1 text-white ${PROJECT_STATUS_CLASS_MAP[row.original.status]}`}
-      >
+      <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
         {PROJECT_STATUS_TEXT_MAP[row.original.status]}
-      </span>
+      </Badge>
     ),
   },
   {

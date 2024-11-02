@@ -1,7 +1,11 @@
-export const PROJECT_STATUS_CLASS_MAP = {
-  pending: "bg-amber-500",
-  in_progress: "bg-blue-500 ",
-  completed: "bg-green-500",
+// Project constants
+export const PROJECT_STATUS_BADGE_MAP: Record<
+  "pending" | "in_progress" | "completed",
+  "warning" | "info" | "success"
+> = {
+  pending: "warning",
+  in_progress: "info",
+  completed: "success",
 };
 
 export const PROJECT_STATUS_TEXT_MAP = {
@@ -10,10 +14,14 @@ export const PROJECT_STATUS_TEXT_MAP = {
   completed: "Completed",
 };
 
-export const TASK_STATUS_CLASS_MAP = {
-  pending: "bg-amber-500",
-  in_progress: "bg-blue-500",
-  completed: "bg-green-500",
+// Task constants
+export const TASK_STATUS_BADGE_MAP: Record<
+  "pending" | "in_progress" | "completed",
+  "warning" | "info" | "success"
+> = {
+  pending: "warning",
+  in_progress: "info",
+  completed: "success",
 };
 
 export const TASK_STATUS_TEXT_MAP = {
@@ -22,10 +30,13 @@ export const TASK_STATUS_TEXT_MAP = {
   completed: "Completed",
 };
 
-export const TASK_PRIORITY_CLASS_MAP = {
-  low: "bg-gray-600",
-  medium: "bg-amber-600",
-  high: "bg-red-600",
+export const TASK_PRIORITY_BADGE_MAP: Record<
+  "low" | "medium" | "high",
+  "low" | "medium" | "destructive"
+> = {
+  low: "low",
+  medium: "medium",
+  high: "destructive",
 };
 
 export const TASK_PRIORITY_TEXT_MAP = {
@@ -34,6 +45,7 @@ export const TASK_PRIORITY_TEXT_MAP = {
   high: "High",
 };
 
+// Invitation constants
 export const INVITATION_STATUS_BADGE_MAP: Record<
   "pending" | "accepted" | "rejected",
   "warning" | "success" | "destructive"

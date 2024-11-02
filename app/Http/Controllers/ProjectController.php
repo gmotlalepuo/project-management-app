@@ -106,8 +106,22 @@ class ProjectController extends Controller {
             $query->where("name", "like", "%" . request("name") . "%");
         }
 
-        if (request("status")) {
-            $query->where("status", request("status"));
+        if (request()->has('status')) {
+            $statuses = request()->input('status');
+            if (is_array($statuses)) {
+                $query->whereIn("status", $statuses);
+            } else {
+                $query->where("status", $statuses);
+            }
+        }
+
+        if (request()->has('priority')) {
+            $priorities = request()->input('priority');
+            if (is_array($priorities)) {
+                $query->whereIn("priority", $priorities);
+            } else {
+                $query->where("priority", $priorities);
+            }
         }
 
         $tasks = $query
@@ -119,6 +133,7 @@ class ProjectController extends Controller {
             'project' => new ProjectResource($project),
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
+            'success' => session('success'),
             'error' => session('error'),
         ]);
     }
@@ -176,20 +191,33 @@ class ProjectController extends Controller {
             return back()->with('error', 'User does not exist.');
         }
 
-        // Check if the user is already invited and the invitation is pending
-        if ($project->invitedUsers()->where('user_id', $user->id)->wherePivot('status', 'pending')->exists()) {
-            return back()->with('error', 'User has already been invited and is awaiting response.');
+        // Check if there's already an invitation for this user and project
+        $existingInvitation = $project->invitedUsers()
+            ->where('user_id', $user->id)
+            ->first();
+
+        // If the user has a rejected invitation, update it to pending instead of creating a new one
+        if ($existingInvitation && $existingInvitation->pivot->status === 'rejected') {
+            $project->invitedUsers()->updateExistingPivot($user->id, [
+                'status' => 'pending',
+                'updated_at' => now(),
+            ]);
+            return back()->with('success', 'User re-invited successfully.');
         }
 
-        // Add user to invited users with a status of 'pending'
-        $project->invitedUsers()->attach($user->id, [
-            'status' => 'pending',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // If no invitation exists, create a new one
+        if (!$existingInvitation) {
+            $project->invitedUsers()->attach($user->id, [
+                'status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            return back()->with('success', 'User invited successfully.');
+        }
 
-        return back()->with('success', 'User invited successfully.');
+        return back()->with('error', 'This user has already been invited.');
     }
+
 
     public function showInvitations(Request $request) {
         $user = Auth::user();
@@ -221,6 +249,7 @@ class ProjectController extends Controller {
 
         return Inertia::render('Project/Invite', [
             'invitations' => ProjectInvitationResource::collection($invitations),
+            'success' => session('success'),
             'queryParams' => $request->query() ?: null,
         ]);
     }

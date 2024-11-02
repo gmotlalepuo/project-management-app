@@ -117,22 +117,38 @@ class UserController extends Controller {
 
         $currentUserId = Auth::id();
 
-        // Get the IDs of users already participating or invited in the project
-        $projectUserIds = $project->invitedUsers->pluck('id')->toArray();
-        $projectUserIds[] = $project->created_by;
+        // Check if the user exists by email
+        $user = User::where('email', $query)->first();
 
-        // Check if the queried email belongs to a user who is already invited
-        $alreadyInvitedUser = User::where('email', $query)
-            ->whereIn('id', $projectUserIds)
-            ->exists();
+        if ($user) {
+            // Check if there is an existing invitation with a "pending" status
+            $isPendingInvite = $project->invitedUsers()
+                ->where('user_id', $user->id)
+                ->wherePivot('status', 'pending')
+                ->exists();
 
-        if ($alreadyInvitedUser) {
-            return response()->json(['error' => 'This user has already been invited or is part of the project.'], 409);
+            if ($isPendingInvite) {
+                return response()->json(['error' => 'This user has already been invited and the invitation is pending.'], 409);
+            }
+
+            // Check if the user is already an active part of the project (not by invitation status)
+            $isProjectMember = $user->id == $project->created_by ||
+                $project->invitedUsers()
+                ->where('user_id', $user->id)
+                ->wherePivot('status', 'accepted')
+                ->exists();
+
+            if ($isProjectMember) {
+                return response()->json(['error' => 'This user is already part of the project.'], 409);
+            }
         }
 
         // Search for users excluding the current user and users already in the project
         $users = User::where('email', 'like', '%' . $query . '%')
-            ->whereNotIn('id', array_merge([$currentUserId], $projectUserIds))
+            ->whereNotIn('id', array_merge([$currentUserId], [$project->created_by]))
+            ->whereNotIn('id', $project->invitedUsers()
+                ->wherePivot('status', 'accepted')
+                ->pluck('users.id'))  // Specify 'users.id' to avoid ambiguity
             ->get();
 
         // Determine if any users were found
