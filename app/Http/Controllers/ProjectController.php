@@ -14,6 +14,7 @@ use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Resources\ProjectInvitationResource;
 
 class ProjectController extends Controller {
     /**
@@ -118,7 +119,7 @@ class ProjectController extends Controller {
             'project' => new ProjectResource($project),
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
-            'success' => session('success'),
+            'error' => session('error'),
         ]);
     }
 
@@ -190,13 +191,37 @@ class ProjectController extends Controller {
         return back()->with('success', 'User invited successfully.');
     }
 
-    public function showInvitations() {
+    public function showInvitations(Request $request) {
         $user = Auth::user();
-        // Get all pending invitations for the user
-        $invitations = $user->projectInvitations()->wherePivot('status', 'pending')->get();
+
+        // Initialize the query for pending invitations
+        $query = $user->projectInvitations()->wherePivot('status', 'pending');
+
+        // Apply filtering based on query parameters
+        if ($request->has('name')) {
+            $query->where('name', 'like', '%' . $request->input('name') . '%');
+        }
+
+        if ($request->has('status')) {
+            $statuses = $request->input('status');
+            if (is_array($statuses)) {
+                $query->wherePivotIn('status', $statuses);
+            } else {
+                $query->wherePivot('status', $statuses);
+            }
+        }
+
+        // Apply sorting based on query parameters
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+        // Paginate the results and include query string
+        $invitations = $query->paginate($request->input('per_page', 10))->withQueryString();
 
         return Inertia::render('Project/Invite', [
-            'invitations' => $invitations,
+            'invitations' => ProjectInvitationResource::collection($invitations),
+            'queryParams' => $request->query() ?: null,
         ]);
     }
 

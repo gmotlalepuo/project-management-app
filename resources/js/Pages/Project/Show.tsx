@@ -25,7 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 type Props = {
   project: Project;
   tasks: PaginatedTask;
-  success: string | null;
+  error: string | null;
   queryParams: { [key: string]: any };
 };
 
@@ -87,14 +87,19 @@ const filterableColumns: FilterableColumn[] = [
   },
 ];
 
-export default function Show({ project, tasks, success, queryParams }: Props) {
+export default function Show({
+  project,
+  tasks,
+  queryParams,
+  error: serverError,
+}: Props) {
   queryParams = queryParams || {};
 
   const user = usePage<PageProps>().props.auth.user;
   const [isInviteFormVisible, setInviteFormVisible] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
-  const [noUsersFound, setNoUsersFound] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(serverError);
   const { data, setData, post, reset, errors } = useForm({
     email: "",
     currentUserEmail: user.email,
@@ -103,16 +108,15 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
   const toggleInviteForm = () => {
     setInviteFormVisible(!isInviteFormVisible);
     setSearchResults([]);
-    setNoUsersFound(false);
     setSelectedUser(null);
+    setError(null); // Reset error state
     reset("email");
   };
 
   const searchUsers = async () => {
     if (!data.email) return;
 
-    // Reset selected user whenever a new search is performed
-    setSelectedUser(null);
+    setSelectedUser(null); // Reset selected user
 
     try {
       const response = await fetch(
@@ -126,33 +130,26 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
         },
       );
 
-      const result = await response.json();
-
-      // Filter out the logged-in user and existing participants
-      const filteredUsers = result.users.filter((user: User) => {
-        return (
-          user.email !== data.currentUserEmail &&
-          !project.invitedUsers.some(
-            (invitedUser: User) => invitedUser.email === user.email,
-          ) &&
-          project.createdBy.email !== user.email
-        );
-      });
-
-      if (filteredUsers.length > 0) {
-        setSearchResults(filteredUsers);
-        setNoUsersFound(false);
+      if (!response.ok) {
+        if (response.status === 422) {
+          setError("Please enter a valid email address.");
+        } else {
+          const result = await response.json();
+          throw new Error(
+            result.error || "An error occurred while searching for users.",
+          );
+        }
       } else {
-        setSearchResults([]);
-        setNoUsersFound(true);
+        const result = await response.json();
+        setSearchResults(result.users);
+        setError(null);
       }
-    } catch (error) {
-      console.error("Error searching users", error);
-      setNoUsersFound(true);
+    } catch (err: any) {
+      setError(err.message);
+      setSearchResults([]);
     }
   };
 
-  // Handle Enter key for searching users
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -160,10 +157,10 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
     }
   };
 
-  const selectUser = (user: any) => {
+  const selectUser = (user: User) => {
     setSelectedUser(user);
     setSearchResults([]);
-    setNoUsersFound(false);
+    setError(null); // Reset error state
   };
 
   const submitInvite = (e: React.FormEvent<HTMLFormElement>) => {
@@ -171,10 +168,12 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
 
     if (!selectedUser) return;
 
-    // Submit the selected user's email
     post(route("project.invite", { project: project.id }), {
       onSuccess: () => {
         toggleInviteForm();
+      },
+      onError: (errors) => {
+        setError(errors.email || "An error occurred while inviting the user.");
       },
     });
   };
@@ -305,10 +304,10 @@ export default function Show({ project, tasks, success, queryParams }: Props) {
                 />
                 <InputError message={errors.email} />
 
-                {noUsersFound && (
+                {error && ( // Display error message dynamically
                   <Alert className="mt-4">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>No users found with this email</AlertTitle>
+                    <AlertTitle>{error}</AlertTitle>
                   </Alert>
                 )}
 

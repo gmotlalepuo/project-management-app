@@ -115,20 +115,31 @@ class UserController extends Controller {
             'email' => 'required|string|email',
         ]);
 
-        // Get the current user ID
         $currentUserId = Auth::id();
 
-        // Get the IDs of users already participating in the project
+        // Get the IDs of users already participating or invited in the project
         $projectUserIds = $project->invitedUsers->pluck('id')->toArray();
-        $projectUserIds[] = $project->created_by; // Include project creator
+        $projectUserIds[] = $project->created_by;
 
-        // Search for users excluding the current user and users already participating in the project
+        // Check if the queried email belongs to a user who is already invited
+        $alreadyInvitedUser = User::where('email', $query)
+            ->whereIn('id', $projectUserIds)
+            ->exists();
+
+        if ($alreadyInvitedUser) {
+            return response()->json(['error' => 'This user has already been invited or is part of the project.'], 409);
+        }
+
+        // Search for users excluding the current user and users already in the project
         $users = User::where('email', 'like', '%' . $query . '%')
-            ->whereNotIn('id', array_merge([$currentUserId], $projectUserIds)) // Exclude current user and project users
+            ->whereNotIn('id', array_merge([$currentUserId], $projectUserIds))
             ->get();
 
-        return response()->json([
-            'users' => $users,
-        ]);
+        // Determine if any users were found
+        if ($users->isEmpty()) {
+            return response()->json(['error' => 'No users found with this email.'], 404);
+        }
+
+        return response()->json(['users' => $users]);
     }
 }
