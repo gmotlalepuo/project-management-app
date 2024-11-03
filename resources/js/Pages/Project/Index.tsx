@@ -65,7 +65,8 @@ const columns: ColumnDef<Project>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Due Date" />
     ),
-    cell: ({ row }) => formatDate(row.original.due_date),
+    cell: ({ row }) =>
+      row.original.due_date ? formatDate(row.original.due_date) : "No date",
   },
   {
     accessorKey: "createdBy.name",

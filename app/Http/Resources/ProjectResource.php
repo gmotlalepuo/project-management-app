@@ -22,9 +22,9 @@ class ProjectResource extends JsonResource {
             'created_at' => Carbon::parse($this->created_at)
                 ->setTimezone($request->header('User-Timezone', 'UTC'))
                 ->toISOString(),
-            'due_date' => Carbon::parse($this->due_date)
+            'due_date' => $this->due_date ? Carbon::parse($this->due_date)
                 ->setTimezone($request->header('User-Timezone', 'UTC'))
-                ->toISOString(),
+                ->toISOString() : null,
             'status' => $this->status,
             'image_path' => $this->image_path ? Storage::url($this->image_path) : "",
             'createdBy' => new UserResource($this->createdBy),

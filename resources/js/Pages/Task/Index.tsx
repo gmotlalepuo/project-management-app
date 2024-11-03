@@ -15,6 +15,8 @@ import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/Components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 type IndexProps = {
   tasks: PaginatedTask;
@@ -80,7 +82,8 @@ const columns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Due Date" />
     ),
-    cell: ({ row }) => formatDate(row.original.due_date),
+    cell: ({ row }) =>
+      row.original.due_date ? formatDate(row.original.due_date) : "No date",
   },
   {
     accessorKey: "createdBy.name",
@@ -154,6 +157,18 @@ const filterableColumns: FilterableColumn[] = [
 export default function Index({ tasks, queryParams, success }: IndexProps) {
   queryParams = queryParams || {};
 
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (success) {
+      toast({
+        title: "Success",
+        variant: "success",
+        description: success,
+      });
+    }
+  }, [success]);
+
   return (
     <AuthenticatedLayout
       header={
@@ -170,12 +185,6 @@ export default function Index({ tasks, queryParams, success }: IndexProps) {
       <Head title="Tasks" />
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          {success && (
-            <div className="mb-4 rounded bg-emerald-500 px-4 py-2 text-white">
-              {success}
-            </div>
-          )}
-
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <DataTable

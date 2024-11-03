@@ -22,9 +22,9 @@ class TaskResource extends JsonResource {
             'created_at' => Carbon::parse($this->created_at)
                 ->setTimezone($request->header('User-Timezone', 'UTC'))
                 ->toISOString(),
-            'due_date' => Carbon::parse($this->due_date)
+            'due_date' => $this->due_date ? Carbon::parse($this->due_date)
                 ->setTimezone($request->header('User-Timezone', 'UTC'))
-                ->toISOString(),
+                ->toISOString() : null,
             'status' => $this->status,
             'priority' => $this->priority,
             'image_path' => $this->image_path ? Storage::url($this->image_path) : "",

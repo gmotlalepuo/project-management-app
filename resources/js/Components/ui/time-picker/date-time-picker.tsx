@@ -11,10 +11,11 @@ import {
   PopoverTrigger,
 } from "@/Components/ui/popover";
 import { TimePickerDemo } from "./time-picker-demo";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
 interface DateTimePickerProps {
   value?: Date;
-  onChange?: (date: Date) => void;
+  onChange?: (date: Date | null) => void;
   defaultValue?: Date;
   className?: string;
   required?: boolean;
@@ -87,6 +88,18 @@ export function DateTimePicker({
             }}
             date={date}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => {
+              setInternalDate(undefined);
+              onChange?.(null);
+            }}
+          >
+            Reset
+            <Cross2Icon className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

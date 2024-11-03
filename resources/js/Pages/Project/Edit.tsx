@@ -126,8 +126,9 @@ export default function Edit({ project }: Props) {
                 <DateTimePicker
                   className="w-full"
                   value={data.due_date ? new Date(data.due_date) : undefined}
-                  onChange={(date) => setData("due_date", date.toISOString())}
-                  required
+                  onChange={(date) =>
+                    setData("due_date", date ? date.toISOString() : "")
+                  }
                 />
                 <InputError message={errors.due_date} className="mt-2" />
               </div>
