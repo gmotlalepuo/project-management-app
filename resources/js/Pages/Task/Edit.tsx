@@ -1,13 +1,22 @@
-import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
-import SelectInput from "@/Components/SelectInput";
-import TextAreaInput from "@/Components/TextAreaInput";
-import TextInput from "@/Components/TextInput";
+import { Head, Link, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
+import InputError from "@/Components/InputError";
+import { useToast } from "@/hooks/use-toast";
+import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
 import { PaginatedProject } from "@/types/project";
 import { Task } from "@/types/task";
 import { PaginatedUser } from "@/types/user";
-import { Head, Link, useForm } from "@inertiajs/react";
 
 type Props = {
   task: Task;
@@ -16,7 +25,7 @@ type Props = {
 };
 
 export default function Edit({ task, projects, users }: Props) {
-  const { data, setData, post, errors, reset } = useForm({
+  const { data, setData, post, errors } = useForm({
     image: null as File | null,
     name: task.name || "",
     description: task.description || "",
@@ -28,10 +37,23 @@ export default function Edit({ task, projects, users }: Props) {
     _method: "PUT",
   });
 
+  const { toast } = useToast();
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    post(route("task.update", task.id));
+    post(route("task.update", task.id), {
+      preserveState: true,
+      onError: (error) => {
+        const errorMessage = Object.values(error).join(" ");
+        toast({
+          title: "Failed to update task",
+          variant: "destructive",
+          description: errorMessage,
+          duration: 5000,
+        });
+      },
+    });
   };
 
   return (
@@ -49,8 +71,9 @@ export default function Edit({ task, projects, users }: Props) {
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
             <form
               onSubmit={onSubmit}
-              className="bg-white p-4 shadow dark:bg-gray-800 sm:rounded-lg sm:p-8"
+              className="space-y-6 bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8"
             >
+              {/* Display Existing Task Image */}
               {task.image_path && (
                 <img
                   src={task.image_path}
@@ -58,33 +81,38 @@ export default function Edit({ task, projects, users }: Props) {
                   className="d-block mb-4 w-64 rounded-sm"
                 />
               )}
-              <div>
-                <InputLabel htmlFor="task_project_id" value="Project" />
 
-                <SelectInput
-                  name="project_id"
-                  id="task_project_id"
-                  className="mt-1 block w-full"
-                  value={data.project_id}
-                  onChange={(e) => setData("project_id", e.target.value)}
+              {/* Project Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="task_project_id">Project</Label>
+                <Select
+                  onValueChange={(value) => setData("project_id", value)}
+                  defaultValue={data.project_id.toString()}
                   required
                 >
-                  <option value="">Select Project</option>
-                  {projects.data.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.name}
-                    </option>
-                  ))}
-                </SelectInput>
-
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.data.map((project) => (
+                      <SelectItem
+                        key={project.id}
+                        value={project.id.toString()}
+                      >
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <InputError message={errors.project_id} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="task_image_path" value="Task Image" />
-                <TextInput
+
+              {/* Task Image */}
+              <div>
+                <Label htmlFor="task_image_path">Task Image</Label>
+                <Input
                   id="task_image_path"
                   type="file"
-                  name="image"
                   className="mt-1 block w-full"
                   accept=".jpg,.jpeg,.png,.webp,.svg"
                   onChange={(e) => {
@@ -95,136 +123,123 @@ export default function Edit({ task, projects, users }: Props) {
                 />
                 <InputError message={errors.image} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="task_name" value="Task Name" />
 
-                <TextInput
+              {/* Task Name */}
+              <div className="space-y-2">
+                <Label htmlFor="task_name">Task Name</Label>
+                <Input
                   id="task_name"
                   type="text"
-                  name="name"
                   value={data.name}
-                  className="mt-1 block w-full"
-                  isFocused={true}
                   onChange={(e) => setData("name", e.target.value)}
                   required
+                  autoFocus
                 />
-
                 <InputError message={errors.name} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel
-                  htmlFor="task_description"
-                  value="Task Description"
-                />
 
-                <TextAreaInput
+              {/* Task Description */}
+              <div className="space-y-2">
+                <Label htmlFor="task_description">Task Description</Label>
+                <Textarea
                   id="task_description"
-                  name="description"
                   value={data.description}
-                  className="mt-1 block w-full"
                   onChange={(e) => setData("description", e.target.value)}
                 />
-
                 <InputError message={errors.description} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="task_due_date" value="Task Deadline" />
 
-                <TextInput
-                  id="task_due_date"
-                  type="datetime-local"
-                  name="due_date"
-                  value={data.due_date}
-                  className="mt-1 block w-full"
-                  onChange={(e) => setData("due_date", e.target.value)}
+              {/* Task Deadline */}
+              <div className="space-y-2">
+                <Label htmlFor="task_due_date">Task Deadline</Label>
+                <DateTimePicker
+                  className="w-full"
+                  value={data.due_date ? new Date(data.due_date) : undefined}
+                  onChange={(date) =>
+                    setData("due_date", date ? date.toISOString() : "")
+                  }
                 />
-
                 <InputError message={errors.due_date} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="task_status" value="Task Status" />
 
-                <SelectInput
-                  name="status"
-                  id="task_status"
-                  value={data.status}
-                  className="mt-1 block w-full"
-                  onChange={(e) =>
+              {/* Task Status */}
+              <div className="space-y-2">
+                <Label htmlFor="task_status">Task Status</Label>
+                <Select
+                  onValueChange={(value) =>
                     setData(
                       "status",
-                      e.target.value as "completed" | "pending" | "in_progress",
+                      value as "completed" | "pending" | "in_progress",
                     )
                   }
+                  defaultValue={data.status}
                   required
                 >
-                  <option value="">Select Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </SelectInput>
-
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
                 <InputError message={errors.status} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel htmlFor="task_priority" value="Task Priority" />
 
-                <SelectInput
-                  name="priority"
-                  id="task_priority"
-                  value={data.priority}
-                  className="mt-1 block w-full"
-                  onChange={(e) =>
-                    setData(
-                      "priority",
-                      e.target.value as "high" | "low" | "medium",
-                    )
+              {/* Task Priority */}
+              <div className="space-y-2">
+                <Label htmlFor="task_priority">Task Priority</Label>
+                <Select
+                  onValueChange={(value) =>
+                    setData("priority", value as "low" | "medium" | "high")
                   }
+                  defaultValue={data.priority}
                   required
                 >
-                  <option value="">Select Priority</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </SelectInput>
-
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
                 <InputError message={errors.priority} className="mt-2" />
               </div>
-              <div className="mt-4">
-                <InputLabel
-                  htmlFor="task_assigned_user"
-                  value="Assigned User"
-                />
 
-                <SelectInput
-                  name="assigned_user_id"
-                  id="task_assigned_user"
-                  value={data.assigned_user_id}
-                  className="mt-1 block w-full"
-                  onChange={(e) => setData("assigned_user_id", e.target.value)}
+              {/* Assigned User */}
+              <div className="space-y-2">
+                <Label htmlFor="task_assigned_user">Assigned User</Label>
+                <Select
+                  onValueChange={(value) => setData("assigned_user_id", value)}
+                  defaultValue={data.assigned_user_id.toString()}
                   required
                 >
-                  <option value="">Select User</option>
-                  {users.data.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </option>
-                  ))}
-                </SelectInput>
-
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select User" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.data.map((user) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <InputError
                   message={errors.assigned_user_id}
                   className="mt-2"
                 />
               </div>
-              <div className="mt-4 text-right">
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-4">
                 <Link href={route("task.index")}>
-                  <button className="mr-3 rounded bg-gray-100 px-3 py-1 text-gray-800 shadow transition-all hover:bg-gray-200">
-                    Cancel
-                  </button>
+                  <Button variant="secondary">Cancel</Button>
                 </Link>
-                <button className="rounded bg-emerald-500 px-3 py-1 text-white shadow transition-all hover:bg-emerald-600">
-                  Submit
-                </button>
+                <Button type="submit">Submit</Button>
               </div>
             </form>
           </div>

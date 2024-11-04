@@ -1,13 +1,16 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
+import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { Label } from "@/Components/ui/label";
 import {
   TASK_PRIORITY_BADGE_MAP,
   TASK_PRIORITY_TEXT_MAP,
   TASK_STATUS_BADGE_MAP,
   TASK_STATUS_TEXT_MAP,
 } from "@/utils/constants";
+import { formatDate } from "@/utils/helpers";
 import { Task } from "@/types/task";
-import { Badge } from "@/Components/ui/badge";
 
 type Props = {
   task: Task;
@@ -24,82 +27,112 @@ export default function Show({ task }: Props) {
     >
       <Head title={`Task "${task.name}"`} />
 
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            {task.image_path && (
-              <img
-                src={task.image_path}
-                alt="Task Image"
-                className="d-block mb-2 h-64 w-full object-cover"
-              />
-            )}
+      <div className="space-y-12 py-12">
+        <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+          {task.image_path && (
+            <img
+              src={task.image_path}
+              alt="Task Image"
+              className="mb-6 h-64 w-full rounded-lg object-cover shadow-md"
+            />
+          )}
 
-            <div className="p-6 text-gray-900 dark:text-gray-100">
-              <div className="grid grid-cols-2 gap-1">
+          <div className="space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-card dark:text-gray-100">
+            {/* Task Information Card */}
+            <Card className="bg-gray-50 dark:bg-gray-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold">
+                  Task Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div>
-                  <div>
-                    <label className="text-lg font-bold">Task ID</label>
-                    <p className="mt-1">{task.id}</p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Task Name</label>
-                    <p className="mt-1">{task.name}</p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Task Status</label>
-                    <p className="mt-1">
-                      <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
-                        {TASK_STATUS_TEXT_MAP[task.status]}
-                      </Badge>
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Task Priority</label>
-                    <p className="mt-1">
-                      <Badge variant={TASK_PRIORITY_BADGE_MAP[task.priority]}>
-                        {TASK_PRIORITY_TEXT_MAP[task.priority]}
-                      </Badge>
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Created By</label>
-                    <p className="mt-1">{task.createdBy.name}</p>
-                  </div>
+                  <Label>Task ID</Label>
+                  <p className="text-gray-700 dark:text-gray-300">{task.id}</p>
                 </div>
                 <div>
-                  <div>
-                    <label className="text-lg font-bold">Due Date</label>
-                    <p className="mt-1">{task.due_date}</p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Create Date</label>
-                    <p className="mt-1">{task.created_at}</p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Updated By</label>
-                    <p className="mt-1">{task.updatedBy.name}</p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Project</label>
-                    <p className="mt-1 hover:underline">
-                      <Link href={route("project.show", task.project.id)}>
-                        {task.project.name}
-                      </Link>
-                    </p>
-                  </div>
-                  <div className="mt-4">
-                    <label className="text-lg font-bold">Assigned User</label>
-                    <p className="mt-1">{task.assignedUser.name}</p>
-                  </div>
+                  <Label>Task Name</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {task.name}
+                  </p>
                 </div>
-              </div>
+                <div className="flex flex-col items-baseline space-y-3">
+                  <Label>Task Status</Label>
+                  <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
+                    {TASK_STATUS_TEXT_MAP[task.status]}
+                  </Badge>
+                </div>
+                <div className="flex flex-col items-baseline space-y-3">
+                  <Label>Task Priority</Label>
+                  <Badge variant={TASK_PRIORITY_BADGE_MAP[task.priority]}>
+                    {TASK_PRIORITY_TEXT_MAP[task.priority]}
+                  </Badge>
+                </div>
+                <div>
+                  <Label>Created By</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {task.createdBy.name}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="mt-4">
-                <label className="text-lg font-bold">Description</label>
-                <p className="mt-1">{task.description}</p>
-              </div>
-            </div>
+            {/* Task Timeline Card */}
+            <Card className="bg-gray-50 dark:bg-gray-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold">
+                  Task Timeline
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label>Due Date</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {formatDate(task.due_date)}
+                  </p>
+                </div>
+                <div>
+                  <Label>Created At</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {formatDate(task.created_at)}
+                  </p>
+                </div>
+                <div>
+                  <Label>Updated By</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {task.updatedBy.name}
+                  </p>
+                </div>
+                <div>
+                  <Label>Project</Label>
+                  <p className="mt-1 hover:underline">
+                    <Link href={route("project.show", task.project.id)}>
+                      {task.project.name}
+                    </Link>
+                  </p>
+                </div>
+                <div>
+                  <Label>Assigned User</Label>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {task.assignedUser.name}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Task Description Card */}
+            <Card className="bg-gray-50 dark:bg-gray-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold">
+                  Task Description
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 dark:text-gray-300">
+                  {task.description}
+                </p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
