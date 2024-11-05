@@ -17,16 +17,21 @@ export default function UpdateProfileInformationForm({
   className?: string;
 }) {
   const user = usePage<PageProps>().props.auth.user;
-  const { data, setData, patch, errors, processing } = useForm({
+  const { data, setData, post, errors, processing, reset } = useForm({
     name: user.name,
     email: user.email,
     profile_picture: null as File | null,
+    _method: "PATCH",
   });
   const profilePictureInput = useRef<HTMLInputElement>(null);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    patch(route("profile.update"));
+
+    post(route("profile.update"), {
+      preserveState: true,
+      onSuccess: () => reset(),
+    });
   };
 
   return (
@@ -42,22 +47,30 @@ export default function UpdateProfileInformationForm({
         </div>
       </header>
 
-      <form onSubmit={submit} className="mt-6 space-y-6">
+      <form
+        onSubmit={submit}
+        className="mt-6 space-y-6"
+        encType="multipart/form-data"
+      >
         <div>
           <Label htmlFor="profile_picture">Profile Picture</Label>
           <Avatar className="my-2 h-16 w-16">
-            <AvatarImage src={user.profile_picture} alt={user.name} />
+            <AvatarImage
+              src={`/storage/${user.profile_picture}`}
+              alt={user.name}
+            />
             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <Input
             id="profile_picture"
             type="file"
             ref={profilePictureInput}
+            accept=".jpg,.jpeg,.png,.webp"
             onChange={(e) => {
-              if (e.target.files) setData("profile_picture", e.target.files[0]);
+              if (e.target.files && e.target.files[0])
+                setData("profile_picture", e.target.files[0]);
             }}
             className="mt-1 block w-full"
-            accept="image/*"
           />
           <InputError message={errors.profile_picture} className="mt-2" />
         </div>
