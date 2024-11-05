@@ -1,3 +1,5 @@
+import { PaginatedUser, User } from "./user";
+
 export type Project = {
   id: number;
   name: string;
@@ -6,21 +8,9 @@ export type Project = {
   due_date: string;
   status: "completed" | "pending" | "in_progress";
   image_path: string;
-  createdBy: {
-    id: number;
-    name: string;
-    email: string;
-  };
-  updatedBy: {
-    id: number;
-    name: string;
-    email: string;
-  };
-  invitedUsers: {
-    id: number;
-    name: string;
-    email: string;
-  }[];
+  createdBy: User;
+  updatedBy: User;
+  invitedUsers: User[];
   pivot?: {
     user_id: number;
     project_id: number;
@@ -28,6 +18,7 @@ export type Project = {
     created_at: string;
     updated_at: string;
   };
+  acceptedUsers: User[];
 };
 
 export type PaginatedProject = {

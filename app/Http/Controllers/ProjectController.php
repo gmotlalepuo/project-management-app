@@ -21,7 +21,8 @@ class ProjectController extends Controller {
      * Display a listing of the resource.
      */
     public function index() {
-        $query = Project::query();
+        $user = Auth::user();
+        $query = Project::visibleToUser($user->id);
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
@@ -99,7 +100,7 @@ class ProjectController extends Controller {
     public function show(Project $project) {
         // Check if the user is authorized to view the project
         $user = Auth::user();
-        if ($user->id !== $project->created_by && !$project->invitedUsers->contains($user)) {
+        if ($user->id !== $project->created_by && !$project->acceptedUsers->contains($user)) {
             abort(403, 'You are not authorized to view this project.');
         }
 
@@ -135,7 +136,7 @@ class ProjectController extends Controller {
             ->onEachSide(1);
 
         return Inertia::render('Project/Show', [
-            'project' => new ProjectResource($project),
+            'project' => new ProjectResource($project->load(['acceptedUsers'])),
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),

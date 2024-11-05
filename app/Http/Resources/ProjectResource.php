@@ -30,6 +30,7 @@ class ProjectResource extends JsonResource {
             'createdBy' => new UserResource($this->createdBy),
             'updatedBy' => new UserResource($this->updatedBy),
             'invitedUsers' => UserResource::collection($this->invitedUsers),
+            'acceptedUsers' => UserResource::collection($this->whenLoaded('acceptedUsers')),
         ];
     }
 }

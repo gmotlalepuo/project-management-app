@@ -21,7 +21,8 @@ class TaskController extends Controller {
      * Display a listing of the resource.
      */
     public function index() {
-        $query = Task::query();
+        $user = Auth::user();
+        $query = Task::visibleToUser($user->id);
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
@@ -189,7 +190,10 @@ class TaskController extends Controller {
 
     public function myTasks() {
         $user = Auth::user();
-        $query = Task::query()->where('assigned_user_id', $user->id);
+        $query = Task::where('assigned_user_id', $user->id)
+            ->whereHas('project', function ($query) use ($user) {
+                $query->visibleToUser($user->id);
+            });
 
         $sortField = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");

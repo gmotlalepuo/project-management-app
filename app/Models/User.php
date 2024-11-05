@@ -21,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail {
         'email',
         'password',
         'email_verified_at',
+        'profile_picture',
     ];
 
     /**
@@ -53,6 +54,13 @@ class User extends Authenticatable implements MustVerifyEmail {
     public function projectInvitations() {
         return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
             ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    // Relationship for accepted project invitations
+    public function acceptedProjects() {
+        return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
+            ->wherePivot('status', 'accepted')
             ->withTimestamps();
     }
 }

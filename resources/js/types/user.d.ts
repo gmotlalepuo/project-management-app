@@ -4,6 +4,7 @@ export type User = {
   email: string;
   email_verified_at?: string;
   created_at?: string;
+  profile_picture?: string;
 };
 
 export type PaginatedUser = {

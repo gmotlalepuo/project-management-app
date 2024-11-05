@@ -25,6 +25,7 @@ import { FilterableColumn } from "@/types/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/Components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 
 type Props = {
   project: Project;
@@ -267,7 +268,7 @@ export default function Show({
                   <div>
                     <Label>Created By</Label>
                     <p className="text-gray-700 dark:text-gray-300">
-                      {project.createdBy.name}
+                      {project.createdBy.name} ({project.createdBy.email})
                     </p>
                   </div>
                 </CardContent>
@@ -296,7 +297,7 @@ export default function Show({
                   <div>
                     <Label>Updated By</Label>
                     <p className="text-gray-700 dark:text-gray-300">
-                      {project.updatedBy.name}
+                      {project.updatedBy.name} ({project.updatedBy.email})
                     </p>
                   </div>
                 </CardContent>
@@ -314,6 +315,50 @@ export default function Show({
                 <p className="text-gray-700 dark:text-gray-300">
                   {project.description}
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Project Members Card */}
+            <Card className="bg-gray-50 dark:bg-gray-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold">
+                  Project Members
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-4">
+                {/* Display the creator of the project */}
+                <div
+                  key={project.createdBy.id}
+                  className="flex items-center space-x-2"
+                >
+                  <Avatar>
+                    <AvatarImage
+                      src={project.createdBy.profile_picture}
+                      alt={project.createdBy.name}
+                    />
+                    <AvatarFallback>
+                      {project.createdBy.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {project.createdBy.name} ({project.createdBy.email})
+                    <Badge variant="outline" className="ml-2">
+                      Creator
+                    </Badge>
+                  </p>
+                </div>
+                {/* Display the accepted users */}
+                {project.acceptedUsers?.map((user) => (
+                  <div key={user.id} className="flex items-center space-x-2">
+                    <Avatar>
+                      <AvatarImage src={user.profile_picture} alt={user.name} />
+                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <p className="text-gray-700 dark:text-gray-300">
+                      {user.name} ({user.email})
+                    </p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>

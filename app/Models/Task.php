@@ -37,4 +37,10 @@ class Task extends Model {
     public function updatedBy() {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    public function scopeVisibleToUser($query, $userId) {
+        return $query->whereHas('project', function ($query) use ($userId) {
+            $query->visibleToUser($userId);
+        });
+    }
 }

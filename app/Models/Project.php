@@ -34,7 +34,21 @@ class Project extends Model {
     // Relation for invited users
     public function invitedUsers() {
         return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
-            ->withPivot('status')  // Ensure the status field is loaded
-            ->withTimestamps();  // Ensure timestamps are handled
+            ->withPivot('status')
+            ->withTimestamps();
+    }
+
+    // Relation for accepted users
+    public function acceptedUsers() {
+        return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
+            ->wherePivot('status', 'accepted')
+            ->withTimestamps();
+    }
+
+    public function scopeVisibleToUser($query, $userId) {
+        return $query->where('created_by', $userId)
+            ->orWhereHas('invitedUsers', function ($query) use ($userId) {
+                $query->where('user_id', $userId)->where('project_user.status', 'accepted');
+            });
     }
 }
