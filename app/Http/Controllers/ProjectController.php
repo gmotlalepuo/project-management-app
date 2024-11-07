@@ -50,7 +50,13 @@ class ProjectController extends Controller {
         }
 
 
-        $projects = $query
+        // Include the latest 5 tasks and total count of tasks for each project
+        $projects = $query->with(['tasks' => function ($query) {
+            $query->latest()->limit(5); // Only fetch the latest 5 tasks
+        }])
+            ->withCount(['tasks as total_tasks', 'tasks as completed_tasks' => function ($query) {
+                $query->where('status', 'completed'); // Count only completed tasks
+            }])
             ->orderBy($sortField, $sortDirection)
             ->paginate(request('per_page', 10))
             ->withQueryString();

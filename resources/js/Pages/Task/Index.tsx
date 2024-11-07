@@ -98,6 +98,10 @@ const columns: ColumnDef<Task>[] = [
     cell: ({ row }) => (
       <DataTableRowActions
         row={row}
+        onView={(row) => {
+          const taskId = row.original.id;
+          router.get(route("task.show", taskId));
+        }}
         onEdit={(row) => {
           const taskId = row.original.id;
           router.get(route("task.edit", taskId));

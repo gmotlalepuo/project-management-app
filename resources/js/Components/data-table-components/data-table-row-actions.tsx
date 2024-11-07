@@ -23,6 +23,7 @@ import {
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
+  onView: (row: Row<TData>) => void;
   onEdit: (row: Row<TData>) => void;
   onDelete: (row: Row<TData>) => void;
   deleteConfirmationText?: string;
@@ -31,6 +32,7 @@ interface DataTableRowActionsProps<TData> {
 
 export function DataTableRowActions<TData>({
   row,
+  onView,
   onEdit,
   onDelete,
   deleteConfirmationText = "Are you sure you want to delete this item? This action cannot be undone.",
@@ -51,6 +53,7 @@ export function DataTableRowActions<TData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem onClick={() => onView(row)}>View</DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(row)}>Edit</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDialogOpen(true)}>

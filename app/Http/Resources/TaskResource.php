@@ -28,7 +28,11 @@ class TaskResource extends JsonResource {
             'status' => $this->status,
             'priority' => $this->priority,
             'image_path' => $this->image_path ? Storage::url($this->image_path) : "",
-            'project' => new ProjectResource($this->project),
+            // Conditionally load the project reference to avoid circular dependency
+            'project' => $this->when(!isset($request->projectContext), function () {
+                return new ProjectResource($this->project);
+            }),
+
             'project_id' => $this->project_id,
             'assigned_user_id' => $this->assigned_user_id,
             'assignedUser' => $this->assignedUser ? new UserResource($this->assignedUser) : null,

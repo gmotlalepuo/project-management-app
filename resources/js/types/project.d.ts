@@ -19,6 +19,7 @@ export type Project = {
     updated_at: string;
   };
   acceptedUsers: User[];
+  tasks: Task[];
 };
 
 export type PaginatedProject = {

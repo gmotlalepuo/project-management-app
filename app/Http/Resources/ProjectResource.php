@@ -15,6 +15,9 @@ class ProjectResource extends JsonResource {
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array {
+        // Set a flag to indicate that tasks are being accessed within the project context
+        $request->merge(['projectContext' => true]);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -31,6 +34,12 @@ class ProjectResource extends JsonResource {
             'updatedBy' => new UserResource($this->updatedBy),
             'invitedUsers' => UserResource::collection($this->invitedUsers),
             'acceptedUsers' => UserResource::collection($this->whenLoaded('acceptedUsers')),
+
+            // Include the latest 5 tasks with the flag to prevent recursion
+            'tasks' => TaskResource::collection($this->tasks->take(5)),
+
+            'total_tasks' => $this->total_tasks,
+            'completed_tasks' => $this->completed_tasks,
         ];
     }
 }
