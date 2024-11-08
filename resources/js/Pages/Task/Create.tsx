@@ -14,15 +14,20 @@ import {
 import InputError from "@/Components/InputError";
 import { useToast } from "@/hooks/use-toast";
 import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
+import { Badge } from "@/Components/ui/badge";
 import { PaginatedProject } from "@/types/project";
 import { PaginatedUser } from "@/types/user";
+import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { Info } from "lucide-react";
 
 type Props = {
   projects: PaginatedProject;
   users: PaginatedUser;
+  labels: Option[];
 };
 
-export default function Create({ projects, users }: Props) {
+export default function Create({ projects, users, labels }: Props) {
   const { data, setData, post, errors, reset } = useForm({
     image: null as File | null,
     name: "",
@@ -32,7 +37,14 @@ export default function Create({ projects, users }: Props) {
     priority: "",
     assigned_user_id: "",
     project_id: "",
+    label_ids: [] as number[],
   });
+
+  const labelOptions = labels.map((label) => ({
+    label: label.name,
+    value: label.id,
+    variant: label.variant,
+  }));
 
   const { toast } = useToast();
 
@@ -126,6 +138,44 @@ export default function Create({ projects, users }: Props) {
                 />
                 <InputError message={errors.name} className="mt-2" />
               </div>
+
+              {/* Task Labels */}
+              <div className="space-y-2">
+                <Label htmlFor="task_labels">Task Labels</Label>
+                {labels.length > 0 ? (
+                  <MultipleSelector
+                    defaultOptions={labelOptions}
+                    placeholder="Select labels..."
+                    onChange={(selectedLabels) =>
+                      setData(
+                        "label_ids",
+                        selectedLabels.map((label) => label.value),
+                      )
+                    }
+                    renderOption={(option) => (
+                      <Badge variant={option.variant}>{option.label}</Badge>
+                    )}
+                  />
+                ) : (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>No labels found</AlertTitle>
+                    <AlertDescription>
+                      If you want to label your tasks, please create labels from
+                      the button below.
+                    </AlertDescription>
+                    <Link
+                      href={route("task_labels.create", {
+                        project_id: data.project_id,
+                      })}
+                    >
+                      <Button variant="secondary">Create Label</Button>
+                    </Link>
+                  </Alert>
+                )}
+              </div>
+
+              <Badge variant="indigo">Bug</Badge>
 
               {/* Task Description */}
               <div className="space-y-2">

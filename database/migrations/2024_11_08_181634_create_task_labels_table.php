@@ -11,9 +11,9 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('task_labels', function (Blueprint $table) {
             $table->id();
-            $table->string('bg_color_class');
-            $table->string('border_color_class');
-            $table->string('text_color_class');
+            $table->string('name');
+            $table->string('variant');
+            $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
             $table->timestamps();
         });
 

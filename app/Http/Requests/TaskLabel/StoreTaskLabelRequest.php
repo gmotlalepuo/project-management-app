@@ -20,9 +20,8 @@ class StoreTaskLabelRequest extends FormRequest {
     public function rules(): array {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:task_labels,name'],
-            'bg_color_class' => ['required', 'string'],
-            'border_color_class' => ['required', 'string'],
-            'text_color_class' => ['required', 'string'],
+            'variant' => ['required', 'string', 'in:red,green,blue,yellow,amber,indigo,purple,pink,teal,cyan,gray'],
+            'project_id' => ['nullable', 'exists:projects,id'],
         ];
     }
 }

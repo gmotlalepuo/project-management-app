@@ -16,9 +16,8 @@ class TaskLabelResource extends JsonResource {
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'bg_color_class' => $this->bg_color_class,
-            'border_color_class' => $this->border_color_class,
-            'text_color_class' => $this->text_color_class,
+            'project_id' => $this->project_id ?? null,
+            'variant' => $this->variant,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

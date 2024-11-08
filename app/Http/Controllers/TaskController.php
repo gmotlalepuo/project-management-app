@@ -14,6 +14,8 @@ use App\Http\Requests\Task\StoreTaskRequest;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Http\Resources\TaskLabelResource;
+use App\Models\TaskLabel;
 use Carbon\Carbon;
 
 class TaskController extends Controller {
@@ -93,9 +95,17 @@ class TaskController extends Controller {
         $projects = Project::query()->orderBy('name', 'asc')->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
+        // Fetch labels that are either generic or related to a project (if selected)
+        $projectId = request('project_id'); // Optional project filter from the request
+        $labels = TaskLabel::whereNull('project_id')
+            ->orWhere('project_id', $projectId)
+            ->orderBy('name', 'asc')
+            ->get();
+
         return Inertia::render('Task/Create', [
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
+            'labels' => TaskLabelResource::collection($labels),
         ]);
     }
 
@@ -140,10 +150,18 @@ class TaskController extends Controller {
         $projects = Project::query()->orderBy('name', 'asc')->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
+        // Fetch labels that are either generic or related to a project (if selected)
+        $projectId = request('project_id'); // Optional project filter from the request
+        $labels = TaskLabel::whereNull('project_id')
+            ->orWhere('project_id', $projectId)
+            ->orderBy('name', 'asc')
+            ->get();
+
         return Inertia::render('Task/Edit', [
             'task' => new TaskResource($task),
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
+            'labels' => TaskLabelResource::collection($labels),
         ]);
     }
 

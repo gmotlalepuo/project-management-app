@@ -6,20 +6,26 @@ use App\Http\Requests\TaskLabel\StoreTaskLabelRequest;
 use App\Http\Requests\TaskLabel\UpdateTaskLabelRequest;
 use App\Http\Resources\TaskLabelResource;
 use App\Models\TaskLabel;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TaskLabelController extends Controller {
     /**
      * Display a listing of the resource.
      */
-    public function index() {
-        $labels = TaskLabel::all();
+    public function index(Request $request) {
+        $projectId = $request->input('project_id');
+        $labels = TaskLabel::where(function ($query) use ($projectId) {
+            $query->whereNull('project_id') // Fetch generic labels
+                ->orWhere('project_id', $projectId); // Fetch labels specific to the project
+        })->get();
 
         return Inertia::render('TaskLabels/Index', [
             'labels' => TaskLabelResource::collection($labels),
             'success' => session('success'),
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
