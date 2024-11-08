@@ -6,6 +6,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskLabelController;
 
 Route::redirect('/', '/dashboard');
 
@@ -25,6 +26,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Task routes
     Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
     Route::resource('task', TaskController::class);
+
+    // Task label routes
+    Route::resource('task_labels', TaskLabelController::class);
 
     // User routes
     Route::resource('user', UserController::class);

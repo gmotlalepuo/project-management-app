@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TaskLabel;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Password;
 
-class StoreUserRequest extends FormRequest {
+class StoreTaskLabelRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -20,9 +19,10 @@ class StoreUserRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            "name" => ["required", "string", "max:255"],
-            "email" => ["required", "email", "max:255", "unique:users,email"],
-            "password" => ["required", "confirmed", Password::min(8)->letters()->symbols()],
+            'name' => ['required', 'string', 'max:255', 'unique:task_labels,name'],
+            'bg_color_class' => ['required', 'string'],
+            'border_color_class' => ['required', 'string'],
+            'text_color_class' => ['required', 'string'],
         ];
     }
 }

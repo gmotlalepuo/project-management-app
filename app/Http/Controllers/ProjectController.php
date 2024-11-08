@@ -12,8 +12,8 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\StoreProjectRequest;
-use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Requests\Project\StoreProjectRequest;
+use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 
 class ProjectController extends Controller {

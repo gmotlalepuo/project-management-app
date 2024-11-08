@@ -10,10 +10,10 @@ use Illuminate\Support\Str;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\Task\StoreTaskRequest;
 use App\Http\Resources\ProjectResource;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
 use Carbon\Carbon;
 
 class TaskController extends Controller {
