@@ -33,7 +33,7 @@ class ProjectController extends Controller {
         $sortDirection = request("sort_direction", "desc");
 
         $projects = $query->with(['tasks' => function ($query) {
-            $query->latest()->limit(5);
+            $query->latest()->limit(5)->with('labels');
         }])
             ->withCount(['tasks as total_tasks', 'tasks as completed_tasks' => function ($query) {
                 $query->where('status', 'completed');

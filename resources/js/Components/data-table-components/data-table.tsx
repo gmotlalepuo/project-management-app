@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-  ColumnDef,
+  ColumnDef as BaseColumnDef,
   ColumnFiltersState,
   SortingState,
   VisibilityState,
@@ -32,6 +32,12 @@ import {
 } from "@/types/utils";
 import { router } from "@inertiajs/react";
 
+// Extend ColumnDef to include defaultHidden
+export type ColumnDef<TData, TValue> = BaseColumnDef<TData, TValue> & {
+  defaultHidden?: boolean;
+  accessorKey?: string;
+};
+
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   entity: {
@@ -57,7 +63,14 @@ export function DataTable<TData, TValue>({
   const { data, meta } = entity;
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+    React.useState<VisibilityState>(
+      columns.reduce((acc, column) => {
+        if (column.defaultHidden) {
+          acc[column.id || (column.accessorKey as string)] = false;
+        }
+        return acc;
+      }, {} as VisibilityState),
+    );
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );

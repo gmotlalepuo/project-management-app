@@ -1,7 +1,10 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { PaginatedTask, Task } from "@/types/task";
-import { DataTable } from "@/Components/data-table-components/data-table";
+import {
+  DataTable,
+  ColumnDef,
+} from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import {
@@ -13,7 +16,6 @@ import {
 import { formatDate } from "@/utils/helpers";
 import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
-import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
@@ -26,7 +28,7 @@ type IndexProps = {
 };
 
 // Define the table columns for the Task data
-const columns: ColumnDef<Task>[] = [
+const columns: ColumnDef<Task, any>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -92,6 +94,7 @@ const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) =>
       row.original.due_date ? formatDate(row.original.due_date) : "No date",
+    defaultHidden: true,
   },
   {
     accessorKey: "createdBy.name",

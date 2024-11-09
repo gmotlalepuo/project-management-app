@@ -17,6 +17,7 @@ import {
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import { FilterableColumn } from "@/types/utils";
 import { DataTable } from "@/Components/data-table-components/data-table";
+import { Label } from "@/types/task";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -213,7 +214,23 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                 <ul className="mt-3 space-y-1 text-sm text-gray-800 dark:text-gray-200">
                   {project.tasks.slice(0, 5).map((task) => (
                     <li key={task.id} className="truncate">
-                      • {task.name}
+                      {task.labels?.map((label: Label) => (
+                        <Badge
+                          key={label.id}
+                          variant={label.variant}
+                          className="mr-1"
+                        >
+                          {label.name}
+                        </Badge>
+                      ))}
+                      <Link
+                        href={route("task.show", task.id)}
+                        className={
+                          task.status === "completed" ? "line-through" : ""
+                        }
+                      >
+                        {task.name}
+                      </Link>
                     </li>
                   ))}
                   {project.tasks.length > 5 && (
