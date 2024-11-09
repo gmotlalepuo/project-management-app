@@ -1,3 +1,5 @@
+import { TaskLabelBadgeVariant } from "@/utils/constants";
+
 export type Task = {
   id: number;
   name: string;
@@ -13,6 +15,14 @@ export type Task = {
   project_id: number;
   createdBy: User;
   updatedBy: User;
+  labels: Label[];
+};
+
+export type Label = {
+  id: number;
+  project_id: number;
+  name: string;
+  variant: TaskLabelBadgeVariant;
 };
 
 export type PaginatedTask = {

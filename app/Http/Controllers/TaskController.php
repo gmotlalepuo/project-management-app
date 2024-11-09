@@ -6,85 +6,49 @@ use App\Models\Task;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Project;
-use Illuminate\Support\Str;
-use App\Http\Resources\TaskResource;
-use App\Http\Resources\UserResource;
+use App\Services\TaskService;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\Task\StoreTaskRequest;
-use App\Http\Resources\ProjectResource;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskLabelResource;
 use App\Models\TaskLabel;
 use Carbon\Carbon;
 
 class TaskController extends Controller {
+    protected $taskService;
+
+    public function __construct(TaskService $taskService) {
+        $this->taskService = $taskService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index() {
         $user = Auth::user();
-        $query = Task::visibleToUser($user->id);
+        $filters = request()->all();
+        $query = $this->taskService->getTasks($user, $filters);
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
 
-        // Filter by task name
-        if (request("name")) {
-            $query->where("name", "like", "%" . request("name") . "%");
-        }
-
-        // Filter by project name with a relation to project_id
-        if (request("project_name")) {
-            $query->whereHas("project", function ($query) {
-                $query->where("name", "like", "%" . request("project_name") . "%");
-            });
-        }
-
-        if (request()->has('status')) {
-            // Check if status is an array and apply filtering
-            $statuses = request()->input('status');
-            if (is_array($statuses)) {
-                $query->whereIn("status", $statuses); // Use whereIn for multiple values
-            } else {
-                $query->where("status", $statuses);
-            }
-        }
-
-        if (request()->has('priority')) {
-            // Check if priority is an array and apply filtering
-            $priorities = request()->input('priority');
-            if (is_array($priorities)) {
-                $query->whereIn("priority", $priorities); // Use whereIn for multiple values
-            } else {
-                $query->where("priority", $priorities);
-            }
-        }
-
-        if (request("due_date")) {
-            $dueDateRange = request("due_date");
-            $startDate = Carbon::parse($dueDateRange[0])->startOfDay();
-            $endDate = Carbon::parse($dueDateRange[1])->endOfDay();
-
-            $query->whereBetween("due_date", [$startDate, $endDate]);
-        }
-
-        // Filter by "Created By" user name with a relation to created_by (User model)
-        if (request("created_by_name")) {
-            $query->whereHas("createdBy", function ($query) {
-                $query->where("name", "like", "%" . request("created_by_name") . "%");
-            });
-        }
-
-        $tasks = $query
-            ->orderBy($sortField, $sortDirection)
+        $tasks = $query->with('labels')->orderBy($sortField, $sortDirection)
             ->paginate(10)
             ->onEachSide(1);
+
+        // Fetch label options for the filter
+        $labelOptions = TaskLabel::all()->map(function ($label) {
+            return ['value' => $label->id, 'label' => $label->name];
+        });
 
         return Inertia::render('Task/Index', [
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
+            'labelOptions' => $labelOptions,
         ]);
     }
 
@@ -114,27 +78,7 @@ class TaskController extends Controller {
      */
     public function store(StoreTaskRequest $request) {
         $data = $request->validated();
-        /** @var $image \Illuminate\Http\UploadedFile */
-        $image = $data['image'] ?? null;
-        $data['created_by'] = Auth::id();
-        $data['updated_by'] = Auth::id();
-
-        if (isset($data['due_date'])) {
-            $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
-        } else {
-            $data['due_date'] = null;
-        }
-
-        if ($image) {
-            $data['image_path'] = $image->store('task/' . Str::random(10), 'public');
-        }
-
-        $task = Task::create($data);
-
-        // Associate labels with the task
-        if (isset($data['label_ids']) && is_array($data['label_ids'])) {
-            $task->labels()->sync($data['label_ids']);
-        }
+        $this->taskService->storeTask($data);
 
         return to_route('task.index')->with('success', 'Task created successfully.');
     }
@@ -152,11 +96,12 @@ class TaskController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Task $task) {
+        $task->load('labels'); // Ensure labels are loaded
         $projects = Project::query()->orderBy('name', 'asc')->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
         // Fetch labels that are either generic or related to a project (if selected)
-        $projectId = request('project_id'); // Optional project filter from the request
+        $projectId = $task->project_id; // Use the task's project_id
         $labels = TaskLabel::whereNull('project_id')
             ->orWhere('project_id', $projectId)
             ->orderBy('name', 'asc')
@@ -175,56 +120,23 @@ class TaskController extends Controller {
      */
     public function update(UpdateTaskRequest $request, Task $task) {
         $data = $request->validated();
-        $name = $task->name;
-        /** @var $image \Illuminate\Http\UploadedFile */
-        $image = $data['image'] ?? null;
-        $data['updated_by'] = Auth::id();
+        $this->taskService->updateTask($task, $data);
 
-        if (isset($data['due_date'])) {
-            $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
-        } else {
-            $data['due_date'] = null;
-        }
-
-        if ($image) {
-            if ($task->image_path) {
-                Storage::disk('public')->deleteDirectory(dirname($task->image_path));
-            }
-            $data['image_path'] = $image->store('task/' . Str::random(10), 'public');
-        }
-
-        $task->update($data);
-
-        // Update associated labels
-        if (isset($data['label_ids']) && is_array($data['label_ids'])) {
-            $task->labels()->sync($data['label_ids']);
-        } else {
-            $task->labels()->detach();
-        }
-
-        return to_route('task.index')->with('success', "Task '$name' updated successfully.");
+        return to_route('task.index')->with('success', "Task '{$task->name}' updated successfully.");
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Task $task) {
-        $name = $task->name;
+        $this->taskService->deleteTask($task);
 
-        if ($task->image_path) {
-            Storage::disk('public')->deleteDirectory(dirname($task->image_path));
-        }
-
-        // Detach associated labels
-        $task->labels()->detach();
-
-        $task->delete();
-
-        return to_route('task.index')->with('success', "Task '$name' deleted successfully.");
+        return to_route('task.index')->with('success', "Task '{$task->name}' deleted successfully.");
     }
 
     public function myTasks() {
         $user = Auth::user();
+        $filters = request()->all();
         $query = Task::where('assigned_user_id', $user->id)
             ->whereHas('project', function ($query) use ($user) {
                 $query->visibleToUser($user->id);
@@ -233,11 +145,11 @@ class TaskController extends Controller {
         $sortField = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");
 
-        if (request("name")) {
-            $query->where("name", "like", "%" . request("name") . "%");
+        if (isset($filters['name'])) {
+            $query->where("name", "like", "%" . $filters['name'] . "%");
         }
-        if (request("status")) {
-            $query->where("status", request("status"));
+        if (isset($filters['status'])) {
+            $query->where("status", $filters['status']);
         }
 
         $tasks = $query->orderBy($sortField, $sortDirection)

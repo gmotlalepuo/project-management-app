@@ -19,10 +19,7 @@ import { PaginatedUser } from "@/types/user";
 import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Info } from "lucide-react";
-import {
-  TaskLabelBadgeVariant,
-  TASK_LABEL_BADGE_VARIANT_MAP,
-} from "@/utils/constants";
+import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
 
 type Props = {
@@ -49,12 +46,8 @@ export default function Create({ projects, users, labels }: Props) {
   const labelOptions: Option[] = labels.data.map((label) => ({
     label: label.name as string,
     value: (label.id ?? "").toString(),
-    variant: TASK_LABEL_BADGE_VARIANT_MAP[
-      label.color as TaskLabelBadgeVariant
-    ] as TaskLabelBadgeVariant,
+    variant: label.variant as TaskLabelBadgeVariant,
   }));
-
-  const { toast } = useToast();
 
   const searchLabels = async (query: string) => {
     const response = await axios.get(route("task_labels.search"), {
@@ -67,10 +60,11 @@ export default function Create({ projects, users, labels }: Props) {
     return labels.map((label: any) => ({
       label: label.name,
       value: label.id.toString(),
-      variant:
-        TASK_LABEL_BADGE_VARIANT_MAP[label.color as TaskLabelBadgeVariant],
+      variant: label.variant as TaskLabelBadgeVariant,
     }));
   };
+
+  const { toast } = useToast();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -17,14 +17,23 @@ import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
 import { PaginatedProject } from "@/types/project";
 import { Task } from "@/types/task";
 import { PaginatedUser } from "@/types/user";
+import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { Info } from "lucide-react";
+import { TaskLabelBadgeVariant } from "@/utils/constants";
+import axios from "axios";
+import { useState } from "react";
 
 type Props = {
   task: Task;
   projects: PaginatedProject;
   users: PaginatedUser;
+  labels: {
+    data: Option[];
+  };
 };
 
-export default function Edit({ task, projects, users }: Props) {
+export default function Edit({ task, projects, users, labels }: Props) {
   const { data, setData, post, errors } = useForm({
     image: null as File | null,
     name: task.name || "",
@@ -34,8 +43,38 @@ export default function Edit({ task, projects, users }: Props) {
     priority: task.priority || "",
     assigned_user_id: task.assigned_user_id || "",
     project_id: task.project_id || "",
+    label_ids: task.labels.map((label) => label.id),
     _method: "PUT",
   });
+
+  const [selectedLabels, setSelectedLabels] = useState<Option[]>(
+    task.labels.map((label) => ({
+      label: label.name,
+      value: label.id.toString(),
+      variant: label.variant as TaskLabelBadgeVariant,
+    })),
+  );
+
+  const labelOptions: Option[] = labels.data.map((label) => ({
+    label: label.name as string,
+    value: (label.id ?? "").toString(),
+    variant: label.variant as TaskLabelBadgeVariant,
+  }));
+
+  const searchLabels = async (query: string) => {
+    const response = await axios.get(route("task_labels.search"), {
+      params: {
+        query,
+        project_id: data.project_id,
+      },
+    });
+    const labels = response.data;
+    return labels.map((label: any) => ({
+      label: label.name,
+      value: label.id.toString(),
+      variant: label.variant as TaskLabelBadgeVariant,
+    }));
+  };
 
   const { toast } = useToast();
 
@@ -136,6 +175,43 @@ export default function Edit({ task, projects, users }: Props) {
                   autoFocus
                 />
                 <InputError message={errors.name} className="mt-2" />
+              </div>
+
+              {/* Task Labels */}
+              <div className="space-y-2">
+                <Label htmlFor="task_labels">Task Labels</Label>
+                {labels.data.length > 0 ? (
+                  <MultipleSelector
+                    value={selectedLabels}
+                    defaultOptions={labelOptions}
+                    placeholder="Select labels..."
+                    emptyIndicator="No labels found"
+                    onSearch={searchLabels}
+                    onChange={(selectedLabels) => {
+                      setSelectedLabels(selectedLabels);
+                      setData(
+                        "label_ids",
+                        selectedLabels.map((label) => Number(label.value)),
+                      );
+                    }}
+                  />
+                ) : (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>No labels found</AlertTitle>
+                    <AlertDescription className="mb-1">
+                      If you want to label your tasks, please create labels from
+                      the button below.
+                    </AlertDescription>
+                    <Link
+                      href={route("task_labels.create", {
+                        project_id: data.project_id,
+                      })}
+                    >
+                      <Button variant="secondary">Create Label</Button>
+                    </Link>
+                  </Alert>
+                )}
               </div>
 
               {/* Task Description */}

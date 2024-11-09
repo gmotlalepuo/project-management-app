@@ -2,60 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Project;
-use Illuminate\Support\Str;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 
 class ProjectController extends Controller {
+    protected $projectService;
+
+    public function __construct(ProjectService $projectService) {
+        $this->projectService = $projectService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index() {
         $user = Auth::user();
-        $query = Project::visibleToUser($user->id);
+        $filters = request()->all();
+        $query = $this->projectService->getProjects($user, $filters);
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
 
-        if (request("name")) {
-            $query->where("name", "like", "%" . request("name") . "%");
-        }
-
-        if (request()->has('status')) {
-            // Check if status is an array and apply filtering
-            $statuses = request()->input('status');
-            if (is_array($statuses)) {
-                $query->whereIn("status", $statuses); // Use whereIn for multiple values
-            } else {
-                $query->where("status", $statuses);
-            }
-        }
-
-        if (request("created_at")) {
-            $createdAtRange = request("created_at");
-            $startDate = Carbon::parse($createdAtRange[0])->startOfDay();
-            $endDate = Carbon::parse($createdAtRange[1])->endOfDay();
-
-            $query->whereBetween("created_at", [$startDate, $endDate]);
-        }
-
-
-        // Include the latest 5 tasks and total count of tasks for each project
         $projects = $query->with(['tasks' => function ($query) {
-            $query->latest()->limit(5); // Only fetch the latest 5 tasks
+            $query->latest()->limit(5);
         }])
             ->withCount(['tasks as total_tasks', 'tasks as completed_tasks' => function ($query) {
-                $query->where('status', 'completed'); // Count only completed tasks
+                $query->where('status', 'completed');
             }])
             ->orderBy($sortField, $sortDirection)
             ->paginate(request('per_page', 10))
@@ -80,22 +61,7 @@ class ProjectController extends Controller {
      */
     public function store(StoreProjectRequest $request) {
         $data = $request->validated();
-        /** @var $image \Illuminate\Http\UploadedFile */
-        $image = $data['image'] ?? null;
-        $data['created_by'] = Auth::id();
-        $data['updated_by'] = Auth::id();
-
-        if (isset($data['due_date'])) {
-            $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
-        } else {
-            $data['due_date'] = null;
-        }
-
-        if ($image) {
-            $data['image_path'] = $image->store('project/' . Str::random(10), 'public');
-        }
-
-        Project::create($data);
+        $this->projectService->storeProject($data);
 
         return to_route('project.index')->with('success', 'Project created successfully.');
     }
@@ -104,42 +70,13 @@ class ProjectController extends Controller {
      * Display the specified resource.
      */
     public function show(Project $project) {
-        // Check if the user is authorized to view the project
         $user = Auth::user();
         if ($user->id !== $project->created_by && !$project->acceptedUsers->contains($user)) {
             abort(403, 'You are not authorized to view this project.');
         }
 
-        $query = $project->tasks();
-        $sortField = request("sort_field", "created_at");
-        $sortDirection = request("sort_direction", "desc");
-
-        if (request("name")) {
-            $query->where("name", "like", "%" . request("name") . "%");
-        }
-
-        if (request()->has('status')) {
-            $statuses = request()->input('status');
-            if (is_array($statuses)) {
-                $query->whereIn("status", $statuses);
-            } else {
-                $query->where("status", $statuses);
-            }
-        }
-
-        if (request()->has('priority')) {
-            $priorities = request()->input('priority');
-            if (is_array($priorities)) {
-                $query->whereIn("priority", $priorities);
-            } else {
-                $query->where("priority", $priorities);
-            }
-        }
-
-        $tasks = $query
-            ->orderBy($sortField, $sortDirection)
-            ->paginate(10)
-            ->onEachSide(1);
+        $filters = request()->all();
+        $tasks = $this->projectService->getProjectWithTasks($project, $filters);
 
         return Inertia::render('Project/Show', [
             'project' => new ProjectResource($project->load(['acceptedUsers'])),
@@ -164,40 +101,18 @@ class ProjectController extends Controller {
      */
     public function update(UpdateProjectRequest $request, Project $project) {
         $data = $request->validated();
-        $name = $project->name;
-        /** @var $image \Illuminate\Http\UploadedFile */
-        $image = $data['image'] ?? null;
-        $data['updated_by'] = Auth::id();
+        $this->projectService->updateProject($project, $data);
 
-        if (isset($data['due_date'])) {
-            $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
-        } else {
-            $data['due_date'] = null;
-        }
-
-        if ($image) {
-            if ($project->image_path) {
-                Storage::disk('public')->deleteDirectory(dirname($project->image_path));
-            }
-            $data['image_path'] = $image->store('project/' . Str::random(10), 'public');
-        }
-        $project->update($data);
-
-        return to_route('project.index')->with('success', "Project '$name' updated successfully.");
+        return to_route('project.index')->with('success', "Project '{$project->name}' updated successfully.");
     }
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Project $project) {
-        $name = $project->name;
+        $this->projectService->deleteProject($project);
 
-        if ($project->image_path) {
-            Storage::disk('public')->deleteDirectory(dirname($project->image_path));
-        }
-        $project->delete();
-
-        return to_route('project.index')->with('success', "Project '$name' deleted successfully.");
+        return to_route('project.index')->with('success', "Project '{$project->name}' deleted successfully.");
     }
 
     public function inviteUser(Request $request, Project $project) {
@@ -235,7 +150,6 @@ class ProjectController extends Controller {
         return back()->with('error', 'This user has already been invited.');
     }
 
-
     public function showInvitations(Request $request) {
         $user = Auth::user();
 
@@ -256,12 +170,10 @@ class ProjectController extends Controller {
             }
         }
 
-        // Apply sorting based on query parameters
         $sortField = $request->input('sort_field', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
         $query->orderBy($sortField, $sortDirection);
 
-        // Paginate the results and include query string
         $invitations = $query->paginate($request->input('per_page', 10))->withQueryString();
 
         return Inertia::render('Project/Invite', [
@@ -270,7 +182,6 @@ class ProjectController extends Controller {
             'queryParams' => $request->query() ?: null,
         ]);
     }
-
 
     public function acceptInvitation(Project $project) {
         $user = Auth::user();
