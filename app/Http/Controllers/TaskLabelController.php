@@ -84,4 +84,22 @@ class TaskLabelController extends Controller {
 
         return to_route('task_labels.index')->with('success', "Task label '$name' deleted successfully.");
     }
+
+    /**
+     * Search for task labels.
+     */
+    public function search(Request $request) {
+        $query = $request->input('query');
+        $projectId = $request->input('project_id');
+
+        $labels = TaskLabel::where(function ($q) use ($query, $projectId) {
+            $q->where('name', 'like', '%' . $query . '%')
+                ->where(function ($q) use ($projectId) {
+                    $q->whereNull('project_id')
+                        ->orWhere('project_id', $projectId);
+                });
+        })->get();
+
+        return response()->json(TaskLabelResource::collection($labels));
+    }
 }

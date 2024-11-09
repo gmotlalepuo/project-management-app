@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Project;
+use App\Models\TaskLabel;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder {
@@ -20,6 +20,19 @@ class DatabaseSeeder extends Seeder {
             'password' => bcrypt('password1'),
             'email_verified_at' => time(),
         ]);
+
+        // Seed generic task labels
+        $genericLabels = [
+            ['name' => 'Bug', 'variant' => 'red'],
+            ['name' => 'Feature Request', 'variant' => 'blue'],
+            ['name' => 'Improvement', 'variant' => 'green'],
+            ['name' => 'Documentation', 'variant' => 'yellow'],
+            ['name' => 'Testing', 'variant' => 'purple'],
+        ];
+
+        foreach ($genericLabels as $label) {
+            TaskLabel::create(array_merge($label, ['project_id' => null]));
+        }
 
         // Project::factory()->count(30)->hasTasks(30)->create();
     }

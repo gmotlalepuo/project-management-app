@@ -129,7 +129,12 @@ class TaskController extends Controller {
             $data['image_path'] = $image->store('task/' . Str::random(10), 'public');
         }
 
-        Task::create($data);
+        $task = Task::create($data);
+
+        // Associate labels with the task
+        if (isset($data['label_ids']) && is_array($data['label_ids'])) {
+            $task->labels()->sync($data['label_ids']);
+        }
 
         return to_route('task.index')->with('success', 'Task created successfully.');
     }
@@ -187,7 +192,15 @@ class TaskController extends Controller {
             }
             $data['image_path'] = $image->store('task/' . Str::random(10), 'public');
         }
+
         $task->update($data);
+
+        // Update associated labels
+        if (isset($data['label_ids']) && is_array($data['label_ids'])) {
+            $task->labels()->sync($data['label_ids']);
+        } else {
+            $task->labels()->detach();
+        }
 
         return to_route('task.index')->with('success', "Task '$name' updated successfully.");
     }
@@ -201,6 +214,10 @@ class TaskController extends Controller {
         if ($task->image_path) {
             Storage::disk('public')->deleteDirectory(dirname($task->image_path));
         }
+
+        // Detach associated labels
+        $task->labels()->detach();
+
         $task->delete();
 
         return to_route('task.index')->with('success', "Task '$name' deleted successfully.");

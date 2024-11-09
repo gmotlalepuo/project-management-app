@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('task', TaskController::class);
 
     // Task label routes
+    Route::get('/task_labels/search', [TaskLabelController::class, 'search'])->name('task_labels.search');
     Route::resource('task_labels', TaskLabelController::class);
 
     // User routes

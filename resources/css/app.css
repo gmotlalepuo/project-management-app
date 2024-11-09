@@ -69,3 +69,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .reset-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    border-color: transparent;
+    border-width: 0;
+    border-radius: 0;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    --tw-shadow: none;
+  }
+}

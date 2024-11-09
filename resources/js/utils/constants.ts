@@ -45,6 +45,34 @@ export const TASK_PRIORITY_TEXT_MAP = {
   high: "High",
 };
 
+// Task Label Badge variant colors
+export type TaskLabelBadgeVariant =
+  | "red"
+  | "green"
+  | "blue"
+  | "yellow"
+  | "amber"
+  | "indigo"
+  | "purple"
+  | "pink"
+  | "teal"
+  | "cyan"
+  | "gray";
+
+export const TASK_LABEL_BADGE_VARIANT_MAP: Record<TaskLabelBadgeVariant, string> = {
+  red: "red",
+  green: "green",
+  blue: "blue",
+  yellow: "yellow",
+  amber: "amber",
+  indigo: "indigo",
+  purple: "purple",
+  pink: "pink",
+  teal: "teal",
+  cyan: "cyan",
+  gray: "gray",
+};
+
 // Invitation constants
 export const INVITATION_STATUS_BADGE_MAP: Record<
   "pending" | "accepted" | "rejected",

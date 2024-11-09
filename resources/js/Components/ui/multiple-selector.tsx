@@ -2,6 +2,7 @@ import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import { X } from "lucide-react";
 import * as React from "react";
 import { forwardRef, useEffect } from "react";
+import { TaskLabelBadgeVariant } from "@/utils/constants";
 
 import { Badge } from "@/Components/ui/badge";
 import {
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 export interface Option {
   value: string;
   label: string;
+  variant?: TaskLabelBadgeVariant;
   disable?: boolean;
   /** fixed option that can't be removed. */
   fixed?: boolean;
@@ -497,7 +499,7 @@ const MultipleSelector = React.forwardRef<
                     }}
                     onClick={() => handleUnselect(option)}
                   >
-                    <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                    <X className="h-3 w-3 text-foreground hover:text-muted-foreground" />
                   </button>
                 </Badge>
               );
@@ -529,7 +531,7 @@ const MultipleSelector = React.forwardRef<
                   : placeholder
               }
               className={cn(
-                "flex-1 bg-transparent outline-none placeholder:text-muted-foreground",
+                "reset-input flex-1 bg-transparent outline-none placeholder:text-muted-foreground",
                 {
                   "w-full": hidePlaceholderWhenSelected,
                   "px-3 py-2": selected.length === 0,

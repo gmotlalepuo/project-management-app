@@ -28,6 +28,8 @@ class StoreTaskRequest extends FormRequest {
             "assigned_user_id" => ["required", "exists:users,id"],
             'status' => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
+            'label_ids' => ['nullable', 'array'],
+            'label_ids.*' => ['integer', 'exists:task_labels,id'],
         ];
     }
 }
