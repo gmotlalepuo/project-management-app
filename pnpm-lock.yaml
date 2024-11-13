@@ -91,8 +91,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@inertiajs/react':
-        specifier: ^1.2.0
-        version: 1.2.0(react@18.3.1)
+        specifier: 2.0.0-beta.2
+        version: 2.0.0-beta.2(react@18.3.1)
       '@tailwindcss/forms':
         specifier: ^0.5.9
         version: 0.5.9(tailwindcss@3.4.14)
@@ -476,11 +476,11 @@ packages:
     resolution: {integrity: sha512-JBxkERygn7Bv/GbN5Rv8Ul6LVknS+5Bp6RgDC/O8gEBU/yeH5Ui5C/OlWrTb6qct7LjjfT6Re2NxB0ln0yYybA==}
     engines: {node: '>=18.18'}
 
-  '@inertiajs/core@1.2.0':
-    resolution: {integrity: sha512-6U0gqCPbGGGMcLoDm+ckKipc5gptZMmfVFfPGdO7vlO7yipWf1RD+TKkcZGJklFvfgFMKwK2VPw8GAv1OctuQA==}
+  '@inertiajs/core@2.0.0-beta.2':
+    resolution: {integrity: sha512-2fi1YAncmkQAGko+miQanobF5anSO9lBK8i6Fgl0YKDjLQJg7+Sdr/yQIDwJtvFYgOgDbAhIcAawn9usc0/9bQ==}
 
-  '@inertiajs/react@1.2.0':
-    resolution: {integrity: sha512-Q3wTaQJdoUbUB8YIGeQ0y2Tf/k8dNtz9Nu2dYr1pbYUBv++6d45iC/CFB/lIpqVvvUw8XuIai2bdsUcRSIbPCQ==}
+  '@inertiajs/react@2.0.0-beta.2':
+    resolution: {integrity: sha512-Zm3hWYvA0GNEHaqt3CPUBNz5NFQnxopOiAdYZ4HKrR/upsptMNcJ+JBQ7r0Wvmk3xaq9cbO3JiH7RvXUDxItxQ==}
     peerDependencies:
       react: ^16.9.0 || ^17.0.0 || ^18.0.0
 
@@ -2894,7 +2894,7 @@ snapshots:
 
   '@humanwhocodes/retry@0.3.1': {}
 
-  '@inertiajs/core@1.2.0':
+  '@inertiajs/core@2.0.0-beta.2':
     dependencies:
       axios: 1.7.7
       deepmerge: 4.3.1
@@ -2903,9 +2903,9 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@inertiajs/react@1.2.0(react@18.3.1)':
+  '@inertiajs/react@2.0.0-beta.2(react@18.3.1)':
     dependencies:
-      '@inertiajs/core': 1.2.0
+      '@inertiajs/core': 2.0.0-beta.2
       lodash.isequal: 4.5.0
       react: 18.3.1
     transitivePeerDependencies:

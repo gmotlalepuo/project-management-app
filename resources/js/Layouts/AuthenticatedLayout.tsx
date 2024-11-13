@@ -42,6 +42,7 @@ export default function AuthenticatedLayout({
                     <NavLink
                       href={route("dashboard")}
                       isActive={route().current("dashboard")}
+                      prefetch
                     >
                       Dashboard
                     </NavLink>
@@ -77,10 +78,18 @@ export default function AuthenticatedLayout({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem asChild>
-                        <Link href={route("project.index")}>All Projects</Link>
+                        <Link
+                          href={route("project.index")}
+                          prefetch={["mount", "hover"]}
+                        >
+                          All Projects
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={route("project.invitations")}>
+                        <Link
+                          href={route("project.invitations")}
+                          prefetch={["mount", "hover"]}
+                        >
                           Invitations
                         </Link>
                       </DropdownMenuItem>
@@ -117,10 +126,20 @@ export default function AuthenticatedLayout({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem asChild>
-                        <Link href={route("task.index")}>All Tasks</Link>
+                        <Link
+                          href={route("task.index")}
+                          prefetch={["mount", "hover"]}
+                        >
+                          All Tasks
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link href={route("task.myTasks")}>My Tasks</Link>
+                        <Link
+                          href={route("task.myTasks")}
+                          prefetch={["mount", "hover"]}
+                        >
+                          My Tasks
+                        </Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -168,7 +187,9 @@ export default function AuthenticatedLayout({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem asChild>
-                    <Link href={route("profile.edit")}>Profile</Link>
+                    <Link href={route("profile.edit")} prefetch>
+                      Profile
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link
