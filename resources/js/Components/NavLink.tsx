@@ -10,7 +10,7 @@ export const NavLink = ({
 }: {
   href: string;
   isActive: boolean;
-  prefetch?: boolean | object;
+  prefetch?: any;
   children: ReactNode;
 }) => {
   return (
