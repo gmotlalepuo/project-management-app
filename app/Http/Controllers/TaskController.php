@@ -36,8 +36,8 @@ class TaskController extends Controller {
         $sortDirection = request("sort_direction", "desc");
 
         $tasks = $query->with('labels')->orderBy($sortField, $sortDirection)
-            ->paginate(10)
-            ->onEachSide(1);
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
 
         // Fetch label options for the filter
         $labelOptions = TaskLabel::all()->map(function ($label) {

@@ -1,11 +1,13 @@
-import Checkbox from "@/Components/Checkbox";
-import InputError from "@/Components/InputError";
-import InputLabel from "@/Components/InputLabel";
-import PrimaryButton from "@/Components/PrimaryButton";
-import TextInput from "@/Components/TextInput";
-import GuestLayout from "@/Layouts/GuestLayout";
 import { Head, Link, useForm } from "@inertiajs/react";
+import AuthFlowLayout from "@/Layouts/AuthFlowLayout";
+import { Button } from "@/Components/ui/button";
+import { Label } from "@/Components/ui/label";
+import { Input } from "@/Components/ui/input";
+import InputError from "@/Components/InputError";
+import Checkbox from "@/Components/Checkbox";
 import { FormEventHandler } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
+import { Check } from "lucide-react";
 
 export default function Login({
   status,
@@ -29,48 +31,46 @@ export default function Login({
   };
 
   return (
-    <GuestLayout>
+    <AuthFlowLayout>
       <Head title="Log in" />
 
       {status && (
-        <div className="mb-4 text-sm font-medium text-green-600">{status}</div>
+        <Alert className="mb-4 shadow" variant="success">
+          <Check className="h-4 w-4" />
+          <AlertTitle>Success</AlertTitle>
+          <AlertDescription className="mb-1">{status}</AlertDescription>
+        </Alert>
       )}
 
-      <form onSubmit={submit}>
-        <div>
-          <InputLabel htmlFor="email" value="Email" />
-
-          <TextInput
+      <form
+        onSubmit={submit}
+        className="space-y-6 rounded-lg bg-white p-4 shadow dark:bg-card sm:p-8"
+      >
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
-            name="email"
             value={data.email}
-            className="mt-1 block w-full"
-            autoComplete="username"
-            isFocused={true}
             onChange={(e) => setData("email", e.target.value)}
+            required
           />
-
           <InputError message={errors.email} className="mt-2" />
         </div>
 
-        <div className="mt-4">
-          <InputLabel htmlFor="password" value="Password" />
-
-          <TextInput
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
             id="password"
             type="password"
-            name="password"
             value={data.password}
-            className="mt-1 block w-full"
-            autoComplete="current-password"
             onChange={(e) => setData("password", e.target.value)}
+            required
           />
-
           <InputError message={errors.password} className="mt-2" />
         </div>
 
-        <div className="mt-4 block">
+        <div>
           <label className="flex items-center">
             <Checkbox
               name="remember"
@@ -83,7 +83,7 @@ export default function Login({
           </label>
         </div>
 
-        <div className="mt-4 flex items-center justify-end">
+        <div className="flex items-center justify-end space-x-4">
           {canResetPassword && (
             <Link
               href={route("password.request")}
@@ -92,12 +92,11 @@ export default function Login({
               Forgot your password?
             </Link>
           )}
-
-          <PrimaryButton className="ms-4" disabled={processing}>
+          <Button type="submit" disabled={processing}>
             Log in
-          </PrimaryButton>
+          </Button>
         </div>
       </form>
-    </GuestLayout>
+    </AuthFlowLayout>
   );
 }
