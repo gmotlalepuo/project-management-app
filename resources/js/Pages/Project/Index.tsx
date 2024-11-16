@@ -177,8 +177,8 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
       <main className="space-y-8 py-12">
         <section className="mx-auto flex max-w-7xl gap-6 sm:px-6 lg:px-8">
           {/* Project Cards Container */}
-          <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.data.slice(0, 9).map((project) => (
+          <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2">
+            {projects.data.slice(0, 6).map((project) => (
               <div
                 key={project.id}
                 className="rounded-lg bg-background p-5 shadow"
