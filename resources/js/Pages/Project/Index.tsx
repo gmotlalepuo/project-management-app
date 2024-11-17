@@ -18,6 +18,7 @@ import { DataTableRowActions } from "@/Components/data-table-components/data-tab
 import { FilterableColumn } from "@/types/utils";
 import { DataTable } from "@/Components/data-table-components/data-table";
 import { Label } from "@/types/task";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -145,36 +146,45 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
   return (
     <AuthenticatedLayout
       header={
-        <>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-              Projects
-            </h2>
-            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center">
-              <Link href={route("project.create")}>
-                <Button className="w-full sm:w-auto">
-                  <CirclePlus className="h-5 w-5" />
-                  <span>Create Project</span>
-                </Button>
-              </Link>
-              <Link href={route("project.invitations")}>
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  <UsersRound className="h-5 w-5" />
-                  <span>Invitations</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Take charge of your projects and actively manage your participation
-            in them.
-          </p>
-        </>
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+            Projects
+          </h2>
+        </div>
       }
     >
       <Head title="Projects" />
 
       <main className="space-y-8 py-12">
+        <section className="mx-auto max-w-7xl gap-6 sm:px-6 lg:px-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Your Projects Efficiently</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h4>
+                Track progress, manage tasks, and collaborate with your team.
+                Use the tools provided to create, view, and update your projects
+                seamlessly.
+              </h4>
+              <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+                <Link href={route("project.create")}>
+                  <Button className="w-full sm:w-auto">
+                    <CirclePlus className="h-5 w-5" />
+                    <span>Create Project</span>
+                  </Button>
+                </Link>
+                <Link href={route("project.invitations")}>
+                  <Button variant="secondary" className="w-full sm:w-auto">
+                    <UsersRound className="h-5 w-5" />
+                    <span>Invitations</span>
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         <section className="mx-auto flex max-w-7xl gap-6 sm:px-6 lg:px-8">
           {/* Project Cards Container */}
           <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2">

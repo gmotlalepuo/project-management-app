@@ -19,6 +19,7 @@ import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 
 type IndexProps = {
   tasks: PaginatedTask;
@@ -201,16 +202,32 @@ export default function Index({
           <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             Tasks
           </h2>
-          <Link href={route("task.create")}>
-            <Button>Create Task</Button>
-          </Link>
         </div>
       }
     >
       <Head title="Tasks" />
       <div className="py-12">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+          <Card>
+            <CardHeader>
+              <CardTitle>Manage Your Tasks Effectively</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <h4>
+                Organize your tasks, set priorities, and track progress. Use the
+                tools provided to create, view, and update your tasks
+                efficiently.
+              </h4>
+              <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
+                <Link href={route("task.create")}>
+                  <Button className="w-full sm:w-auto">
+                    <span>Create Task</span>
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          <div className="mt-8 rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <DataTable
                 columns={columns}
