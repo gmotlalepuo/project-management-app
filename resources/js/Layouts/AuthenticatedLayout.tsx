@@ -14,7 +14,7 @@ export default function AuthenticatedLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="bg-secondary">
+      <SidebarInset className="overflow-x-auto bg-secondary">
         {/* Header */}
         {header && (
           <header className="rounded-bl-lg rounded-br-lg bg-background shadow md:rounded-none md:shadow-none">
