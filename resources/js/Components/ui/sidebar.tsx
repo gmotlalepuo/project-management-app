@@ -19,7 +19,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "16rem";
+const SIDEBAR_WIDTH = "17rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
@@ -194,6 +194,36 @@ const Sidebar = React.forwardRef<
           {...props}
         >
           {children}
+          <style>{`
+            ::-webkit-scrollbar {
+              width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+              background: hsl(var(--background));
+            }
+
+            ::-webkit-scrollbar-thumb {
+              background: hsl(var(--muted));
+              border-radius: 5px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+              background: hsl(var(--muted-foreground));
+            }
+
+            .dark ::-webkit-scrollbar-track {
+              background: hsl(var(--background));
+            }
+
+            .dark ::-webkit-scrollbar-thumb {
+              background: hsl(var(--muted));
+            }
+
+            .dark ::-webkit-scrollbar-thumb:hover {
+              background: hsl(var(--muted-foreground));
+            }
+          `}</style>
         </div>
       );
     }
@@ -213,6 +243,36 @@ const Sidebar = React.forwardRef<
             side={side}
           >
             <div className="flex h-full w-full flex-col">{children}</div>
+            <style>{`
+              ::-webkit-scrollbar {
+                width: 8px;
+              }
+
+              ::-webkit-scrollbar-track {
+                background: hsl(var(--background));
+              }
+
+              ::-webkit-scrollbar-thumb {
+                background: hsl(var(--muted));
+                border-radius: 5px;
+              }
+
+              ::-webkit-scrollbar-thumb:hover {
+                background: hsl(var(--muted-foreground));
+              }
+
+              .dark ::-webkit-scrollbar-track {
+                background: hsl(var(--background));
+              }
+
+              .dark ::-webkit-scrollbar-thumb {
+                background: hsl(var(--muted));
+              }
+
+              .dark ::-webkit-scrollbar-thumb:hover {
+                background: hsl(var(--muted-foreground));
+              }
+            `}</style>
           </SheetContent>
         </Sheet>
       );
@@ -257,13 +317,42 @@ const Sidebar = React.forwardRef<
             className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
           >
             {children}
+            <style>{`
+              ::-webkit-scrollbar {
+                width: 8px;
+              }
+
+              ::-webkit-scrollbar-track {
+                background: hsl(var(--background));
+              }
+
+              ::-webkit-scrollbar-thumb {
+                background: hsl(var(--muted));
+                border-radius: 5px;
+              }
+
+              ::-webkit-scrollbar-thumb:hover {
+                background: hsl(var(--muted-foreground));
+              }
+
+              .dark ::-webkit-scrollbar-track {
+                background: hsl(var(--background));
+              }
+
+              .dark ::-webkit-scrollbar-thumb {
+                background: hsl(var(--muted));
+              }
+
+              .dark ::-webkit-scrollbar-thumb:hover {
+                background: hsl(var(--muted-foreground));
+              }
+            `}</style>
           </div>
         </div>
       </div>
     );
   },
 );
-Sidebar.displayName = "Sidebar";
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,

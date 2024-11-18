@@ -1,5 +1,6 @@
 import { MoreHorizontal, Trash2 } from "lucide-react";
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
+import { Badge } from "@/Components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/Components/ui/sidebar";
+import { Label } from "@/types/task";
 
 export function NavTasks({
   tasks,
@@ -23,6 +25,7 @@ export function NavTasks({
   tasks: {
     name: string;
     url: string;
+    labels: Label[];
   }[];
 }) {
   const { isMobile } = useSidebar();
@@ -38,9 +41,14 @@ export function NavTasks({
         {tasks.map((item, index) => (
           <SidebarMenuItem key={`${item.name}-${index}`}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link href={item.url}>
+                {item.labels.map((label) => (
+                  <Badge key={label.id} variant={label.variant} size="small">
+                    {label.name}
+                  </Badge>
+                ))}
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

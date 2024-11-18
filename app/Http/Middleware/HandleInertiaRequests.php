@@ -43,6 +43,7 @@ class HandleInertiaRequests extends Middleware {
                 ->get();
 
             $recentTasks = Task::where('assigned_user_id', $user->id)
+                ->with('labels')
                 ->orderBy('updated_at', 'desc')
                 ->limit(3)
                 ->get();

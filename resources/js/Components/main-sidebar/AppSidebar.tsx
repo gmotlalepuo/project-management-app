@@ -30,7 +30,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         title: "Projects",
         url: "#",
         icon: SquareChartGantt,
-        isActive: true,
         items: [
           {
             title: "All Projects",
@@ -71,10 +70,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     projects: recentProjects.map((project) => ({
       name: project.name,
       url: route("project.show", project.id),
+      status: project.status,
     })),
     tasks: recentTasks.map((task) => ({
       name: task.name,
       url: route("task.show", task.id),
+      labels: task.labels,
     })),
   };
 

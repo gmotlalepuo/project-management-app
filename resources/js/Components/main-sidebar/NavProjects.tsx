@@ -1,5 +1,5 @@
 import { MoreHorizontal, Trash2 } from "lucide-react";
-import { router } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 
 import {
   DropdownMenu,
@@ -17,11 +17,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/Components/ui/sidebar";
+import { Badge } from "../ui/badge";
+import {
+  PROJECT_STATUS_BADGE_MAP,
+  PROJECT_STATUS_TEXT_MAP,
+} from "@/utils/constants";
 
 export function NavProjects({
   projects,
 }: {
   projects: {
+    status: keyof typeof PROJECT_STATUS_BADGE_MAP;
     name: string;
     url: string;
   }[];
@@ -39,9 +45,16 @@ export function NavProjects({
         {projects.map((item, index) => (
           <SidebarMenuItem key={`${item.name}-${index}`}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link href={item.url}>
+                <Badge
+                  className="text-nowrap"
+                  size="small"
+                  variant={PROJECT_STATUS_BADGE_MAP[item.status]}
+                >
+                  {PROJECT_STATUS_TEXT_MAP[item.status]}
+                </Badge>
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
