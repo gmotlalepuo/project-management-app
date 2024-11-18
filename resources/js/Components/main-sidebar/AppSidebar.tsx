@@ -1,16 +1,4 @@
-import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Frame,
-  ListTodo,
-  Map,
-  PieChart,
-  Settings2,
-  SquareChartGantt,
-  SquareTerminal,
-  Users,
-} from "lucide-react";
+import { ListTodo, SquareChartGantt, Users } from "lucide-react";
 
 import { NavMain } from "./NavMain";
 import { NavProjects } from "./NavProjects";
@@ -25,17 +13,17 @@ import {
 import { NavHeader } from "./NavHeader";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import { ModeToggle } from "../ModeToggle";
 import NavThemeToggle from "./NavThemeToggle";
+import { NavTasks } from "./NavTasks";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const user = usePage<PageProps>().props.auth.user;
+  const { auth, recentProjects, recentTasks } = usePage<PageProps>().props;
 
   const data = {
     user: {
-      name: user.name,
-      email: user.email,
-      avatar: `/storage/${user.profile_picture}`,
+      name: auth.user.name,
+      email: auth.user.email,
+      avatar: `/storage/${auth.user.profile_picture}`,
     },
     navMain: [
       {
@@ -80,23 +68,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         prefetch: true,
       },
     ],
-    projects: [
-      {
-        name: "Design Engineering",
-        url: "#",
-        icon: Frame,
-      },
-      {
-        name: "Sales & Marketing",
-        url: "#",
-        icon: PieChart,
-      },
-      {
-        name: "Travel",
-        url: "#",
-        icon: Map,
-      },
-    ],
+    projects: recentProjects.map((project) => ({
+      name: project.name,
+      url: route("project.show", project.id),
+    })),
+    tasks: recentTasks.map((task) => ({
+      name: task.name,
+      url: route("task.show", task.id),
+    })),
   };
 
   return (
@@ -107,6 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
+        <NavTasks tasks={data.tasks} />
       </SidebarContent>
       <SidebarFooter>
         <NavThemeToggle />

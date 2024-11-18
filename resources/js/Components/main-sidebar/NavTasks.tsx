@@ -1,6 +1,5 @@
 import { MoreHorizontal, Trash2 } from "lucide-react";
 import { router } from "@inertiajs/react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,25 +17,25 @@ import {
   useSidebar,
 } from "@/Components/ui/sidebar";
 
-export function NavProjects({
-  projects,
+export function NavTasks({
+  tasks,
 }: {
-  projects: {
+  tasks: {
     name: string;
     url: string;
   }[];
 }) {
   const { isMobile } = useSidebar();
 
-  if (projects.length === 0) {
+  if (tasks.length === 0) {
     return null;
   }
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Recent Projects</SidebarGroupLabel>
+      <SidebarGroupLabel>Recent Tasks</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item, index) => (
+        {tasks.map((item, index) => (
           <SidebarMenuItem key={`${item.name}-${index}`}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
@@ -56,25 +55,25 @@ export function NavProjects({
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem onSelect={() => router.get(item.url)}>
-                  <span>View Project</span>
+                  <span>View Task</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() =>
-                    router.get(route("project.edit", item.url.split("/").pop()))
+                    router.get(route("task.edit", item.url.split("/").pop()))
                   }
                 >
-                  <span>Edit Project</span>
+                  <span>Edit Task</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onSelect={() =>
                     router.delete(
-                      route("project.destroy", item.url.split("/").pop()),
+                      route("task.destroy", item.url.split("/").pop()),
                     )
                   }
                 >
                   <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
+                  <span>Delete Task</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -82,7 +81,7 @@ export function NavProjects({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href={route("project.index")}>
+            <a href={route("task.index")}>
               <MoreHorizontal className="text-sidebar-foreground/70" />
               <span>More</span>
             </a>

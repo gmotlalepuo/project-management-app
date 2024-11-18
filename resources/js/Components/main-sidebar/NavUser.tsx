@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/Components/ui/sidebar";
+import { Link } from "@inertiajs/react";
 
 export function NavUser({
   user,
@@ -78,21 +79,18 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
+                <Link
+                  className="flex items-center gap-2"
+                  href={route("profile.edit")}
+                  method="get"
+                  as="button"
+                >
+                  <BadgeCheck />
+                  <span>Account</span>
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
@@ -101,8 +99,15 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOut />
-              Log out
+              <Link
+                className="flex items-center gap-2"
+                href={route("logout")}
+                method="post"
+                as="button"
+              >
+                <LogOut />
+                <span>Log Out</span>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
