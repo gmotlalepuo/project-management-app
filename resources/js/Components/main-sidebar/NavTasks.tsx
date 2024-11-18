@@ -89,10 +89,10 @@ export function NavTasks({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href={route("task.index")}>
+            <Link href={route("task.index")}>
               <MoreHorizontal className="text-sidebar-foreground/70" />
               <span>More</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

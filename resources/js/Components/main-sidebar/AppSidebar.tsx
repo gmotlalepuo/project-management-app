@@ -28,7 +28,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain: [
       {
         title: "Projects",
-        url: "#",
+        url: route("project.index"),
         icon: SquareChartGantt,
         items: [
           {
@@ -45,7 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         title: "Tasks",
-        url: "#",
+        url: route("task.index"),
         icon: ListTodo,
         items: [
           {

@@ -95,10 +95,10 @@ export function NavProjects({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
-            <a href={route("project.index")}>
+            <Link href={route("project.index")}>
               <MoreHorizontal className="text-sidebar-foreground/70" />
               <span>More</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
