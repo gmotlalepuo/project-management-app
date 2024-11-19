@@ -32,6 +32,8 @@ class HandleInertiaRequests extends Middleware {
         $user = $request->user();
         $recentProjects = collect();
         $recentTasks = collect();
+        $allProjects = collect();
+        $allTasks = collect();
 
         if ($user) {
             $recentProjects = Project::where('created_by', $user->id)
@@ -47,6 +49,21 @@ class HandleInertiaRequests extends Middleware {
                 ->orderBy('updated_at', 'desc')
                 ->limit(3)
                 ->get();
+
+            // Fetch all projects and tasks related to the user
+            $allProjects = Project::where('created_by', $user->id)
+                ->orWhereHas('acceptedUsers', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->orderBy('updated_at', 'desc')
+                ->with(['tasks' => function ($query) {
+                    $query->with('labels');
+                }])
+                ->get();
+
+            $allTasks = Task::where('assigned_user_id', $user->id)
+                ->with('labels')
+                ->get();
         }
 
         return [
@@ -61,6 +78,8 @@ class HandleInertiaRequests extends Middleware {
             ],
             'recentProjects' => $recentProjects,
             'recentTasks' => $recentTasks,
+            'allProjects' => $allProjects, // Share all projects
+            'allTasks' => $allTasks, // Share all tasks
         ];
     }
 }

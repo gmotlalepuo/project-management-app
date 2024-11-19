@@ -1,5 +1,5 @@
 import { PaginatedProject, Project } from "@/types/project";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Badge } from "@/Components/ui/badge";
 import { Button } from "@/Components/ui/button";
@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 
 type IndexProps = {
   projects: PaginatedProject;
+  allProjects: Project[];
   queryParams: { [key: string]: any } | null;
   success: string | null;
 };
@@ -124,6 +125,7 @@ const filterableColumns: FilterableColumn[] = [
 // Main component for the Project index page
 export default function Index({ projects, queryParams, success }: IndexProps) {
   const { toast } = useToast();
+  const { allProjects } = usePage<IndexProps>().props; // Access global projects data
   queryParams = queryParams || {};
 
   useEffect(() => {
@@ -136,11 +138,18 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
     }
   }, [success]);
 
-  const calculateProgress = (tasks: any[]) => {
-    const completedTasks = tasks.filter(
-      (task) => task.status === "completed",
+  const calculateTaskProgress = (
+    totalTasks: number,
+    completedTasks: number,
+  ) => {
+    return totalTasks ? (completedTasks / totalTasks) * 100 : 0;
+  };
+
+  const calculateProjectCompletionPercentage = (projects: Project[]) => {
+    const completedProjects = projects.filter(
+      (project) => project.status === "completed",
     ).length;
-    return tasks.length ? (completedTasks / tasks.length) * 100 : 0;
+    return projects.length ? (completedProjects / projects.length) * 100 : 0;
   };
 
   return (
@@ -188,7 +197,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
         <section className="mx-auto flex max-w-7xl gap-6 sm:px-6 lg:px-8">
           {/* Project Cards Container */}
           <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2">
-            {projects.data.slice(0, 6).map((project) => (
+            {allProjects.slice(0, 6).map((project) => (
               <div
                 key={project.id}
                 className="rounded-lg bg-background p-5 shadow"
@@ -222,27 +231,30 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
 
                 {/* Task Previews */}
                 <ul className="mt-3 space-y-1 text-sm text-gray-800 dark:text-gray-200">
-                  {project.tasks.slice(0, 5).map((task) => (
-                    <li key={task.id} className="truncate">
-                      {task.labels?.map((label: Label) => (
-                        <Badge
-                          key={label.id}
-                          variant={label.variant}
-                          className="mr-1"
+                  {project.tasks
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .slice(0, 5)
+                    .map((task) => (
+                      <li key={task.id} className="truncate">
+                        {task.labels?.map((label: Label) => (
+                          <Badge
+                            key={label.id}
+                            variant={label.variant}
+                            className="mr-1"
+                          >
+                            {label.name}
+                          </Badge>
+                        ))}
+                        <Link
+                          href={route("task.show", task.id)}
+                          className={
+                            task.status === "completed" ? "line-through" : ""
+                          }
                         >
-                          {label.name}
-                        </Badge>
-                      ))}
-                      <Link
-                        href={route("task.show", task.id)}
-                        className={
-                          task.status === "completed" ? "line-through" : ""
-                        }
-                      >
-                        {task.name}
-                      </Link>
-                    </li>
-                  ))}
+                          {task.name}
+                        </Link>
+                      </li>
+                    ))}
                   {project.tasks.length > 5 && (
                     <li className="text-gray-500">+ more tasks...</li>
                   )}
@@ -251,11 +263,18 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                 {/* Progress Bar */}
                 <div className="mt-3">
                   <Progress
-                    value={calculateProgress(project.tasks)}
+                    value={calculateTaskProgress(
+                      project.total_tasks,
+                      project.completed_tasks,
+                    )}
                     className="h-2"
                   />
                   <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                    {calculateProgress(project.tasks).toFixed(0)}% Complete
+                    {calculateTaskProgress(
+                      project.total_tasks,
+                      project.completed_tasks,
+                    ).toFixed(0)}
+                    % Complete
                   </p>
                 </div>
               </div>
@@ -271,27 +290,23 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               <div className="mt-4 flex items-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-orange-500">
                   <span className="text-xl font-bold text-orange-500">
-                    {(
-                      (projects.data.filter(
-                        (project) => project.status === "completed",
-                      ).length /
-                        projects.data.length) *
-                      100
-                    ).toFixed(0)}
+                    {calculateProjectCompletionPercentage(allProjects).toFixed(
+                      0,
+                    )}
                     %
                   </span>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-semibold">
                     {
-                      projects.data.filter(
+                      allProjects.filter(
                         (project) => project.status === "completed",
                       ).length
                     }{" "}
                     Completed
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {projects.data.length} Total Projects
+                    {allProjects.length} Total Projects
                   </p>
                 </div>
               </div>
@@ -302,7 +317,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                 Recently Completed
               </h3>
               <ul className="mt-3 space-y-2 text-sm">
-                {projects.data
+                {allProjects
                   .filter((project) => project.status === "completed")
                   .slice(0, 3)
                   .map((project) => (

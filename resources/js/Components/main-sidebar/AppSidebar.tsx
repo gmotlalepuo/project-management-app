@@ -56,7 +56,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {
             title: "My Tasks",
             url: route("task.myTasks"),
-            prefetch: true,
           },
         ],
       },
