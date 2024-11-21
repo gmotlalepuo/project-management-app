@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
@@ -146,9 +146,12 @@ export default function Create({}: Props) {
 
               {/* Actions */}
               <div className="flex justify-end space-x-4">
-                <Link href={route("project.index")}>
-                  <Button variant="secondary">Cancel</Button>
-                </Link>
+                <Button
+                  variant="secondary"
+                  onClick={() => window.history.back()}
+                >
+                  Cancel
+                </Button>
                 <Button type="submit">Submit</Button>
               </div>
             </form>

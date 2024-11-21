@@ -283,9 +283,12 @@ export default function Create({ projects, users, labels }: Props) {
 
               {/* Actions */}
               <div className="flex justify-end space-x-4">
-                <Link href={route("task.index")}>
-                  <Button variant="secondary">Cancel</Button>
-                </Link>
+                <Button
+                  variant="secondary"
+                  onClick={() => window.history.back()}
+                >
+                  Cancel
+                </Button>
                 <Button type="submit">Submit</Button>
               </div>
             </form>
