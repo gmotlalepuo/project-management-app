@@ -20,6 +20,8 @@ export type Project = {
   };
   acceptedUsers: User[];
   tasks: Task[];
+  total_tasks: number;
+  completed_tasks: number;
 };
 
 export type PaginatedProject = {

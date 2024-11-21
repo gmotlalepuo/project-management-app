@@ -20,6 +20,7 @@ import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { CirclePlus } from "lucide-react";
 
 type IndexProps = {
   tasks: PaginatedTask;
@@ -65,6 +66,7 @@ const columns: ColumnDef<Task, any>[] = [
         </Link>
       </>
     ),
+    minWidth: 170,
   },
   {
     accessorKey: "priority",
@@ -221,6 +223,7 @@ export default function Index({
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("task.create")}>
                   <Button className="w-full sm:w-auto">
+                    <CirclePlus className="h-5 w-5" />
                     <span>Create Task</span>
                   </Button>
                 </Link>

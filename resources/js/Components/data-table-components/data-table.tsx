@@ -32,10 +32,11 @@ import {
 } from "@/types/utils";
 import { router } from "@inertiajs/react";
 
-// Extend ColumnDef to include defaultHidden
+// Extend ColumnDef to include defaultHidden and minWidth
 export type ColumnDef<TData, TValue> = BaseColumnDef<TData, TValue> & {
   defaultHidden?: boolean;
   accessorKey?: string;
+  minWidth?: number;
 };
 
 type DataTableProps<TData, TValue> = {
