@@ -72,8 +72,8 @@ export default function Index({ users, queryParams, success }: IndexProps) {
     >
       <Head title="Users" />
 
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           {success && (
             <div className="mb-4 rounded bg-emerald-500 px-4 py-2 text-white">
               {success}

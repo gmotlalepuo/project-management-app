@@ -164,8 +164,8 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
     >
       <Head title="Projects" />
 
-      <main className="space-y-8 py-12">
-        <section className="mx-auto max-w-7xl gap-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl space-y-8 py-8">
+        <section className="gap-6 px-3 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
               <CardTitle>Manage Your Projects Efficiently</CardTitle>
@@ -194,7 +194,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
           </Card>
         </section>
 
-        <section className="mx-auto flex max-w-7xl gap-6 sm:px-6 lg:px-8">
+        <section className="flex flex-col gap-6 px-3 sm:px-6 lg:flex-row lg:px-8">
           {/* Project Cards Container */}
           <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2">
             {allProjects.slice(0, 6).map((project) => (
@@ -282,7 +282,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="w-1/4 space-y-4">
+          <div className="flex w-full flex-col gap-6 md:flex-row lg:w-1/4 lg:flex-col">
             <div className="rounded-lg bg-background p-4 shadow">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Projects Completed
@@ -312,6 +312,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               </div>
             </div>
 
+            {/* Recently Completed */}
             <div className="rounded-lg bg-background p-4 shadow">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Recently Completed
@@ -338,8 +339,8 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
           </div>
         </section>
 
-        <section className="mx-auto flex max-w-7xl gap-6 sm:px-6 lg:px-8">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <section className="flex gap-6 px-3 sm:px-6 lg:px-8">
+          <div className="overflow-x-auto rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold leading-tight">
                 All Projects

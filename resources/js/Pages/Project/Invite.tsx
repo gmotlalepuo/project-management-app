@@ -130,8 +130,8 @@ export default function Invite({
       }
     >
       <Head title="Invitations" />
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
               <DataTable

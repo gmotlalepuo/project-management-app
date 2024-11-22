@@ -27,8 +27,8 @@ export default function Show({ task }: Props) {
     >
       <Head title={`Task "${task.name}"`} />
 
-      <div className="space-y-12 py-12">
-        <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+      <div className="space-y-12 py-8">
+        <div className="mx-auto max-w-7xl px-3 space-y-6 sm:px-6 lg:px-8">
           {task.image_path && (
             <img
               src={task.image_path}

@@ -35,8 +35,8 @@ export default function Edit({ mustVerifyEmail, status, success }: Props) {
     >
       <Head title="Profile" />
 
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl px-3 space-y-6 sm:px-6 lg:px-8">
           {/* Update Profile Information */}
           <div className="bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8">
             <UpdateProfileInformationForm

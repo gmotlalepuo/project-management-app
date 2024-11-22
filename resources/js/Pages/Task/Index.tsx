@@ -208,8 +208,8 @@ export default function Index({
       }
     >
       <Head title="Tasks" />
-      <div className="py-12">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
               <CardTitle>Manage Your Tasks Effectively</CardTitle>

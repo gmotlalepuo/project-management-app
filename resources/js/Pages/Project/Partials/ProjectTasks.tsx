@@ -102,7 +102,7 @@ export default function ProjectTasks({ tasks, queryParams, projectId }: Props) {
   queryParams = queryParams || {};
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-sm dark:bg-card">
+    <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-card sm:p-6">
       <header className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
           All Project Tasks

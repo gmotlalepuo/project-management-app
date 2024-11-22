@@ -33,8 +33,8 @@ export default function Dashboard({
     >
       <Head title="Dashboard" />
 
-      <div className="py-12">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 sm:px-6 lg:px-8">
+      <div className="py-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-3 sm:px-6 lg:px-8">
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <h3 className="text-2xl font-semibold text-amber-500">
@@ -69,7 +69,7 @@ export default function Dashboard({
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-4 max-w-7xl sm:px-6 lg:px-8">
+        <div className="mx-auto mt-4 max-w-7xl px-3 sm:px-6 lg:px-8">
           <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
             <div className="p-6 text-gray-900 dark:text-gray-100">
               <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
