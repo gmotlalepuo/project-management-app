@@ -1,4 +1,5 @@
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { useState, useEffect } from "react";
+import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import ProjectInfo from "./Partials/ProjectInfo";
@@ -13,6 +14,7 @@ type Props = {
   error: string | null;
   success: string | null;
   queryParams: { [key: string]: any };
+  activeTab: string;
 };
 
 export default function Show({
@@ -21,8 +23,21 @@ export default function Show({
   success,
   queryParams,
   error: serverError,
+  activeTab: initialActiveTab,
 }: Props) {
   queryParams = queryParams || {};
+
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", activeTab);
+    window.history.pushState({}, "", url);
+  }, [activeTab]);
+
+  const handleInviteClick = () => {
+    setActiveTab("invite");
+  };
 
   return (
     <AuthenticatedLayout
@@ -36,7 +51,11 @@ export default function Show({
 
       <div className="space-y-12 py-12">
         <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-          <Tabs defaultValue="tasks" className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="tasks">Project Tasks</TabsTrigger>
               <TabsTrigger value="info">Project Info</TabsTrigger>
@@ -50,7 +69,10 @@ export default function Show({
               />
             </TabsContent>
             <TabsContent value="info">
-              <ProjectInfo project={project} />
+              <ProjectInfo
+                project={project}
+                onInviteClick={handleInviteClick}
+              />
             </TabsContent>
             <TabsContent value="invite">
               <InviteUsers

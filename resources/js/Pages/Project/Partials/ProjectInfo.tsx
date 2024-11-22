@@ -8,17 +8,20 @@ import {
   PROJECT_STATUS_BADGE_MAP,
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
+import { Button } from "@/Components/ui/button";
+import { UsersRound } from "lucide-react";
 
 type Props = {
   project: Project;
+  onInviteClick: () => void;
 };
 
-export default function ProjectInfo({ project }: Props) {
+export default function ProjectInfo({ project, onInviteClick }: Props) {
   return (
-    <div className="space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-card dark:text-gray-100">
+    <div className="= space-y-6 rounded-lg">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Project Information Card */}
-        <Card className="bg-gray-50 dark:bg-gray-900">
+        <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold">
               Project Information
@@ -49,7 +52,7 @@ export default function ProjectInfo({ project }: Props) {
         </Card>
 
         {/* Date & Update Info Card */}
-        <Card className="bg-gray-50 dark:bg-gray-900">
+        <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-lg font-semibold">
               Project Timeline
@@ -79,7 +82,7 @@ export default function ProjectInfo({ project }: Props) {
       </div>
 
       {/* Description Card */}
-      <Card className="bg-gray-50 dark:bg-gray-900">
+      <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold">
             Project Description
@@ -93,7 +96,7 @@ export default function ProjectInfo({ project }: Props) {
       </Card>
 
       {/* Project Members Card */}
-      <Card className="bg-gray-50 dark:bg-gray-900">
+      <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold">
             Project Members
@@ -133,6 +136,18 @@ export default function ProjectInfo({ project }: Props) {
               </p>
             </div>
           ))}
+
+          {/* Invite Users Button */}
+          <div className="w-full">
+            <Button
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={onInviteClick}
+            >
+              <UsersRound className="h-5 w-5" />
+              Invite Users
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

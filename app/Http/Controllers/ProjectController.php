@@ -84,6 +84,7 @@ class ProjectController extends Controller {
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
             'error' => session('error'),
+            'activeTab' => request()->query('tab', 'info'),
         ]);
     }
 

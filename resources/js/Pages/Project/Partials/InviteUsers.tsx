@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Alert, AlertTitle } from "@/Components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, UsersRound } from "lucide-react";
 import InputError from "@/Components/InputError";
 import { User } from "@/types/user";
 import { useToast } from "@/hooks/use-toast";
@@ -121,6 +121,7 @@ export default function InviteUsers({ project, success, serverError }: Props) {
 
       {!isInviteFormVisible ? (
         <Button className="mt-4" onClick={toggleInviteForm}>
+          <UsersRound className="h-5 w-5" />
           Invite Users
         </Button>
       ) : (
