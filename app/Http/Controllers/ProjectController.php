@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProjectInvitationRequestReceived;
 use Inertia\Inertia;
 use App\Models\Project;
 use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
-use Illuminate\Foundation\Auth\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use App\Http\Requests\Project\StoreProjectRequest;
@@ -135,6 +136,8 @@ class ProjectController extends Controller {
                 'status' => 'pending',
                 'updated_at' => now(),
             ]);
+
+            broadcast(new ProjectInvitationRequestReceived($project, $user));
             return back()->with('success', 'User re-invited successfully.');
         }
 
@@ -145,6 +148,8 @@ class ProjectController extends Controller {
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+
+            broadcast(new ProjectInvitationRequestReceived($project, $user));
             return back()->with('success', 'User invited successfully.');
         }
 

@@ -1,4 +1,5 @@
 import { PropsWithChildren, ReactNode } from "react";
+import { useProjectInvitationNotifications } from "@/hooks/useProjectInvitationNotifications";
 
 import {
   SidebarInset,
@@ -11,6 +12,8 @@ export default function AuthenticatedLayout({
   header,
   children,
 }: PropsWithChildren<{ header?: ReactNode }>) {
+  useProjectInvitationNotifications();
+
   return (
     <SidebarProvider>
       <AppSidebar />

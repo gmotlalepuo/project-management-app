@@ -47,3 +47,11 @@ export type PaginatedProject = {
     total: number;
   };
 };
+
+// Events
+export type ProjectInvitationEvent = {
+  project: {
+    id: number;
+    name: string;
+  };
+};
