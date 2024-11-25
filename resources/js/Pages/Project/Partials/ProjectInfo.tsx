@@ -10,6 +10,18 @@ import {
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
 import { UsersRound } from "lucide-react";
+import { router, usePage } from "@inertiajs/react";
+import { PageProps } from "@/types";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/Components/ui/alert-dialog";
+import { useState } from "react";
 
 type Props = {
   project: Project;
@@ -17,6 +29,21 @@ type Props = {
 };
 
 export default function ProjectInfo({ project, onInviteClick }: Props) {
+  const authUser = usePage<PageProps>().props.auth.user;
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const handleLeaveProject = () => {
+    router.post(route("project.leave", { project: project.id }), {
+      preserveScroll: true,
+    });
+  };
+
+  const handleDeleteProject = () => {
+    router.delete(route("project.destroy", { project: project.id }), {
+      preserveScroll: true,
+    });
+  };
+
   return (
     <div className="= space-y-6 rounded-lg">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -150,6 +177,51 @@ export default function ProjectInfo({ project, onInviteClick }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Project Actions Card */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold">
+            Project Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button variant="destructive" onClick={() => setDialogOpen(true)}>
+            {project.createdBy.id === authUser.id
+              ? "Delete Project"
+              : "Leave Project"}
+          </Button>
+        </CardContent>
+      </Card>
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogTitle>
+            {project.createdBy.id === authUser.id
+              ? "Confirm Project Deletion"
+              : "Confirm Leaving Project"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {project.createdBy.id === authUser.id
+              ? "Are you sure you want to delete this project? This action cannot be undone."
+              : "Are you sure you want to leave this project?"}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                project.createdBy.id === authUser.id
+                  ? handleDeleteProject()
+                  : handleLeaveProject();
+                setDialogOpen(false);
+              }}
+            >
+              {project.createdBy.id === authUser.id ? "Delete" : "Leave"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

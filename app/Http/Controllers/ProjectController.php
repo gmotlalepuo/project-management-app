@@ -112,6 +112,12 @@ class ProjectController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(Project $project) {
+        $user = Auth::user();
+
+        if ($user->id !== $project->created_by) {
+            return back()->with('error', 'Only the project creator can delete the project.');
+        }
+
         $this->projectService->deleteProject($project);
 
         return to_route('project.index')->with('success', "Project '{$project->name}' deleted successfully.");
@@ -205,5 +211,17 @@ class ProjectController extends Controller {
         $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'rejected']);
 
         return redirect()->back()->with('success', 'Invitation rejected.');
+    }
+
+    public function leaveProject(Project $project) {
+        $user = Auth::user();
+
+        if ($user->id === $project->created_by) {
+            return back()->with('error', 'Project creators cannot leave their own projects. Please delete the project instead.');
+        }
+
+        $project->invitedUsers()->detach($user->id);
+
+        return redirect()->route('dashboard')->with('success', 'You have left the project.');
     }
 }

@@ -107,7 +107,7 @@ class ProjectService {
     $sortField = $filters['sort_field'] ?? "created_at";
     $sortDirection = $filters['sort_direction'] ?? "desc";
 
-    $tasks = $query->orderBy($sortField, $sortDirection)
+    $tasks = $query->with('labels')->orderBy($sortField, $sortDirection)
       ->paginate(10)
       ->onEachSide(1);
 

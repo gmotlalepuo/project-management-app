@@ -65,10 +65,10 @@ export function DataTableRowActions<TData>({
       {/* Alert Dialog for Delete Confirmation */}
       <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
-          <AlertDialogTitle>
-            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+          <AlertDialogTitle className="text-lg font-semibold">
+            Confirm Deletion
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-muted-foreground">
             {deleteConfirmationText}
           </AlertDialogDescription>
           <AlertDialogFooter>

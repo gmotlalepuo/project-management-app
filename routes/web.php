@@ -19,6 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/project/{project}/accept-invitation', [ProjectController::class, 'acceptInvitation'])->name('project.acceptInvitation');
     Route::post('/project/{project}/reject-invitation', [ProjectController::class, 'rejectInvitation'])->name('project.rejectInvitation');
     Route::get('/project/{project}/search-users', [UserController::class, 'search'])->name('user.search');
+    Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject'])->name('project.leave');
 
     // The resource route for project management
     Route::resource('project', ProjectController::class);

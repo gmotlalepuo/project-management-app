@@ -11,9 +11,10 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn } from "@/types/utils";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
 import { CirclePlus } from "lucide-react";
+import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 
 type Props = {
   tasks: PaginatedTask;
@@ -32,6 +33,18 @@ const columns: ColumnDef<Task>[] = [
     accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Task Name" />
+    ),
+    cell: ({ row }) => (
+      <>
+        <Link href={route("task.show", row.original.id)}>
+          {row.original.labels?.map((label) => (
+            <Badge key={label.id} variant={label.variant} className="mr-1.5">
+              {label.name}
+            </Badge>
+          ))}
+          {row.original.name}
+        </Link>
+      </>
     ),
   },
   {
@@ -68,6 +81,26 @@ const columns: ColumnDef<Task>[] = [
     accessorKey: "createdBy.name",
     header: () => "Created By",
     cell: ({ row }) => row.original.createdBy.name,
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => (
+      <DataTableRowActions
+        row={row}
+        onView={(row) => {
+          const taskId = row.original.id;
+          router.get(route("task.show", taskId));
+        }}
+        onEdit={(row) => {
+          const taskId = row.original.id;
+          router.get(route("task.edit", taskId));
+        }}
+        onDelete={(row) => {
+          const taskId = row.original.id;
+          router.delete(route("task.destroy", taskId));
+        }}
+      />
+    ),
   },
 ];
 
