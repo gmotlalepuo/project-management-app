@@ -23,7 +23,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     user: {
       name: auth.user.name,
       email: auth.user.email,
-      avatar: `/storage/${auth.user.profile_picture}`,
+      avatar: auth.user.profile_picture
+        ? `/storage/${auth.user.profile_picture}`
+        : null,
     },
     navMain: [
       {

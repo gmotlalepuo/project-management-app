@@ -13,7 +13,6 @@ import {
 } from "../ui/dropdown-menu";
 
 import { useTheme } from "@/Layouts/ThemeProvider";
-import { Button } from "../ui/button";
 import { Moon, Sun } from "lucide-react";
 
 export default function NavThemeToggle() {
@@ -29,11 +28,10 @@ export default function NavThemeToggle() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Button variant="secondary" size="icon">
-                <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <Sun className="h-[1rem] w-[1rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-[1rem] w-[1rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </span>
               <span className={state === "collapsed" ? "sr-only" : ""}>
                 Toggle theme
               </span>

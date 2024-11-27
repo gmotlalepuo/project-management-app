@@ -9,7 +9,7 @@ import {
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
-import { UsersRound } from "lucide-react";
+import { CircleX, LogOut, UsersRound } from "lucide-react";
 import { router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
@@ -187,6 +187,11 @@ export default function ProjectInfo({ project, onInviteClick }: Props) {
         </CardHeader>
         <CardContent>
           <Button variant="destructive" onClick={() => setDialogOpen(true)}>
+            {project.createdBy.id === authUser.id ? (
+              <CircleX className="h-5 w-5" />
+            ) : (
+              <LogOut className="h-5 w-5" />
+            )}
             {project.createdBy.id === authUser.id
               ? "Delete Project"
               : "Leave Project"}

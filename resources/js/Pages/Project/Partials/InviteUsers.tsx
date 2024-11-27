@@ -1,5 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Alert, AlertTitle } from "@/Components/ui/alert";
@@ -9,6 +9,7 @@ import { User } from "@/types/user";
 import { useToast } from "@/hooks/use-toast";
 import { Project } from "@/types/project";
 import { PageProps } from "@/types";
+import _ from "lodash";
 
 type Props = {
   project: Project;
@@ -84,6 +85,19 @@ export default function InviteUsers({ project, success, serverError }: Props) {
       setSearchResults([]);
     }
   };
+
+  const debouncedSearch = useCallback(_.debounce(searchUsers, 1000), [
+    data.email,
+  ]);
+
+  useEffect(() => {
+    if (data.email) {
+      debouncedSearch();
+    }
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [data.email, debouncedSearch]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {

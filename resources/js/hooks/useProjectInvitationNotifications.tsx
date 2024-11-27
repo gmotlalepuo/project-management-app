@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { usePage, router } from "@inertiajs/react";
 import { useToast } from "@/hooks/use-toast";
@@ -8,7 +7,7 @@ import { ProjectInvitationEvent } from "@/types/project";
 
 export function useProjectInvitationNotifications() {
   const user = usePage<PageProps>().props.auth.user;
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
 
   useEffect(() => {
     const channel = window.Echo.private(`management.${user.id}`);
@@ -16,7 +15,7 @@ export function useProjectInvitationNotifications() {
     channel.listen(
       "ProjectInvitationRequestReceived",
       (event: ProjectInvitationEvent) => {
-        toast({
+        const toaster = toast({
           title: "New Project Invitation",
           description: `You've been invited to join ${event.project.name}`,
           variant: "default",
@@ -31,6 +30,7 @@ export function useProjectInvitationNotifications() {
                       preserveScroll: true,
                     },
                   );
+                  dismiss(toaster.id);
                 }}
               >
                 Accept
@@ -45,6 +45,7 @@ export function useProjectInvitationNotifications() {
                       preserveScroll: true,
                     },
                   );
+                  dismiss(toaster.id);
                 }}
               >
                 Reject

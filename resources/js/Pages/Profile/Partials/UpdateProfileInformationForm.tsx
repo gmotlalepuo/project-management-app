@@ -55,11 +55,14 @@ export default function UpdateProfileInformationForm({
         <div>
           <Label htmlFor="profile_picture">Profile Picture</Label>
           <Avatar className="my-2 h-16 w-16">
-            <AvatarImage
-              src={`/storage/${user.profile_picture}`}
-              alt={user.name}
-            />
-            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            {user.profile_picture ? (
+              <AvatarImage
+                src={`/storage/${user.profile_picture}`}
+                alt={user.name}
+              />
+            ) : (
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            )}
           </Avatar>
           <Input
             id="profile_picture"
