@@ -194,6 +194,7 @@ export default function Index({
       title: "Labels",
       filterType: "select",
       options: labelOptions,
+      excludeFromTable: true,
     },
   ];
 

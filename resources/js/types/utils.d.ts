@@ -9,6 +9,7 @@ export type FilterableColumn = {
   title: string;
   filterType: "text" | "select" | "date";
   options?: FilterOption[];
+  excludeFromTable?: boolean;
 };
 
 // Pagination types

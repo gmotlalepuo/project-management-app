@@ -9,8 +9,8 @@ import {
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
-import { CircleX, LogOut, UsersRound } from "lucide-react";
-import { router, usePage } from "@inertiajs/react";
+import { CircleX, LogOut, Pencil, UsersRound } from "lucide-react";
+import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
   AlertDialog,
@@ -186,16 +186,25 @@ export default function ProjectInfo({ project, onInviteClick }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive" onClick={() => setDialogOpen(true)}>
-            {project.createdBy.id === authUser.id ? (
-              <CircleX className="h-5 w-5" />
-            ) : (
-              <LogOut className="h-5 w-5" />
-            )}
-            {project.createdBy.id === authUser.id
-              ? "Delete Project"
-              : "Leave Project"}
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href={route("project.edit", project.id)}>
+              <Button className="w-full" variant="outline">
+                <Pencil className="h-5 w-5" />
+                <span>Edit Project</span>
+              </Button>
+            </Link>
+
+            <Button variant="destructive" onClick={() => setDialogOpen(true)}>
+              {project.createdBy.id === authUser.id ? (
+                <CircleX className="h-5 w-5" />
+              ) : (
+                <LogOut className="h-5 w-5" />
+              )}
+              {project.createdBy.id === authUser.id
+                ? "Delete Project"
+                : "Leave Project"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
       <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>

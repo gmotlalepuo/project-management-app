@@ -8,18 +8,7 @@ import { TrashIcon } from "lucide-react";
 import { CalendarDatePicker } from "../ui/calendar-datetime-picker";
 import { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
-
-interface FilterOption {
-  label: string;
-  value: string;
-}
-
-interface FilterableColumn {
-  accessorKey: string;
-  title: string;
-  filterType: "text" | "select" | "date";
-  options?: FilterOption[];
-}
+import { FilterableColumn } from "@/types/utils";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -102,8 +91,8 @@ export function DataTableToolbar<TData>({
 
   const visibleFilters =
     showAllFilters || isMobile
-      ? filterableColumns
-      : filterableColumns.slice(0, 4); // Show only first 4 if not toggled or on mobile
+      ? filterableColumns.filter((col) => !col.excludeFromTable) // Add filter here
+      : filterableColumns.filter((col) => !col.excludeFromTable).slice(0, 4); // Add filter here
 
   return (
     <div className="space-y-4">

@@ -196,7 +196,11 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
 
         <section className="flex flex-col gap-6 px-3 sm:px-6 lg:flex-row lg:px-8">
           {/* Project Cards Container */}
-          <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-2">
+          <div
+            className={`grid flex-1 gap-6 ${
+              allProjects.length > 1 ? "sm:grid-cols-2" : "sm:grid-cols-1"
+            }`}
+          >
             {allProjects.slice(0, 6).map((project) => (
               <div
                 key={project.id}
@@ -312,35 +316,36 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               </div>
             </div>
 
-            {/* Recently Completed */}
-            <div className="rounded-lg bg-background p-4 shadow">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Recently Completed
-              </h3>
-              <ul className="mt-3 space-y-2 text-sm">
-                {allProjects
-                  .filter((project) => project.status === "completed")
-                  .slice(0, 3)
-                  .map((project) => (
-                    <li key={project.id} className="flex items-center">
-                      <Badge variant="outline" className="mr-2">
-                        {project.name.charAt(0)}
-                      </Badge>
-                      <Link
-                        href={route("project.show", project.id)}
-                        className="hover:underline"
-                      >
-                        {project.name}
-                      </Link>
-                    </li>
-                  ))}
-              </ul>
-            </div>
+            {allProjects.some((project) => project.status === "completed") && (
+              <div className="rounded-lg bg-background p-4 shadow">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                  Recently Completed
+                </h3>
+                <ul className="mt-3 space-y-2 text-sm">
+                  {allProjects
+                    .filter((project) => project.status === "completed")
+                    .slice(0, 3)
+                    .map((project) => (
+                      <li key={project.id} className="flex items-center">
+                        <Badge variant="outline" className="mr-2">
+                          {project.name.charAt(0)}
+                        </Badge>
+                        <Link
+                          href={route("project.show", project.id)}
+                          className="hover:underline"
+                        >
+                          {project.name}
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
 
-        <section className="flex gap-6 px-3 sm:px-6 lg:px-8">
-          <div className="overflow-x-auto rounded-lg border bg-card text-card-foreground shadow-sm">
+        <section className="flex w-full flex-col gap-6 px-3 sm:px-6 lg:flex-row lg:px-8">
+          <div className="flex-1 overflow-x-auto rounded-lg border bg-card text-card-foreground shadow-sm">
             <div className="p-4 text-gray-900 dark:text-gray-100 sm:p-6">
               <h3 className="mb-3 text-lg font-semibold leading-tight">
                 All Projects
