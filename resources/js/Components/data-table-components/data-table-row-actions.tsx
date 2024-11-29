@@ -26,8 +26,13 @@ interface DataTableRowActionsProps<TData> {
   onView: (row: Row<TData>) => void;
   onEdit: (row: Row<TData>) => void;
   onDelete: (row: Row<TData>) => void;
+  onLeave?: (row: Row<TData>) => void;
   deleteConfirmationText?: string;
+  leaveConfirmationText?: string;
   deleteButtonText?: string;
+  leaveButtonText?: string;
+  isProjectTable?: boolean;
+  isCreator?: boolean;
 }
 
 export function DataTableRowActions<TData>({
@@ -35,8 +40,13 @@ export function DataTableRowActions<TData>({
   onView,
   onEdit,
   onDelete,
+  onLeave,
+  leaveConfirmationText = "Are you sure you want to leave this project?",
   deleteConfirmationText = "Are you sure you want to delete this item? This action cannot be undone.",
   deleteButtonText = "Delete",
+  leaveButtonText = "Leave",
+  isProjectTable = false,
+  isCreator = false,
 }: DataTableRowActionsProps<TData>) {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
@@ -57,19 +67,23 @@ export function DataTableRowActions<TData>({
           <DropdownMenuItem onClick={() => onEdit(row)}>Edit</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => setDialogOpen(true)}>
-            {deleteButtonText}
+            {isProjectTable && !isCreator ? leaveButtonText : deleteButtonText}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Alert Dialog for Delete Confirmation */}
+      {/* Alert Dialog for Delete/Leave Confirmation */}
       <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogTitle className="text-lg font-semibold">
-            Confirm Deletion
+            {isProjectTable && !isCreator
+              ? "Confirm Leaving"
+              : "Confirm Deletion"}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            {deleteConfirmationText}
+            {isProjectTable && !isCreator
+              ? leaveConfirmationText
+              : deleteConfirmationText}
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDialogOpen(false)}>
@@ -77,11 +91,17 @@ export function DataTableRowActions<TData>({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                onDelete(row);
+                if (isProjectTable && !isCreator && onLeave) {
+                  onLeave(row);
+                } else {
+                  onDelete(row);
+                }
                 setDialogOpen(false);
               }}
             >
-              {deleteButtonText}
+              {isProjectTable && !isCreator
+                ? leaveButtonText
+                : deleteButtonText}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

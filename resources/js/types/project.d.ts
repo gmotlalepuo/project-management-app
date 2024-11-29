@@ -9,6 +9,7 @@ export type Project = {
   status: "completed" | "pending" | "in_progress";
   image_path: string;
   createdBy: User;
+  created_by: number;
   updatedBy: User;
   invitedUsers: User[];
   pivot?: {

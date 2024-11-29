@@ -19,6 +19,7 @@ import { FilterableColumn } from "@/types/utils";
 import { DataTable } from "@/Components/data-table-components/data-table";
 import { Label } from "@/types/task";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { PageProps } from "@/types";
 
 type IndexProps = {
   projects: PaginatedProject;
@@ -26,78 +27,6 @@ type IndexProps = {
   queryParams: { [key: string]: any } | null;
   success: string | null;
 };
-
-// Define the table columns for the Project data
-const columns: ColumnDef<Project>[] = [
-  {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    cell: ({ row }) => (
-      <Link href={route("project.show", row.original.id)}>
-        {row.original.name}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
-        {PROJECT_STATUS_TEXT_MAP[row.original.status]}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "created_at",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Create Date" />
-    ),
-    cell: ({ row }) => formatDate(row.original.created_at),
-  },
-  {
-    accessorKey: "due_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Due Date" />
-    ),
-    cell: ({ row }) =>
-      row.original.due_date ? formatDate(row.original.due_date) : "No date",
-  },
-  {
-    accessorKey: "createdBy.name",
-    header: () => "Created By",
-    cell: ({ row }) => row.original.createdBy.name,
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        row={row}
-        onView={(row) => {
-          const projectId = row.original.id;
-          router.get(route("project.show", projectId));
-        }}
-        onEdit={(row) => {
-          const projectId = row.original.id;
-          router.get(route("project.edit", projectId));
-        }}
-        onDelete={(row) => {
-          const projectId = row.original.id;
-          router.delete(route("project.destroy", projectId));
-        }}
-      />
-    ),
-  },
-];
 
 // Define the filterable columns and their options using constants
 const filterableColumns: FilterableColumn[] = [
@@ -125,8 +54,91 @@ const filterableColumns: FilterableColumn[] = [
 // Main component for the Project index page
 export default function Index({ projects, queryParams, success }: IndexProps) {
   const { toast } = useToast();
-  const { allProjects } = usePage<IndexProps>().props; // Access global projects data
+  const {
+    allProjects,
+    auth: { user },
+  } = usePage<PageProps & IndexProps>().props;
   queryParams = queryParams || {};
+
+  // Define the table columns for the Project data
+  const columns: ColumnDef<Project>[] = [
+    {
+      accessorKey: "id",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="ID" />
+      ),
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
+      cell: ({ row }) => (
+        <Link href={route("project.show", row.original.id)}>
+          {row.original.name}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
+        <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
+          {PROJECT_STATUS_TEXT_MAP[row.original.status]}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Create Date" />
+      ),
+      cell: ({ row }) => formatDate(row.original.created_at),
+    },
+    {
+      accessorKey: "due_date",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Due Date" />
+      ),
+      cell: ({ row }) =>
+        row.original.due_date ? formatDate(row.original.due_date) : "No date",
+    },
+    {
+      accessorKey: "createdBy.name",
+      header: () => "Created By",
+      cell: ({ row }) => row.original.createdBy.name,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DataTableRowActions
+          row={row}
+          onView={(row) => {
+            const projectId = row.original.id;
+            router.get(route("project.show", projectId));
+          }}
+          onEdit={(row) => {
+            const projectId = row.original.id;
+            router.get(route("project.edit", projectId));
+          }}
+          onDelete={(row) => {
+            const projectId = row.original.id;
+            router.delete(route("project.destroy", projectId));
+          }}
+          onLeave={(row) => {
+            const projectId = row.original.id;
+            router.post(route("project.leave", { project: projectId }), {
+              preserveScroll: true,
+            });
+          }}
+          isProjectTable={true}
+          isCreator={row.original.createdBy.id === user.id}
+        />
+      ),
+    },
+  ];
 
   useEffect(() => {
     if (success) {
@@ -226,6 +238,16 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                       onDelete={() => {
                         router.delete(route("project.destroy", project.id));
                       }}
+                      onLeave={() => {
+                        router.post(
+                          route("project.leave", { project: project.id }),
+                          {
+                            preserveScroll: true,
+                          },
+                        );
+                      }}
+                      isProjectTable={true}
+                      isCreator={project.created_by === user.id}
                     />
                   </span>
                 </div>
