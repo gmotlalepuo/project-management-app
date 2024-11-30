@@ -14,6 +14,7 @@ use App\Http\Resources\ProjectResource;
 use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
+use App\Enum\RolesEnum;
 
 class ProjectController extends Controller {
     protected $projectService;
@@ -62,9 +63,13 @@ class ProjectController extends Controller {
      */
     public function store(StoreProjectRequest $request) {
         $data = $request->validated();
-        $this->projectService->storeProject($data);
+        $project = $this->projectService->storeProject($data);
 
-        return to_route('project.index')->with('success', 'Project created successfully.');
+        // Assign ProjectManager role to the user who created the project
+        $user = Auth::user();
+        $user->assignRole(RolesEnum::ProjectManager->value);
+
+        return to_route('project.index')->with('success', "Project '{$project->name}' created successfully.");
     }
 
     /**
@@ -200,6 +205,9 @@ class ProjectController extends Controller {
 
         // Update the invitation status to 'accepted'
         $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'accepted']);
+
+        // Assign ProjectMember role to the user
+        $user->assignRole(RolesEnum::ProjectMember->value);
 
         return redirect()->back()->with('success', 'Invitation accepted.');
     }
