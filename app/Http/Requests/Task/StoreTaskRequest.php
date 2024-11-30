@@ -2,30 +2,16 @@
 
 namespace App\Http\Requests\Task;
 
+use App\Models\Project;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Project;
 
 class StoreTaskRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool {
-        $user = $this->user();
-        $projectId = $this->input('project_id');
-        $project = Project::findOrFail($projectId);
-
-        // Must be a member or manager of the project
-        if (!$project->acceptedUsers()->where('user_id', $user->id)->exists()) {
-            return false;
-        }
-
-        // If project member, can only assign to self
-        if ($project->isProjectMember($user) && $this->input('assigned_user_id') != $user->id) {
-            return false;
-        }
-
-        return true;
+        return true; // Authorization is now handled in the controller
     }
 
     protected function prepareForValidation() {

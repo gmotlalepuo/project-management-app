@@ -37,11 +37,12 @@ class UpdateTaskRequest extends FormRequest {
      */
     public function rules(): array {
         return [
+            // Ensure project_id matches the current task's project_id
+            'project_id' => ['required', 'exists:projects,id', 'in:' . $this->route('task')->project_id],
             'name' => ['required', 'string', 'max:255'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:2048'],
             'description' => ['nullable', 'string'],
             "due_date" => ["nullable", "date"],
-            'project_id' => ['required', 'exists:projects,id'],
             "assigned_user_id" => ["required", "exists:users,id"],
             'status' => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],

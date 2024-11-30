@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enum\RolesEnum;
 use App\Models\Task;
 use App\Models\User;
 use Inertia\Inertia;
@@ -57,7 +58,14 @@ class TaskController extends Controller {
      */
     public function create() {
         $user = Auth::user();
-        $projects = Project::query()->orderBy('name', 'asc')->get();
+        $projects = Project::query()
+            ->whereHas('invitedUsers', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                    ->where('status', 'accepted')
+                    ->whereIn('role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value]);
+            })
+            ->orderBy('name', 'asc')
+            ->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
         // Get the project ID from the request
@@ -90,6 +98,14 @@ class TaskController extends Controller {
         $data = $request->validated();
         $user = Auth::user();
         $project = Project::findOrFail($data['project_id']);
+
+        // Validate that user is a member or manager of the project
+        if (!$project->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->whereIn('role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value])
+            ->exists()) {
+            abort(403, 'You cannot create tasks for this project.');
+        }
 
         // If user is a project member, force self-assignment
         if ($project->isProjectMember($user)) {
@@ -129,7 +145,8 @@ class TaskController extends Controller {
         }
 
         $task->load('labels');
-        $projects = Project::query()->orderBy('name', 'asc')->get();
+        // We only need the current project for edit mode
+        $projects = Project::where('id', $project->id)->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
         $projectId = $task->project_id;

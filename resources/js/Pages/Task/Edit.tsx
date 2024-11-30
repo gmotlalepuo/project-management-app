@@ -134,6 +134,7 @@ export default function Edit({
                 <Select
                   onValueChange={(value) => setData("project_id", value)}
                   defaultValue={data.project_id.toString()}
+                  disabled={true}
                   required
                 >
                   <SelectTrigger className="w-full">

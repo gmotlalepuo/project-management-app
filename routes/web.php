@@ -60,8 +60,8 @@ Route::middleware('auth')->group(function () {
             ->name('project.check-role');
 
         // Task routes - available to project members
+        Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
         Route::resource('task', TaskController::class);
-        Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
 
         // Task label routes
         Route::get('/task_labels/search', [TaskLabelController::class, 'search'])->name('task_labels.search');
