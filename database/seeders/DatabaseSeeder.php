@@ -40,7 +40,6 @@ class DatabaseSeeder extends Seeder {
         $projectManagerRole->givePermissionTo([
             PermissionsEnum::ManageProjects->value,
             PermissionsEnum::ManageTasks->value,
-            PermissionsEnum::ManageUsers->value,
             PermissionsEnum::ViewProjects->value,
             PermissionsEnum::ViewTasks->value,
             PermissionsEnum::CommentOnTasks->value,
@@ -53,7 +52,7 @@ class DatabaseSeeder extends Seeder {
             PermissionsEnum::ViewProjects->value,
             PermissionsEnum::ViewTasks->value,
             PermissionsEnum::CommentOnTasks->value,
-            PermissionsEnum::DeleteComments->value,
+            PermissionsEnum::ManageTasks->value,
         ]);
 
         // Create a sample user

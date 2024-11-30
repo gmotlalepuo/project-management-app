@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\RolesEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,7 +35,7 @@ class Project extends Model {
     // Relation for invited users
     public function invitedUsers() {
         return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
-            ->withPivot('status')
+            ->withPivot('status', 'role')
             ->withTimestamps();
     }
 
@@ -42,13 +43,23 @@ class Project extends Model {
     public function acceptedUsers() {
         return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
             ->wherePivot('status', 'accepted')
+            ->withPivot('role')
             ->withTimestamps();
     }
 
     public function scopeVisibleToUser($query, $userId) {
-        return $query->where('created_by', $userId)
-            ->orWhereHas('invitedUsers', function ($query) use ($userId) {
-                $query->where('user_id', $userId)->where('project_user.status', 'accepted');
-            });
+        return $query->whereHas('invitedUsers', function ($query) use ($userId) {
+            $query->where('user_id', $userId)
+                ->where('project_user.status', 'accepted')
+                ->whereIn('project_user.role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value]);
+        });
+    }
+
+    public function canManage(User $user): bool {
+        return $user->id === $this->created_by ||
+            $this->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->where('role', RolesEnum::ProjectManager->value)
+            ->exists();
     }
 }

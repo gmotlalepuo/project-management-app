@@ -65,9 +65,21 @@ class ProjectController extends Controller {
         $data = $request->validated();
         $project = $this->projectService->storeProject($data);
 
-        // Assign ProjectManager role to the user who created the project
+        // Get the authenticated user
         $user = Auth::user();
-        $user->assignRole(RolesEnum::ProjectManager->value);
+
+        // Attach user to project with ProjectManager role
+        $project->invitedUsers()->attach($user->id, [
+            'status' => 'accepted',
+            'role' => RolesEnum::ProjectManager->value,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Assign ProjectManager role to user if they don't have it
+        if (!$user->hasRole(RolesEnum::ProjectManager->value)) {
+            $user->assignRole(RolesEnum::ProjectManager->value);
+        }
 
         return to_route('project.index')->with('success', "Project '{$project->name}' created successfully.");
     }
@@ -77,7 +89,7 @@ class ProjectController extends Controller {
      */
     public function show(Project $project) {
         $user = Auth::user();
-        if ($user->id !== $project->created_by && !$project->acceptedUsers->contains($user)) {
+        if (!$project->acceptedUsers()->where('user_id', $user->id)->whereIn('role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value])->exists()) {
             abort(403, 'You are not authorized to view this project.');
         }
 
@@ -98,6 +110,11 @@ class ProjectController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Project $project) {
+        $user = Auth::user();
+        if (!$project->canManage($user)) {
+            abort(403, 'You are not authorized to edit this project.');
+        }
+
         return Inertia::render('Project/Edit', [
             'project' => new ProjectResource($project),
         ]);
@@ -107,6 +124,11 @@ class ProjectController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(UpdateProjectRequest $request, Project $project) {
+        $user = Auth::user();
+        if (!$project->canManage($user)) {
+            abort(403, 'You are not authorized to update this project.');
+        }
+
         $data = $request->validated();
         $this->projectService->updateProject($project, $data);
 
@@ -118,9 +140,8 @@ class ProjectController extends Controller {
      */
     public function destroy(Project $project) {
         $user = Auth::user();
-
-        if ($user->id !== $project->created_by) {
-            return back()->with('error', 'Only the project creator can delete the project.');
+        if (!$project->canManage($user)) {
+            abort(403, 'You are not authorized to delete this project.');
         }
 
         $this->projectService->deleteProject($project);
@@ -145,6 +166,7 @@ class ProjectController extends Controller {
         if ($existingInvitation && $existingInvitation->pivot->status === 'rejected') {
             $project->invitedUsers()->updateExistingPivot($user->id, [
                 'status' => 'pending',
+                'role' => RolesEnum::ProjectMember->value,
                 'updated_at' => now(),
             ]);
 
@@ -156,6 +178,7 @@ class ProjectController extends Controller {
         if (!$existingInvitation) {
             $project->invitedUsers()->attach($user->id, [
                 'status' => 'pending',
+                'role' => RolesEnum::ProjectMember->value,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -205,9 +228,6 @@ class ProjectController extends Controller {
 
         // Update the invitation status to 'accepted'
         $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'accepted']);
-
-        // Assign ProjectMember role to the user
-        $user->assignRole(RolesEnum::ProjectMember->value);
 
         return redirect()->back()->with('success', 'Invitation accepted.');
     }

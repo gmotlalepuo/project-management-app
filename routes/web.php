@@ -33,26 +33,31 @@ Route::middleware('auth')->group(function () {
         Route::resource('user', UserController::class);
     });
 
-    // Project manager and project member routes
-    Route::middleware([
-        'verified',
-        sprintf(
-            'role:%s|%s|%s',
-            RolesEnum::Admin->value,
-            RolesEnum::ProjectManager->value,
-            RolesEnum::ProjectMember->value
-        )
-    ])->group(function () {
-        // Project routes
-        Route::post('/project/{project}/invite', [ProjectController::class, 'inviteUser'])->name('project.invite');
-        Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject'])->name('project.leave');
+    // Project and Task routes
+    Route::middleware('verified')->group(function () {
+        // Basic project routes - available to all authenticated users
+        Route::get('/project', [ProjectController::class, 'index'])->name('project.index');
+        Route::get('/project/create', [ProjectController::class, 'create'])->name('project.create');
+        Route::post('/project', [ProjectController::class, 'store'])->name('project.store');
+        Route::get('/project/{project}', [ProjectController::class, 'show'])->name('project.show');
 
-        Route::resource('project', ProjectController::class)
-            ->middleware('can:' . PermissionsEnum::ManageProjects->value);
+        // Project management routes - require specific permissions
+        Route::get('/project/{project}/edit', [ProjectController::class, 'edit'])
+            ->name('project.edit')
+            ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
+        Route::put('/project/{project}', [ProjectController::class, 'update'])
+            ->name('project.update')
+            ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
+        Route::delete('/project/{project}', [ProjectController::class, 'destroy'])
+            ->name('project.destroy')
+            ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
+        Route::post('/project/{project}/invite', [ProjectController::class, 'inviteUser'])
+            ->name('project.invite')
+            ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
 
-        // Task routes
-        Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
+        // Task routes - available to project members
         Route::resource('task', TaskController::class);
+        Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
 
         // Task label routes
         Route::get('/task_labels/search', [TaskLabelController::class, 'search'])->name('task_labels.search');

@@ -21,6 +21,7 @@ class ProjectInvitationResource extends JsonResource {
             'image_path' => $this->image_path,
             'pivot' => [
                 'status' => $this->pivot->status,
+                'role' => $this->pivot->role, // Include role
                 'created_at' => $this->pivot->created_at,
                 'updated_at' => $this->pivot->updated_at,
             ],
