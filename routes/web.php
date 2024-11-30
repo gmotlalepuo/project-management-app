@@ -55,6 +55,10 @@ Route::middleware('auth')->group(function () {
             ->name('project.invite')
             ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
 
+        // Add this inside your routes group
+        Route::get('/project/{project}/check-role', [ProjectController::class, 'checkRole'])
+            ->name('project.check-role');
+
         // Task routes - available to project members
         Route::resource('task', TaskController::class);
         Route::get('/task/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');

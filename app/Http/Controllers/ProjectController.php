@@ -252,4 +252,11 @@ class ProjectController extends Controller {
 
         return redirect()->route('dashboard')->with('success', 'You have left the project.');
     }
+
+    public function checkRole(Project $project) {
+        $user = Auth::user();
+        return response()->json([
+            'isProjectMember' => $project->isProjectMember($user),
+        ]);
+    }
 }

@@ -31,9 +31,16 @@ type Props = {
   labels: {
     data: Option[];
   };
+  canChangeAssignee: boolean;
 };
 
-export default function Edit({ task, projects, users, labels }: Props) {
+export default function Edit({
+  task,
+  projects,
+  users,
+  labels,
+  canChangeAssignee,
+}: Props) {
   const { data, setData, post, errors } = useForm({
     image: null as File | null,
     name: task.name || "",
@@ -291,6 +298,7 @@ export default function Edit({ task, projects, users, labels }: Props) {
                 <Select
                   onValueChange={(value) => setData("assigned_user_id", value)}
                   defaultValue={data.assigned_user_id.toString()}
+                  disabled={!canChangeAssignee}
                   required
                 >
                   <SelectTrigger className="w-full">

@@ -62,4 +62,29 @@ class Project extends Model {
             ->where('role', RolesEnum::ProjectManager->value)
             ->exists();
     }
+
+    public function canManageTask(User $user): bool {
+        return $user->id === $this->created_by ||
+            $this->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->where('role', RolesEnum::ProjectManager->value)
+            ->exists();
+    }
+
+    public function canEditTask(User $user, Task $task): bool {
+        // Project managers can edit all tasks
+        if ($this->canManageTask($user)) {
+            return true;
+        }
+
+        // Project members can only edit tasks assigned to them
+        return $task->assigned_user_id === $user->id;
+    }
+
+    public function isProjectMember(User $user): bool {
+        return $this->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->where('role', RolesEnum::ProjectMember->value)
+            ->exists();
+    }
 }

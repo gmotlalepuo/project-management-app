@@ -10,6 +10,23 @@ class UpdateTaskRequest extends FormRequest {
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool {
+        $user = $this->user();
+        $task = $this->route('task');
+        $project = $task->project;
+
+        if (!$project->canEditTask($user, $task)) {
+            return false;
+        }
+
+        // If not a project manager, ensure they're not trying to change the assignee
+        if (
+            !$project->canManageTask($user) &&
+            $this->has('assigned_user_id') &&
+            $this->input('assigned_user_id') != $task->assigned_user_id
+        ) {
+            return false;
+        }
+
         return true;
     }
 

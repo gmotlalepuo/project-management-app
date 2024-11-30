@@ -56,11 +56,18 @@ class TaskController extends Controller {
      * Show the form for creating a new resource.
      */
     public function create() {
+        $user = Auth::user();
         $projects = Project::query()->orderBy('name', 'asc')->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
-        // Fetch labels that are either generic or related to a project (if selected)
-        $projectId = request('project_id'); // Optional project filter from the request
+        // Get the project ID from the request
+        $projectId = request('project_id');
+        $project = $projectId ? Project::find($projectId) : null;
+
+        // Should they be restricted to self-assignment?
+        $canAssignOthers = !$project || !$project->isProjectMember($user);
+
+        // Fetch labels
         $labels = TaskLabel::whereNull('project_id')
             ->orWhere('project_id', $projectId)
             ->orderBy('name', 'asc')
@@ -70,6 +77,9 @@ class TaskController extends Controller {
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
             'labels' => TaskLabelResource::collection($labels),
+            'canAssignOthers' => $canAssignOthers,
+            'currentUserId' => $user->id,
+            'selectedProjectId' => $projectId, // Add this to help frontend validation
         ]);
     }
 
@@ -78,8 +88,15 @@ class TaskController extends Controller {
      */
     public function store(StoreTaskRequest $request) {
         $data = $request->validated();
-        $this->taskService->storeTask($data);
+        $user = Auth::user();
+        $project = Project::findOrFail($data['project_id']);
 
+        // If user is a project member, force self-assignment
+        if ($project->isProjectMember($user)) {
+            $data['assigned_user_id'] = $user->id;
+        }
+
+        $this->taskService->storeTask($data);
         return to_route('task.index')->with('success', 'Task created successfully.');
     }
 
@@ -96,12 +113,26 @@ class TaskController extends Controller {
      * Show the form for editing the specified resource.
      */
     public function edit(Task $task) {
-        $task->load('labels'); // Ensure labels are loaded
+        $user = Auth::user();
+        $project = $task->project;
+
+        if (!$project->canEditTask($user, $task)) {
+            abort(403, 'You are not authorized to edit this task.');
+        }
+
+        // Project managers can always change assignee
+        $canChangeAssignee = true;
+
+        // Only restrict if user is not a project manager
+        if (!$project->canManageTask($user)) {
+            $canChangeAssignee = false;
+        }
+
+        $task->load('labels');
         $projects = Project::query()->orderBy('name', 'asc')->get();
         $users = User::query()->orderBy('name', 'asc')->get();
 
-        // Fetch labels that are either generic or related to a project (if selected)
-        $projectId = $task->project_id; // Use the task's project_id
+        $projectId = $task->project_id;
         $labels = TaskLabel::whereNull('project_id')
             ->orWhere('project_id', $projectId)
             ->orderBy('name', 'asc')
@@ -112,6 +143,7 @@ class TaskController extends Controller {
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
             'labels' => TaskLabelResource::collection($labels),
+            'canChangeAssignee' => $canChangeAssignee,
         ]);
     }
 
@@ -119,6 +151,18 @@ class TaskController extends Controller {
      * Update the specified resource in storage.
      */
     public function update(UpdateTaskRequest $request, Task $task) {
+        $user = Auth::user();
+        $project = $task->project;
+
+        if (!$project->canEditTask($user, $task)) {
+            abort(403, 'You are not authorized to edit this task.');
+        }
+
+        // If user is not a project manager, prevent changing the assignee
+        if (!$project->canManageTask($user)) {
+            unset($request['assigned_user_id']);
+        }
+
         $data = $request->validated();
         $this->taskService->updateTask($task, $data);
 

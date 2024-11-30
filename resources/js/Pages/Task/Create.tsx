@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Info } from "lucide-react";
 import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
+import { useState } from "react";
 
 type Props = {
   projects: PaginatedProject;
@@ -28,9 +29,19 @@ type Props = {
   labels: {
     data: Option[];
   };
+  currentUserId: number;
+  selectedProjectId?: number;
 };
 
-export default function Create({ projects, users, labels }: Props) {
+export default function Create({
+  projects,
+  users,
+  labels,
+  currentUserId,
+  selectedProjectId,
+}: Props) {
+  const [canAssignOthers, setCanAssignOthers] = useState(true);
+
   const { data, setData, post, errors, reset } = useForm({
     image: null as File | null,
     name: "",
@@ -38,7 +49,7 @@ export default function Create({ projects, users, labels }: Props) {
     status: "",
     due_date: "",
     priority: "",
-    assigned_user_id: "",
+    assigned_user_id: canAssignOthers ? "" : currentUserId.toString(),
     project_id: "",
     label_ids: [] as number[],
   });
@@ -84,6 +95,26 @@ export default function Create({ projects, users, labels }: Props) {
     });
   };
 
+  const checkProjectRole = async (projectId: string) => {
+    try {
+      const response = await axios.get(route("project.check-role", projectId));
+      const isProjectMember = response.data.isProjectMember;
+
+      setCanAssignOthers(!isProjectMember);
+
+      if (isProjectMember) {
+        setData("assigned_user_id", currentUserId.toString());
+      }
+    } catch (error) {
+      console.error("Failed to check project role:", error);
+    }
+  };
+
+  const handleProjectChange = (projectId: string) => {
+    setData("project_id", projectId);
+    checkProjectRole(projectId);
+  };
+
   return (
     <AuthenticatedLayout
       header={
@@ -105,8 +136,8 @@ export default function Create({ projects, users, labels }: Props) {
               <div className="space-y-2">
                 <Label htmlFor="task_project_id">Project</Label>
                 <Select
-                  onValueChange={(value) => setData("project_id", value)}
-                  defaultValue={data.project_id}
+                  onValueChange={handleProjectChange}
+                  defaultValue={selectedProjectId?.toString()}
                   required
                 >
                   <SelectTrigger className="w-full">
@@ -261,7 +292,11 @@ export default function Create({ projects, users, labels }: Props) {
                 <Label htmlFor="task_assigned_user">Assigned User</Label>
                 <Select
                   onValueChange={(value) => setData("assigned_user_id", value)}
-                  defaultValue={data.assigned_user_id}
+                  value={data.assigned_user_id}
+                  disabled={!canAssignOthers}
+                  defaultValue={
+                    canAssignOthers ? undefined : currentUserId.toString()
+                  }
                   required
                 >
                   <SelectTrigger className="w-full">
