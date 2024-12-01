@@ -87,4 +87,16 @@ class Project extends Model {
             ->where('role', RolesEnum::ProjectMember->value)
             ->exists();
     }
+
+    public function canInviteUsers(User $user): bool {
+        return $user->id === $this->created_by ||
+            $this->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->where('role', RolesEnum::ProjectManager->value)
+            ->exists();
+    }
+
+    public function canEditProject(User $user): bool {
+        return $this->canInviteUsers($user); // Same permissions as inviting users
+    }
 }

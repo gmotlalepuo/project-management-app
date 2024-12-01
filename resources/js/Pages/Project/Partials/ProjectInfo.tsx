@@ -26,9 +26,17 @@ import { useState } from "react";
 type Props = {
   project: Project;
   onInviteClick: () => void;
+  permissions: {
+    canInviteUsers: boolean;
+    canEditProject: boolean;
+  };
 };
 
-export default function ProjectInfo({ project, onInviteClick }: Props) {
+export default function ProjectInfo({
+  project,
+  onInviteClick,
+  permissions,
+}: Props) {
   const authUser = usePage<PageProps>().props.auth.user;
   const [isDialogOpen, setDialogOpen] = useState(false);
 
@@ -144,37 +152,54 @@ export default function ProjectInfo({ project, onInviteClick }: Props) {
                 {project.createdBy.name.charAt(0)}
               </AvatarFallback>
             </Avatar>
-            <p className="text-gray-700 dark:text-gray-300">
-              {project.createdBy.name} ({project.createdBy.email})
-              <Badge variant="outline" className="ml-2">
-                Creator
-              </Badge>
-            </p>
-          </div>
-          {/* Display the accepted users */}
-          {project.acceptedUsers?.map((user) => (
-            <div key={user.id} className="flex items-center space-x-2">
-              <Avatar>
-                <AvatarImage src={user.profile_picture} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-              </Avatar>
+            <div>
               <p className="text-gray-700 dark:text-gray-300">
-                {user.name} ({user.email})
+                {project.createdBy.name} ({project.createdBy.email})
               </p>
+              <div className="flex gap-2">
+                <Badge variant="outline">Creator</Badge>
+                {project.acceptedUsers?.some(
+                  (user) =>
+                    user.id === project.createdBy.id &&
+                    user.pivot?.role === "project_manager",
+                ) && <Badge variant="outline">PM</Badge>}
+              </div>
             </div>
-          ))}
-
-          {/* Invite Users Button */}
-          <div className="w-full">
-            <Button
-              variant="outline"
-              className="w-full md:w-auto"
-              onClick={onInviteClick}
-            >
-              <UsersRound className="h-5 w-5" />
-              Invite Users
-            </Button>
           </div>
+
+          {/* Display accepted users (excluding creator) */}
+          {project.acceptedUsers
+            ?.filter((user) => user.id !== project.createdBy.id)
+            .map((user) => (
+              <div key={user.id} className="flex items-center space-x-2">
+                <Avatar>
+                  <AvatarImage src={user.profile_picture} alt={user.name} />
+                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {user.name} ({user.email})
+                  </p>
+                  <Badge variant="outline">
+                    {user.pivot?.role === "project_manager" ? "PM" : "Member"}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+
+          {/* Invite Users Button - Only show if permitted */}
+          {permissions.canInviteUsers && (
+            <div className="w-full">
+              <Button
+                variant="outline"
+                className="w-full md:w-auto"
+                onClick={onInviteClick}
+              >
+                <UsersRound className="h-5 w-5" />
+                Invite Users
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -187,12 +212,14 @@ export default function ProjectInfo({ project, onInviteClick }: Props) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href={route("project.edit", project.id)}>
-              <Button className="w-full" variant="outline">
-                <Pencil className="h-5 w-5" />
-                <span>Edit Project</span>
-              </Button>
-            </Link>
+            {permissions.canEditProject && (
+              <Link href={route("project.edit", project.id)}>
+                <Button className="w-full" variant="outline">
+                  <Pencil className="h-5 w-5" />
+                  <span>Edit Project</span>
+                </Button>
+              </Link>
+            )}
 
             <Button variant="destructive" onClick={() => setDialogOpen(true)}>
               {project.createdBy.id === authUser.id ? (

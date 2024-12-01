@@ -15,6 +15,10 @@ type Props = {
   success: string | null;
   queryParams: { [key: string]: any };
   activeTab: string;
+  permissions: {
+    canInviteUsers: boolean;
+    canEditProject: boolean;
+  };
 };
 
 export default function Show({
@@ -24,6 +28,7 @@ export default function Show({
   queryParams,
   error: serverError,
   activeTab: initialActiveTab,
+  permissions,
 }: Props) {
   queryParams = queryParams || {};
 
@@ -56,10 +61,12 @@ export default function Show({
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid auto-cols-[minmax(0,_2fr)] grid-flow-col">
               <TabsTrigger value="tasks">Project Tasks</TabsTrigger>
               <TabsTrigger value="info">Project Info</TabsTrigger>
-              <TabsTrigger value="invite">Invite Users</TabsTrigger>
+              {permissions.canInviteUsers && (
+                <TabsTrigger value="invite">Invite Users</TabsTrigger>
+              )}
             </TabsList>
             <TabsContent value="tasks">
               <ProjectTasks
@@ -72,6 +79,7 @@ export default function Show({
               <ProjectInfo
                 project={project}
                 onInviteClick={handleInviteClick}
+                permissions={permissions}
               />
             </TabsContent>
             <TabsContent value="invite">

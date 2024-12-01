@@ -25,7 +25,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/project/invitations', [ProjectController::class, 'showInvitations'])->name('project.invitations');
         Route::post('/project/{project}/accept-invitation', [ProjectController::class, 'acceptInvitation'])->name('project.acceptInvitation');
         Route::post('/project/{project}/reject-invitation', [ProjectController::class, 'rejectInvitation'])->name('project.rejectInvitation');
-        Route::get('/project/{project}/search-users', [UserController::class, 'search'])->name('user.search');
     });
 
     // Admin routes
@@ -51,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/project/{project}', [ProjectController::class, 'destroy'])
             ->name('project.destroy')
             ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
+        Route::get('/project/{project}/search-users', [UserController::class, 'search'])->name('user.search')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::post('/project/{project}/invite', [ProjectController::class, 'inviteUser'])
             ->name('project.invite')
             ->middleware('permission:' . PermissionsEnum::ManageProjects->value);

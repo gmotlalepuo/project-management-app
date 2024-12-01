@@ -82,7 +82,7 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <Link
-                  className="flex items-center gap-2"
+                  className="flex w-full items-center gap-2"
                   href={route("profile.edit")}
                   method="get"
                   as="button"
@@ -99,7 +99,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Link
-                className="flex items-center gap-2"
+                className="flex w-full items-center gap-2"
                 href={route("logout")}
                 method="post"
                 as="button"

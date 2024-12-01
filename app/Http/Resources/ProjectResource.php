@@ -37,7 +37,16 @@ class ProjectResource extends JsonResource {
             'createdBy' => new UserResource($this->createdBy),
             'updatedBy' => new UserResource($this->updatedBy),
             'invitedUsers' => UserResource::collection($this->invitedUsers),
-            'acceptedUsers' => UserResource::collection($this->whenLoaded('acceptedUsers')),
+            'acceptedUsers' => $this->whenLoaded('acceptedUsers', function () use ($request) {
+                return $this->acceptedUsers->map(function ($user) use ($request) {
+                    return array_merge($user->toArray($request), [
+                        'pivot' => [
+                            'role' => $user->pivot->role,
+                            'status' => $user->pivot->status
+                        ]
+                    ]);
+                });
+            }),
 
             // Include the latest 5 tasks sorted by updated_at
             'tasks' => TaskResource::collection($this->tasks()->orderBy('updated_at', 'desc')->take(5)->get()),
