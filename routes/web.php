@@ -59,6 +59,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/project/{project}/check-role', [ProjectController::class, 'checkRole'])
             ->name('project.check-role');
 
+        // Add this route before the task routes
+        Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject'])
+            ->name('project.leave');
+
         // Task routes - available to project members
         Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
         Route::resource('task', TaskController::class);

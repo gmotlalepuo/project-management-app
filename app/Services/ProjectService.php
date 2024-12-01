@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Enum\RolesEnum;
+use App\Events\ProjectInvitationRequestReceived;
 use App\Models\Project;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -112,5 +115,84 @@ class ProjectService {
       ->onEachSide(1);
 
     return $tasks;
+  }
+
+  public function handleInvitation(Project $project, string $email) {
+    $user = User::where('email', $email)->first();
+
+    if (!$user) {
+      return ['success' => false, 'message' => 'User does not exist.'];
+    }
+
+    // Check existing invitation
+    $existingInvitation = $project->invitedUsers()
+      ->where('user_id', $user->id)
+      ->first();
+
+    // Handle rejected invitation
+    if ($existingInvitation && $existingInvitation->pivot->status === 'rejected') {
+      $project->invitedUsers()->updateExistingPivot($user->id, [
+        'status' => 'pending',
+        'role' => RolesEnum::ProjectMember->value,
+        'updated_at' => now(),
+      ]);
+
+      broadcast(new ProjectInvitationRequestReceived($project, $user));
+      return ['success' => true, 'message' => 'User re-invited successfully.'];
+    }
+
+    // Handle new invitation
+    if (!$existingInvitation) {
+      $project->invitedUsers()->attach($user->id, [
+        'status' => 'pending',
+        'role' => RolesEnum::ProjectMember->value,
+        'created_at' => now(),
+        'updated_at' => now()
+      ]);
+
+      broadcast(new ProjectInvitationRequestReceived($project, $user));
+      return ['success' => true, 'message' => 'User invited successfully.'];
+    }
+
+    return ['success' => false, 'message' => 'This user has already been invited.'];
+  }
+
+  public function getPendingInvitations(User $user, array $filters = []) {
+    $query = $user->projectInvitations()->wherePivot('status', 'pending');
+
+    if (isset($filters['name'])) {
+      $query->where('name', 'like', '%' . $filters['name'] . '%');
+    }
+
+    if (isset($filters['status'])) {
+      $statuses = $filters['status'];
+      if (is_array($statuses)) {
+        $query->wherePivotIn('status', $statuses);
+      } else {
+        $query->wherePivot('status', $statuses);
+      }
+    }
+
+    $sortField = $filters['sort_field'] ?? 'created_at';
+    $sortDirection = $filters['sort_direction'] ?? 'desc';
+    $perPage = $filters['per_page'] ?? 10;
+
+    return $query->orderBy($sortField, $sortDirection)
+      ->paginate($perPage)
+      ->withQueryString();
+  }
+
+  public function updateInvitationStatus(Project $project, User $user, string $status) {
+    $project->invitedUsers()->updateExistingPivot($user->id, ['status' => $status]);
+    return true;
+  }
+
+  public function leaveProject(Project $project, User $user) {
+    if ($user->id === $project->created_by) {
+      return ['success' => false, 'message' => 'Project creators cannot leave their own projects. Please delete the project instead.'];
+    }
+
+    $project->invitedUsers()->detach($user->id);
+    return ['success' => true, 'message' => 'You have left the project.'];
   }
 }

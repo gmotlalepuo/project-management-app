@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ProjectInvitationRequestReceived;
 use Inertia\Inertia;
 use App\Models\Project;
 use App\Services\ProjectService;
 use Illuminate\Http\Request;
 use App\Http\Resources\TaskResource;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
 use App\Http\Requests\Project\StoreProjectRequest;
@@ -161,70 +159,18 @@ class ProjectController extends Controller {
 
     public function inviteUser(Request $request, Project $project) {
         $request->validate(['email' => 'required|email']);
-        $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
-            return back()->with('error', 'User does not exist.');
+        $result = $this->projectService->handleInvitation($project, $request->email);
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
         }
 
-        // Check if there's already an invitation for this user and project
-        $existingInvitation = $project->invitedUsers()
-            ->where('user_id', $user->id)
-            ->first();
-
-        // If the user has a rejected invitation, update it to pending instead of creating a new one
-        if ($existingInvitation && $existingInvitation->pivot->status === 'rejected') {
-            $project->invitedUsers()->updateExistingPivot($user->id, [
-                'status' => 'pending',
-                'role' => RolesEnum::ProjectMember->value,
-                'updated_at' => now(),
-            ]);
-
-            broadcast(new ProjectInvitationRequestReceived($project, $user));
-            return back()->with('success', 'User re-invited successfully.');
-        }
-
-        // If no invitation exists, create a new one
-        if (!$existingInvitation) {
-            $project->invitedUsers()->attach($user->id, [
-                'status' => 'pending',
-                'role' => RolesEnum::ProjectMember->value,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            broadcast(new ProjectInvitationRequestReceived($project, $user));
-            return back()->with('success', 'User invited successfully.');
-        }
-
-        return back()->with('error', 'This user has already been invited.');
+        return back()->with('error', $result['message']);
     }
 
     public function showInvitations(Request $request) {
-        $user = Auth::user();
-
-        // Initialize the query for pending invitations
-        $query = $user->projectInvitations()->wherePivot('status', 'pending');
-
-        // Apply filtering based on query parameters
-        if ($request->has('name')) {
-            $query->where('name', 'like', '%' . $request->input('name') . '%');
-        }
-
-        if ($request->has('status')) {
-            $statuses = $request->input('status');
-            if (is_array($statuses)) {
-                $query->wherePivotIn('status', $statuses);
-            } else {
-                $query->wherePivot('status', $statuses);
-            }
-        }
-
-        $sortField = $request->input('sort_field', 'created_at');
-        $sortDirection = $request->input('sort_direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
-
-        $invitations = $query->paginate($request->input('per_page', 10))->withQueryString();
+        $invitations = $this->projectService->getPendingInvitations(Auth::user(), $request->all());
 
         return Inertia::render('Project/Invite', [
             'invitations' => ProjectInvitationResource::collection($invitations),
@@ -234,33 +180,23 @@ class ProjectController extends Controller {
     }
 
     public function acceptInvitation(Project $project) {
-        $user = Auth::user();
-
-        // Update the invitation status to 'accepted'
-        $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'accepted']);
-
+        $this->projectService->updateInvitationStatus($project, Auth::user(), 'accepted');
         return redirect()->back()->with('success', 'Invitation accepted.');
     }
 
     public function rejectInvitation(Project $project) {
-        $user = Auth::user();
-
-        // Update the invitation status to 'rejected'
-        $project->invitedUsers()->updateExistingPivot($user->id, ['status' => 'rejected']);
-
+        $this->projectService->updateInvitationStatus($project, Auth::user(), 'rejected');
         return redirect()->back()->with('success', 'Invitation rejected.');
     }
 
     public function leaveProject(Project $project) {
-        $user = Auth::user();
+        $result = $this->projectService->leaveProject($project, Auth::user());
 
-        if ($user->id === $project->created_by) {
-            return back()->with('error', 'Project creators cannot leave their own projects. Please delete the project instead.');
+        if ($result['success']) {
+            return redirect()->route('dashboard')->with('success', $result['message']);
         }
 
-        $project->invitedUsers()->detach($user->id);
-
-        return redirect()->route('dashboard')->with('success', 'You have left the project.');
+        return back()->with('error', $result['message']);
     }
 
     public function checkRole(Project $project) {
