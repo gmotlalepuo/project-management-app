@@ -193,7 +193,7 @@ class ProjectController extends Controller {
         $result = $this->projectService->leaveProject($project, Auth::user());
 
         if ($result['success']) {
-            return redirect()->route('dashboard')->with('success', $result['message']);
+            return to_route('dashboard')->with('success', $result['message']);
         }
 
         return back()->with('error', $result['message']);

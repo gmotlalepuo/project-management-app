@@ -192,7 +192,18 @@ class ProjectService {
       return ['success' => false, 'message' => 'Project creators cannot leave their own projects. Please delete the project instead.'];
     }
 
+    // Update all tasks assigned to this user in this project to have no assignee
+    $project->tasks()
+      ->where('assigned_user_id', $user->id)
+      ->update([
+        'assigned_user_id' => null,
+        'updated_by' => $user->id,
+        'updated_at' => now()
+      ]);
+
+    // Remove user from project
     $project->invitedUsers()->detach($user->id);
+
     return ['success' => true, 'message' => 'You have left the project.'];
   }
 }

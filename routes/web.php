@@ -41,6 +41,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/project/{project}', [ProjectController::class, 'show'])->name('project.show');
 
         // Project management routes - require specific permissions
+        Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject'])
+            ->name('project.leave');
+
         Route::get('/project/{project}/edit', [ProjectController::class, 'edit'])
             ->name('project.edit')
             ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
@@ -58,10 +61,6 @@ Route::middleware('auth')->group(function () {
         // Add this inside your routes group
         Route::get('/project/{project}/check-role', [ProjectController::class, 'checkRole'])
             ->name('project.check-role');
-
-        // Add this route before the task routes
-        Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject'])
-            ->name('project.leave');
 
         // Task routes - available to project members
         Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');

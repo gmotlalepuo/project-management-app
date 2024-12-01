@@ -23,6 +23,10 @@ class Task extends Model {
         'updated_by',
     ];
 
+    protected $casts = [
+        'assigned_user_id' => 'integer', // Add this to properly handle null values
+    ];
+
     public function project() {
         return $this->belongsTo(Project::class);
     }
