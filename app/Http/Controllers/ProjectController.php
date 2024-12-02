@@ -43,7 +43,14 @@ class ProjectController extends Controller {
             ->withQueryString();
 
         return Inertia::render('Project/Index', [
-            'projects' => ProjectResource::collection($projects),
+            'projects' => ProjectResource::collection($projects)->additional([
+                'permissions' => $projects->map(function ($project) use ($user) {
+                    return [
+                        'id' => $project->id,
+                        'canEditProject' => $project->canEditProject($user),
+                    ];
+                })->pluck('canEditProject', 'id'),
+            ]),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
         ]);

@@ -22,7 +22,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { PageProps } from "@/types";
 
 type IndexProps = {
-  projects: PaginatedProject;
+  projects: PaginatedProject & {
+    permissions: {
+      [key: number]: boolean; // project id -> canEditProject mapping
+    };
+  };
   allProjects: Project[];
   queryParams: { [key: string]: any } | null;
   success: string | null;
@@ -64,15 +68,11 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
   const columns: ColumnDef<Project>[] = [
     {
       accessorKey: "id",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="ID" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
     },
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Name" />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" />,
       cell: ({ row }) => (
         <Link href={route("project.show", row.original.id)}>
           {row.original.name}
@@ -115,26 +115,17 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
       cell: ({ row }) => (
         <DataTableRowActions
           row={row}
-          onView={(row) => {
-            const projectId = row.original.id;
-            router.get(route("project.show", projectId));
-          }}
-          onEdit={(row) => {
-            const projectId = row.original.id;
-            router.get(route("project.edit", projectId));
-          }}
-          onDelete={(row) => {
-            const projectId = row.original.id;
-            router.delete(route("project.destroy", projectId));
-          }}
-          onLeave={(row) => {
-            const projectId = row.original.id;
-            router.post(route("project.leave", { project: projectId }), {
+          onView={() => router.get(route("project.show", row.original.id))}
+          onEdit={() => router.get(route("project.edit", row.original.id))}
+          onDelete={() => router.delete(route("project.destroy", row.original.id))}
+          onLeave={() => {
+            router.post(route("project.leave", { project: row.original.id }), {
               preserveScroll: true,
             });
           }}
           isProjectTable={true}
           isCreator={row.original.createdBy.id === user.id}
+          canEdit={projects.permissions[row.original.id]}
         />
       ),
     },
@@ -150,10 +141,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
     }
   }, [success]);
 
-  const calculateTaskProgress = (
-    totalTasks: number,
-    completedTasks: number,
-  ) => {
+  const calculateTaskProgress = (totalTasks: number, completedTasks: number) => {
     return totalTasks ? (completedTasks / totalTasks) * 100 : 0;
   };
 
@@ -184,9 +172,8 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
             </CardHeader>
             <CardContent>
               <h4>
-                Track progress, manage tasks, and collaborate with your team.
-                Use the tools provided to create, view, and update your projects
-                seamlessly.
+                Track progress, manage tasks, and collaborate with your team. Use the
+                tools provided to create, view, and update your projects seamlessly.
               </h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("project.create")}>
@@ -214,10 +201,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
             }`}
           >
             {allProjects.slice(0, 6).map((project) => (
-              <div
-                key={project.id}
-                className="rounded-lg bg-background p-5 shadow"
-              >
+              <div key={project.id} className="rounded-lg bg-background p-5 shadow">
                 {/* Project Header */}
                 <div className="flex items-center justify-between space-x-1">
                   <Link
@@ -229,25 +213,20 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                   <span className="self-baseline">
                     <DataTableRowActions
                       row={{ original: project } as Row<Project>}
-                      onView={() => {
-                        router.get(route("project.show", project.id));
-                      }}
-                      onEdit={() => {
-                        router.get(route("project.edit", project.id));
-                      }}
-                      onDelete={() => {
-                        router.delete(route("project.destroy", project.id));
-                      }}
+                      onView={() => router.get(route("project.show", project.id))}
+                      onEdit={() => router.get(route("project.edit", project.id))}
+                      onDelete={() =>
+                        router.delete(route("project.destroy", project.id))
+                      }
                       onLeave={() => {
                         router.post(
                           route("project.leave", { project: project.id }),
-                          {
-                            preserveScroll: true,
-                          },
+                          { preserveScroll: true },
                         );
                       }}
                       isProjectTable={true}
                       isCreator={project.created_by === user.id}
+                      canEdit={projects.permissions[project.id]}
                     />
                   </span>
                 </div>
@@ -316,18 +295,14 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               <div className="mt-4 flex items-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-orange-500">
                   <span className="text-xl font-bold text-orange-500">
-                    {calculateProjectCompletionPercentage(allProjects).toFixed(
-                      0,
-                    )}
-                    %
+                    {calculateProjectCompletionPercentage(allProjects).toFixed(0)}%
                   </span>
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-semibold">
                     {
-                      allProjects.filter(
-                        (project) => project.status === "completed",
-                      ).length
+                      allProjects.filter((project) => project.status === "completed")
+                        .length
                     }{" "}
                     Completed
                   </p>

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/Components/ui/dropdown-menu";
-import { Eye, Pencil, Trash2, UserPlus, UserMinus } from "lucide-react";
+import { Eye, Pencil, Trash2, UserPlus, UserMinus, LogOut } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
@@ -31,7 +31,10 @@ interface DataTableRowActionsProps<TData> {
   onDelete?: (row: Row<TData>) => void;
   onAssign?: (row: Row<TData>) => void;
   onUnassign?: (row: Row<TData>) => void;
+  onLeave?: (row: Row<TData>) => void;
   canEdit?: boolean;
+  isProjectTable?: boolean;
+  isCreator?: boolean;
 }
 
 export function DataTableRowActions<TData>({
@@ -41,7 +44,10 @@ export function DataTableRowActions<TData>({
   onDelete,
   onAssign,
   onUnassign,
+  onLeave,
   canEdit = true,
+  isProjectTable = false,
+  isCreator = false,
 }: DataTableRowActionsProps<TData>) {
   const { auth } = usePage<PageProps>().props;
   const task = row.original as any;
@@ -95,6 +101,16 @@ export function DataTableRowActions<TData>({
     });
   };
 
+  const handleLeaveClick = () => {
+    setDialogConfig({
+      isOpen: true,
+      title: "Confirm Project Leave",
+      description: "Are you sure you want to leave this project?",
+      action: () => onLeave?.(row),
+      actionText: "Leave",
+    });
+  };
+
   return (
     <>
       <DropdownMenu>
@@ -122,29 +138,44 @@ export function DataTableRowActions<TData>({
             </DropdownMenuItem>
           )}
 
-          {canBeAssigned && onAssign && (
-            <DropdownMenuItem onClick={handleAssignClick}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Assign to me
-            </DropdownMenuItem>
-          )}
-
-          {isAssignedToCurrentUser && onUnassign && (
-            <DropdownMenuItem onClick={handleUnassignClick}>
-              <UserMinus className="mr-2 h-4 w-4" />
-              Unassign
-            </DropdownMenuItem>
-          )}
-
-          {canEdit && onDelete && (
+          {!isProjectTable && (
             <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600" onClick={handleDeleteClick}>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {canBeAssigned && onAssign && (
+                <DropdownMenuItem onClick={handleAssignClick}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Assign to me
+                </DropdownMenuItem>
+              )}
+
+              {isAssignedToCurrentUser && onUnassign && (
+                <DropdownMenuItem onClick={handleUnassignClick}>
+                  <UserMinus className="mr-2 h-4 w-4" />
+                  Unassign
+                </DropdownMenuItem>
+              )}
             </>
           )}
+
+          {isProjectTable && !isCreator && onLeave && (
+            <DropdownMenuItem onClick={handleLeaveClick}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Leave Project
+            </DropdownMenuItem>
+          )}
+
+          {((isProjectTable && isCreator) || (!isProjectTable && canEdit)) &&
+            onDelete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {isProjectTable && isCreator ? "Delete Project" : "Delete"}
+                </DropdownMenuItem>
+              </>
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
 
