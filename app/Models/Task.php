@@ -52,4 +52,19 @@ class Task extends Model {
     public function labels(): BelongsToMany {
         return $this->belongsToMany(TaskLabel::class, 'label_task', 'task_id', 'task_label_id');
     }
+
+    public function canBeAssignedBy(User $user): bool {
+        return $this->assigned_user_id === null &&
+            $this->project->acceptedUsers()
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    public function isAssignedTo(User $user): bool {
+        return $this->assigned_user_id === $user->id;
+    }
+
+    public function canBeUnassignedBy(User $user): bool {
+        return $this->isAssignedTo($user);
+    }
 }

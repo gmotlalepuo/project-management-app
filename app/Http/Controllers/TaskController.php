@@ -16,7 +16,6 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskLabelResource;
 use App\Models\TaskLabel;
-use Carbon\Carbon;
 
 class TaskController extends Controller {
     protected $taskService;
@@ -50,6 +49,9 @@ class TaskController extends Controller {
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
             'labelOptions' => $labelOptions,
+            'permissions' => [
+                'canManageTasks' => $tasks->first()?->project->canManageTask($user),
+            ],
         ]);
     }
 
@@ -221,6 +223,39 @@ class TaskController extends Controller {
             "tasks" => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
+            'permissions' => [
+                'canManageTasks' => $tasks->first()?->project->canManageTask($user),
+            ],
         ]);
+    }
+
+    public function assignToMe(Task $task) {
+        $user = Auth::user();
+
+        if (!$task->canBeAssignedBy($user)) {
+            abort(403, 'You cannot assign this task.');
+        }
+
+        $task->update([
+            'assigned_user_id' => $user->id,
+            'updated_by' => $user->id
+        ]);
+
+        return back()->with('success', 'Task assigned successfully.');
+    }
+
+    public function unassign(Task $task) {
+        $user = Auth::user();
+
+        if (!$task->canBeUnassignedBy($user)) {
+            abort(403, 'You cannot unassign this task.');
+        }
+
+        $task->update([
+            'assigned_user_id' => null,
+            'updated_by' => $user->id
+        ]);
+
+        return back()->with('success', 'Task unassigned successfully.');
     }
 }

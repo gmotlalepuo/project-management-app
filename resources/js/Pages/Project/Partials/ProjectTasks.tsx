@@ -20,92 +20,10 @@ type Props = {
   tasks: PaginatedTask;
   queryParams: { [key: string]: any };
   projectId: number;
+  permissions: {
+    canManageTasks: boolean;
+  };
 };
-
-const columns: ColumnDef<Task>[] = [
-  {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Task Name" />
-    ),
-    cell: ({ row }) => (
-      <>
-        <Link href={route("task.show", row.original.id)}>
-          {row.original.labels?.map((label) => (
-            <Badge key={label.id} variant={label.variant} className="mr-1.5">
-              {label.name}
-            </Badge>
-          ))}
-          {row.original.name}
-        </Link>
-      </>
-    ),
-  },
-  {
-    accessorKey: "priority",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Priority" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
-        {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
-        {PROJECT_STATUS_TEXT_MAP[row.original.status]}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "due_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Due Date" />
-    ),
-    cell: ({ row }) =>
-      row.original.due_date ? formatDate(row.original.due_date) : "No date",
-  },
-  {
-    accessorKey: "assignedUser.name",
-    enableSorting: false,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Assigned To" />
-    ),
-    cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        row={row}
-        onView={(row) => {
-          const taskId = row.original.id;
-          router.get(route("task.show", taskId));
-        }}
-        onEdit={(row) => {
-          const taskId = row.original.id;
-          router.get(route("task.edit", taskId));
-        }}
-        onDelete={(row) => {
-          const taskId = row.original.id;
-          router.delete(route("task.destroy", taskId));
-        }}
-      />
-    ),
-  },
-];
 
 const filterableColumns: FilterableColumn[] = [
   { accessorKey: "name", title: "Task Name", filterType: "text" },
@@ -134,8 +52,103 @@ const filterableColumns: FilterableColumn[] = [
   },
 ];
 
-export default function ProjectTasks({ tasks, queryParams, projectId }: Props) {
+export default function ProjectTasks({
+  tasks,
+  queryParams,
+  projectId,
+  permissions,
+}: Props) {
   queryParams = queryParams || {};
+
+  const columns: ColumnDef<Task>[] = [
+    {
+      accessorKey: "id",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Task Name" />
+      ),
+      cell: ({ row }) => (
+        <>
+          <Link href={route("task.show", row.original.id)}>
+            {row.original.labels?.map((label) => (
+              <Badge key={label.id} variant={label.variant} className="mr-1.5">
+                {label.name}
+              </Badge>
+            ))}
+            {row.original.name}
+          </Link>
+        </>
+      ),
+    },
+    {
+      accessorKey: "priority",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Priority" />
+      ),
+      cell: ({ row }) => (
+        <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
+          {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Status" />
+      ),
+      cell: ({ row }) => (
+        <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
+          {PROJECT_STATUS_TEXT_MAP[row.original.status]}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "due_date",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Due Date" />
+      ),
+      cell: ({ row }) =>
+        row.original.due_date ? formatDate(row.original.due_date) : "No date",
+    },
+    {
+      accessorKey: "assignedUser.name",
+      enableSorting: false,
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Assigned To" />
+      ),
+      cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DataTableRowActions
+          row={row}
+          onView={(row) => {
+            const taskId = row.original.id;
+            router.get(route("task.show", taskId));
+          }}
+          onEdit={(row) => {
+            const taskId = row.original.id;
+            router.get(route("task.edit", taskId));
+          }}
+          onDelete={(row) => {
+            const taskId = row.original.id;
+            router.delete(route("task.destroy", taskId));
+          }}
+          onAssign={(row) => {
+            router.post(route("task.assignToMe", row.original.id));
+          }}
+          onUnassign={(row) => {
+            router.post(route("task.unassign", row.original.id));
+          }}
+          canEdit={permissions.canManageTasks}
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-card sm:p-6">

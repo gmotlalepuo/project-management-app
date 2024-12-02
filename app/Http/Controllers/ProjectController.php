@@ -110,6 +110,7 @@ class ProjectController extends Controller {
             'permissions' => [
                 'canInviteUsers' => $project->canInviteUsers($user),
                 'canEditProject' => $project->canEditProject($user),
+                'canManageTasks' => $project->canManageTask($user),
             ],
         ]);
     }

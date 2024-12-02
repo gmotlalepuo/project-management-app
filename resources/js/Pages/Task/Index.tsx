@@ -1,10 +1,7 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router } from "@inertiajs/react";
 import { PaginatedTask, Task } from "@/types/task";
-import {
-  DataTable,
-  ColumnDef,
-} from "@/Components/data-table-components/data-table";
+import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import {
@@ -18,7 +15,7 @@ import { FilterableColumn } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { CirclePlus } from "lucide-react";
 
@@ -27,107 +24,10 @@ type IndexProps = {
   success: string | null;
   queryParams: { [key: string]: any };
   labelOptions: { value: string; label: string }[];
+  permissions: {
+    canManageTasks: boolean;
+  };
 };
-
-// Define the table columns for the Task data
-const columns: ColumnDef<Task, any>[] = [
-  {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
-    ),
-  },
-  {
-    accessorKey: "project.name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Project" />
-    ),
-    enableSorting: false,
-    cell: ({ row }) => (
-      <Link href={route("project.show", row.original.project.id)}>
-        {row.original.project.name}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    cell: ({ row }) => (
-      <>
-        <Link href={route("task.show", row.original.id)}>
-          {row.original.labels?.map((label) => (
-            <Badge key={label.id} variant={label.variant} className="mr-1.5">
-              {label.name}
-            </Badge>
-          ))}
-          {row.original.name}
-        </Link>
-      </>
-    ),
-    minWidth: 170,
-  },
-  {
-    accessorKey: "priority",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Priority" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
-        {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => (
-      <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
-        {TASK_STATUS_TEXT_MAP[row.original.status]}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "due_date",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Due Date" />
-    ),
-    cell: ({ row }) =>
-      row.original.due_date ? formatDate(row.original.due_date) : "No date",
-    defaultHidden: true,
-  },
-  {
-    accessorKey: "assignedUser.name",
-    enableSorting: false,
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Assigned To" />
-    ),
-    cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DataTableRowActions
-        row={row}
-        onView={(row) => {
-          const taskId = row.original.id;
-          router.get(route("task.show", taskId));
-        }}
-        onEdit={(row) => {
-          const taskId = row.original.id;
-          router.get(route("task.edit", taskId));
-        }}
-        onDelete={(row) => {
-          const taskId = row.original.id;
-          router.delete(route("task.destroy", taskId));
-        }}
-      />
-    ),
-  },
-];
 
 // Main component for the Task index page
 export default function Index({
@@ -135,6 +35,7 @@ export default function Index({
   queryParams,
   success,
   labelOptions,
+  permissions,
 }: IndexProps) {
   queryParams = queryParams || {};
 
@@ -149,6 +50,114 @@ export default function Index({
       });
     }
   }, [success]);
+
+  // Define the table columns for the Task data
+  const columns = useMemo<ColumnDef<Task, any>[]>(
+    () => [
+      {
+        accessorKey: "id",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+      },
+      {
+        accessorKey: "project.name",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Project" />
+        ),
+        enableSorting: false,
+        cell: ({ row }) => (
+          <Link href={route("project.show", row.original.project.id)}>
+            {row.original.project.name}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Name" />
+        ),
+        cell: ({ row }) => (
+          <>
+            <Link href={route("task.show", row.original.id)}>
+              {row.original.labels?.map((label) => (
+                <Badge key={label.id} variant={label.variant} className="mr-1.5">
+                  {label.name}
+                </Badge>
+              ))}
+              {row.original.name}
+            </Link>
+          </>
+        ),
+        minWidth: 170,
+      },
+      {
+        accessorKey: "priority",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Priority" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant={TASK_PRIORITY_BADGE_MAP[row.original.priority]}>
+            {TASK_PRIORITY_TEXT_MAP[row.original.priority]}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
+            {TASK_STATUS_TEXT_MAP[row.original.status]}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "due_date",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Due Date" />
+        ),
+        cell: ({ row }) =>
+          row.original.due_date ? formatDate(row.original.due_date) : "No date",
+        defaultHidden: true,
+      },
+      {
+        accessorKey: "assignedUser.name",
+        enableSorting: false,
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Assigned To" />
+        ),
+        cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => (
+          <DataTableRowActions
+            row={row}
+            onView={(row) => {
+              const taskId = row.original.id;
+              router.get(route("task.show", taskId));
+            }}
+            onEdit={(row) => {
+              const taskId = row.original.id;
+              router.get(route("task.edit", taskId));
+            }}
+            onDelete={(row) => {
+              const taskId = row.original.id;
+              router.delete(route("task.destroy", taskId));
+            }}
+            onAssign={(row) => {
+              router.post(route("task.assignToMe", row.original.id));
+            }}
+            onUnassign={(row) => {
+              router.post(route("task.unassign", row.original.id));
+            }}
+            canEdit={permissions.canManageTasks}
+          />
+        ),
+      },
+    ],
+    [permissions],
+  );
 
   const filterableColumns: FilterableColumn[] = [
     {
@@ -218,8 +227,7 @@ export default function Index({
             <CardContent>
               <h4>
                 Organize your tasks, set priorities, and track progress. Use the
-                tools provided to create, view, and update your tasks
-                efficiently.
+                tools provided to create, view, and update your tasks efficiently.
               </h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("task.create")}>
