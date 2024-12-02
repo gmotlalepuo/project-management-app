@@ -88,3 +88,10 @@ export const INVITATION_STATUS_TEXT_MAP = {
   accepted: "Accepted",
   rejected: "Rejected",
 };
+
+// Role constants
+export const ROLE_TEXT_MAP = {
+  admin: "Admin",
+  project_manager: "Project Manager",
+  project_member: "Project Member",
+};

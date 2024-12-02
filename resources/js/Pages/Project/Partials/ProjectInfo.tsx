@@ -7,6 +7,7 @@ import { Project } from "@/types/project";
 import {
   PROJECT_STATUS_BADGE_MAP,
   PROJECT_STATUS_TEXT_MAP,
+  ROLE_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
 import { CircleX, LogOut, Pencil, UsersRound, UserMinus } from "lucide-react";
@@ -25,6 +26,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -40,11 +42,7 @@ type Props = {
   };
 };
 
-export default function ProjectInfo({
-  project,
-  onInviteClick,
-  permissions,
-}: Props) {
+export default function ProjectInfo({ project, onInviteClick, permissions }: Props) {
   const authUser = usePage<PageProps>().props.auth.user;
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isKickDialogOpen, setKickDialogOpen] = useState(false);
@@ -52,9 +50,10 @@ export default function ProjectInfo({
 
   const kickableUsers = project.acceptedUsers?.filter(
     (user) =>
-      (user.pivot?.role === "project_member" && permissions.canInviteUsers) ||
-      (user.pivot?.role === "project_manager" &&
-        project.createdBy.id === authUser.id),
+      user.id !== authUser.id && // Filter out current user
+      ((user.pivot?.role === "project_member" && permissions.canInviteUsers) ||
+        (user.pivot?.role === "project_manager" &&
+          project.createdBy.id === authUser.id)),
   );
 
   const handleLeaveProject = () => {
@@ -120,9 +119,7 @@ export default function ProjectInfo({
         {/* Date & Update Info Card */}
         <Card>
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold">
-              Project Timeline
-            </CardTitle>
+            <CardTitle className="text-lg font-semibold">Project Timeline</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
@@ -155,33 +152,24 @@ export default function ProjectInfo({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 dark:text-gray-300">
-            {project.description}
-          </p>
+          <p className="text-gray-700 dark:text-gray-300">{project.description}</p>
         </CardContent>
       </Card>
 
       {/* Project Members Card */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">
-            Project Members
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold">Project Members</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-4">
           {/* Display the creator of the project */}
-          <div
-            key={project.createdBy.id}
-            className="flex items-center space-x-2"
-          >
+          <div key={project.createdBy.id} className="flex items-center space-x-2">
             <Avatar>
               <AvatarImage
                 src={project.createdBy.profile_picture}
                 alt={project.createdBy.name}
               />
-              <AvatarFallback>
-                {project.createdBy.name.charAt(0)}
-              </AvatarFallback>
+              <AvatarFallback>{project.createdBy.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
               <p className="text-gray-700 dark:text-gray-300">
@@ -218,9 +206,9 @@ export default function ProjectInfo({
               </div>
             ))}
 
-          {/* Invite Users Button - Only show if permitted */}
           {permissions.canInviteUsers && (
-            <div className="w-full">
+            <div className="flex w-full gap-3">
+              {/* Invite Users Button - Only show if permitted */}
               <Button
                 variant="outline"
                 className="w-full md:w-auto"
@@ -229,55 +217,80 @@ export default function ProjectInfo({
                 <UsersRound className="h-5 w-5" />
                 Invite Users
               </Button>
-            </div>
-          )}
-
-          {/* Kick Members Button - Only show if permitted */}
-          {permissions.canInviteUsers && kickableUsers?.length > 0 && (
-            <Dialog open={isKickDialogOpen} onOpenChange={setKickDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full md:w-auto">
-                  <UserMinus className="h-5 w-5" />
-                  Kick Members
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Select Members to Remove</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  {kickableUsers.map((user) => (
-                    <div key={user.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`user-${user.id}`}
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedUsers([...selectedUsers, user.id]);
-                          } else {
-                            setSelectedUsers(
-                              selectedUsers.filter((id) => id !== user.id),
-                            );
-                          }
-                        }}
-                      />
-                      <label htmlFor={`user-${user.id}`}>
-                        {user.name} ({user.pivot?.role})
-                      </label>
-                    </div>
-                  ))}
-                  <div className="flex justify-end space-x-2">
-                    <Button
-                      variant="destructive"
-                      disabled={selectedUsers.length === 0}
-                      onClick={handleKickMembers}
-                    >
-                      Kick Selected Members
+              {/* Kick Members Button - Only show if permitted */}
+              {permissions.canInviteUsers && kickableUsers?.length > 0 && (
+                <Dialog open={isKickDialogOpen} onOpenChange={setKickDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-auto">
+                      <UserMinus className="h-5 w-5" />
+                      Kick Members
                     </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Select Members to Remove</DialogTitle>
+                      <DialogDescription>
+                        By kicking users, you will also unassign them from any tasks
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {kickableUsers && kickableUsers.length > 0 ? (
+                        <>
+                          {kickableUsers.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`user-${user.id}`}
+                                checked={selectedUsers.includes(user.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedUsers([...selectedUsers, user.id]);
+                                  } else {
+                                    setSelectedUsers(
+                                      selectedUsers.filter((id) => id !== user.id),
+                                    );
+                                  }
+                                }}
+                              />
+                              <label htmlFor={`user-${user.id}`}>
+                                {user.name} (
+                                {
+                                  ROLE_TEXT_MAP[
+                                    user.pivot?.role as keyof typeof ROLE_TEXT_MAP
+                                  ]
+                                }
+                                )
+                              </label>
+                            </div>
+                          ))}
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => setKickDialogOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              disabled={selectedUsers.length === 0}
+                              onClick={handleKickMembers}
+                            >
+                              Kick Selected Members
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center text-gray-500 dark:text-gray-400">
+                          No members available to kick at this time.
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -285,9 +298,7 @@ export default function ProjectInfo({
       {/* Project Actions Card */}
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">
-            Project Actions
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold">Project Actions</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3 sm:flex-row">
