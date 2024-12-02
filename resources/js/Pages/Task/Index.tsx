@@ -100,12 +100,12 @@ const columns: ColumnDef<Task, any>[] = [
     defaultHidden: true,
   },
   {
-    accessorKey: "createdBy.name",
+    accessorKey: "assignedUser.name",
     enableSorting: false,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Created By" />
+      <DataTableColumnHeader column={column} title="Assigned To" />
     ),
-    cell: ({ row }) => row.original.createdBy.name,
+    cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
   },
   {
     id: "actions",

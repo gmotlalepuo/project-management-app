@@ -78,9 +78,12 @@ const columns: ColumnDef<Task>[] = [
       row.original.due_date ? formatDate(row.original.due_date) : "No date",
   },
   {
-    accessorKey: "createdBy.name",
-    header: () => "Created By",
-    cell: ({ row }) => row.original.createdBy.name,
+    accessorKey: "assignedUser.name",
+    enableSorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Assigned To" />
+    ),
+    cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
   },
   {
     id: "actions",

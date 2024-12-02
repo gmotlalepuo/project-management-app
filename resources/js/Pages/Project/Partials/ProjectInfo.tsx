@@ -9,7 +9,7 @@ import {
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
-import { CircleX, LogOut, Pencil, UsersRound } from "lucide-react";
+import { CircleX, LogOut, Pencil, UsersRound, UserMinus } from "lucide-react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
@@ -22,6 +22,14 @@ import {
   AlertDialogTitle,
 } from "@/Components/ui/alert-dialog";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/Components/ui/dialog";
+import { Checkbox } from "@/Components/ui/checkbox";
 
 type Props = {
   project: Project;
@@ -39,6 +47,15 @@ export default function ProjectInfo({
 }: Props) {
   const authUser = usePage<PageProps>().props.auth.user;
   const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isKickDialogOpen, setKickDialogOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+
+  const kickableUsers = project.acceptedUsers?.filter(
+    (user) =>
+      (user.pivot?.role === "project_member" && permissions.canInviteUsers) ||
+      (user.pivot?.role === "project_manager" &&
+        project.createdBy.id === authUser.id),
+  );
 
   const handleLeaveProject = () => {
     router.post(route("project.leave", { project: project.id }), {
@@ -50,6 +67,20 @@ export default function ProjectInfo({
     router.delete(route("project.destroy", { project: project.id }), {
       preserveScroll: true,
     });
+  };
+
+  const handleKickMembers = () => {
+    router.post(
+      route("project.kick-members", { project: project.id }),
+      { user_ids: selectedUsers },
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          setKickDialogOpen(false);
+          setSelectedUsers([]);
+        },
+      },
+    );
   };
 
   return (
@@ -97,7 +128,7 @@ export default function ProjectInfo({
             <div>
               <Label>Due Date</Label>
               <p className="text-gray-700 dark:text-gray-300">
-                {formatDate(project.due_date)}
+                {project.due_date ? formatDate(project.due_date) : "No date"}
               </p>
             </div>
             <div>
@@ -199,6 +230,54 @@ export default function ProjectInfo({
                 Invite Users
               </Button>
             </div>
+          )}
+
+          {/* Kick Members Button - Only show if permitted */}
+          {permissions.canInviteUsers && kickableUsers?.length > 0 && (
+            <Dialog open={isKickDialogOpen} onOpenChange={setKickDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full md:w-auto">
+                  <UserMinus className="h-5 w-5" />
+                  Kick Members
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Select Members to Remove</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {kickableUsers.map((user) => (
+                    <div key={user.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`user-${user.id}`}
+                        checked={selectedUsers.includes(user.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedUsers([...selectedUsers, user.id]);
+                          } else {
+                            setSelectedUsers(
+                              selectedUsers.filter((id) => id !== user.id),
+                            );
+                          }
+                        }}
+                      />
+                      <label htmlFor={`user-${user.id}`}>
+                        {user.name} ({user.pivot?.role})
+                      </label>
+                    </div>
+                  ))}
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="destructive"
+                      disabled={selectedUsers.length === 0}
+                      onClick={handleKickMembers}
+                    >
+                      Kick Selected Members
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
         </CardContent>
       </Card>

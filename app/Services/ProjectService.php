@@ -206,4 +206,20 @@ class ProjectService {
 
     return ['success' => true, 'message' => 'You have left the project.'];
   }
+
+  public function kickMembers(Project $project, array $userIds) {
+    // Update all tasks assigned to these users in this project to have no assignee
+    $project->tasks()
+      ->whereIn('assigned_user_id', $userIds)
+      ->update([
+        'assigned_user_id' => null,
+        'updated_by' => Auth::id(),
+        'updated_at' => now()
+      ]);
+
+    // Remove users from project
+    $project->invitedUsers()->detach($userIds);
+
+    return ['success' => true, 'message' => 'Selected members have been removed from the project.'];
+  }
 }

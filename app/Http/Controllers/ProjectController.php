@@ -205,4 +205,33 @@ class ProjectController extends Controller {
             'isProjectMember' => $project->isProjectMember($user),
         ]);
     }
+
+    public function kickMembers(Request $request, Project $project) {
+        $user = Auth::user();
+
+        if (!$project->canKickProjectMember($user)) {
+            abort(403, 'You are not authorized to kick members from this project.');
+        }
+
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id'
+        ]);
+
+        $userIds = $request->user_ids;
+
+        // Check if trying to kick project managers without permission
+        $projectManagers = $project->acceptedUsers()
+            ->whereIn('user_id', $userIds)
+            ->where('role', RolesEnum::ProjectManager->value)
+            ->exists();
+
+        if ($projectManagers && !$project->canKickProjectManager($user)) {
+            abort(403, 'You are not authorized to kick project managers.');
+        }
+
+        $result = $this->projectService->kickMembers($project, $userIds);
+
+        return back()->with('success', $result['message']);
+    }
 }

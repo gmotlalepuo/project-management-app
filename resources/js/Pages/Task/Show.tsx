@@ -105,7 +105,7 @@ export default function Show({ task }: Props) {
                 <div>
                   <Label>Due Date</Label>
                   <p className="text-gray-700 dark:text-gray-300">
-                    {formatDate(task.due_date)}
+                    {task.due_date ? formatDate(task.due_date) : "No date"}
                   </p>
                 </div>
                 <div>
