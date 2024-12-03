@@ -53,6 +53,7 @@ class ProjectController extends Controller {
             ]),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
+            'activeTab' => request()->query('tab', 'overview'),
         ]);
     }
 
