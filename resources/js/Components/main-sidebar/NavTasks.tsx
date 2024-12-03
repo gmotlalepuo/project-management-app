@@ -1,5 +1,6 @@
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, Trash2, UserMinus } from "lucide-react";
 import { Link, router } from "@inertiajs/react";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 import { Badge } from "@/Components/ui/badge";
 import {
   DropdownMenu,
@@ -19,20 +20,42 @@ import {
 } from "@/Components/ui/sidebar";
 import { Label } from "@/types/task";
 
-export function NavTasks({
-  tasks,
-}: {
-  tasks: {
-    name: string;
-    url: string;
-    labels: Label[];
-  }[];
-}) {
+type TaskWithPermissions = {
+  id: number;
+  name: string;
+  url: string;
+  labels: Label[];
+};
+
+export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
   const { isMobile } = useSidebar();
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
 
   if (tasks.length === 0) {
     return null;
   }
+
+  const handleDeleteClick = (taskId: string) => {
+    showConfirmation({
+      title: "Confirm Task Deletion",
+      description:
+        "Are you sure you want to delete this task? This action cannot be undone.",
+      action: () => router.delete(route("task.destroy", taskId)),
+      actionText: "Delete",
+    });
+  };
+
+  const handleUnassignClick = (taskId: string) => {
+    showConfirmation({
+      title: "Confirm Task Unassignment",
+      description: "Are you sure you want to unassign yourself from this task?",
+      action: () =>
+        router.post(route("task.unassign", taskId), {
+          preserveScroll: true,
+        }),
+      actionText: "Unassign",
+    });
+  };
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -63,6 +86,7 @@ export function NavTasks({
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem onSelect={() => router.get(item.url)}>
+                  <Eye className="h-4 w-4" />
                   <span>View Task</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -70,17 +94,23 @@ export function NavTasks({
                     router.get(route("task.edit", item.url.split("/").pop()))
                   }
                 >
+                  <Pencil className="h-4 w-4" />
                   <span>Edit Task</span>
                 </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => handleUnassignClick(item.url.split("/").pop()!)}
+                >
+                  <UserMinus className="h-4 w-4" />
+                  <span>Unassign</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={() =>
-                    router.delete(
-                      route("task.destroy", item.url.split("/").pop()),
-                    )
-                  }
+                  className="text-red-500"
+                  onSelect={() => handleDeleteClick(item.url.split("/").pop()!)}
                 >
-                  <Trash2 className="text-muted-foreground" />
+                  <Trash2 className="h-4 w-4" />
                   <span>Delete Task</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -96,6 +126,8 @@ export function NavTasks({
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
+
+      <ConfirmationDialog />
     </SidebarGroup>
   );
 }

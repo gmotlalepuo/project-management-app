@@ -72,8 +72,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       name: project.name,
       url: route("project.show", project.id),
       status: project.status,
+      permissions: project.permissions,
     })),
     tasks: recentTasks.map((task) => ({
+      id: task.id,
       name: task.name,
       url: route("task.show", task.id),
       labels: task.labels,

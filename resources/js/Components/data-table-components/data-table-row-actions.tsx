@@ -11,18 +11,7 @@ import {
 import { Eye, Pencil, Trash2, UserPlus, UserMinus, LogOut } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/Components/ui/alert-dialog";
-import * as React from "react";
-import {
-  AlertDialogDescription,
-  AlertDialogTitle,
-} from "@radix-ui/react-alert-dialog";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -51,19 +40,7 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const { auth } = usePage<PageProps>().props;
   const task = row.original as any;
-  const [dialogConfig, setDialogConfig] = React.useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    action: () => void;
-    actionText: string;
-  }>({
-    isOpen: false,
-    title: "",
-    description: "",
-    action: () => {},
-    actionText: "",
-  });
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
 
   // Handle different data shapes for project tasks and global tasks
   const assignedUserId = task.assigned_user_id ?? task.assignedUser?.id;
@@ -71,8 +48,7 @@ export function DataTableRowActions<TData>({
   const isAssignedToCurrentUser = assignedUserId === auth.user.id;
 
   const handleDeleteClick = () => {
-    setDialogConfig({
-      isOpen: true,
+    showConfirmation({
       title: "Confirm Task Deletion",
       description:
         "Are you sure you want to delete this task? This action cannot be undone.",
@@ -82,8 +58,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleAssignClick = () => {
-    setDialogConfig({
-      isOpen: true,
+    showConfirmation({
       title: "Confirm Task Assignment",
       description: "Are you sure you want to assign this task to yourself?",
       action: () => onAssign?.(row),
@@ -92,8 +67,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleUnassignClick = () => {
-    setDialogConfig({
-      isOpen: true,
+    showConfirmation({
       title: "Confirm Task Unassignment",
       description: "Are you sure you want to unassign yourself from this task?",
       action: () => onUnassign?.(row),
@@ -102,8 +76,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleLeaveClick = () => {
-    setDialogConfig({
-      isOpen: true,
+    showConfirmation({
       title: "Confirm Project Leave",
       description: "Are you sure you want to leave this project?",
       action: () => onLeave?.(row),
@@ -126,15 +99,15 @@ export function DataTableRowActions<TData>({
         <DropdownMenuContent align="end" className="w-[160px]">
           {onView && (
             <DropdownMenuItem onClick={() => onView(row)}>
-              <Eye className="mr-2 h-4 w-4" />
-              View
+              <Eye className="h-4 w-4" />
+              <span>View</span>
             </DropdownMenuItem>
           )}
 
           {canEdit && onEdit && (
             <DropdownMenuItem onClick={() => onEdit(row)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              <Pencil className="h-4 w-4" />
+              <span>Edit</span>
             </DropdownMenuItem>
           )}
 
@@ -142,25 +115,28 @@ export function DataTableRowActions<TData>({
             <>
               {canBeAssigned && onAssign && (
                 <DropdownMenuItem onClick={handleAssignClick}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Assign to me
+                  <UserPlus className="h-4 w-4" />
+                  <span>Assign to me</span>
                 </DropdownMenuItem>
               )}
 
               {isAssignedToCurrentUser && onUnassign && (
                 <DropdownMenuItem onClick={handleUnassignClick}>
-                  <UserMinus className="mr-2 h-4 w-4" />
-                  Unassign
+                  <UserMinus className="h-4 w-4" />
+                  <span>Unassign</span>
                 </DropdownMenuItem>
               )}
             </>
           )}
 
           {isProjectTable && !isCreator && onLeave && (
-            <DropdownMenuItem onClick={handleLeaveClick}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Leave Project
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500" onClick={handleLeaveClick}>
+                <LogOut className="h-4 w-4" />
+                <span>Leave Project</span>
+              </DropdownMenuItem>
+            </>
           )}
 
           {((isProjectTable && isCreator) || (!isProjectTable && canEdit)) &&
@@ -168,43 +144,20 @@ export function DataTableRowActions<TData>({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-red-600"
+                  className="text-red-500"
                   onClick={handleDeleteClick}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {isProjectTable && isCreator ? "Delete Project" : "Delete"}
+                  <Trash2 className="h-4 w-4" />
+                  <span>
+                    {isProjectTable && isCreator ? "Delete Project" : "Delete"}
+                  </span>
                 </DropdownMenuItem>
               </>
             )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog
-        open={dialogConfig.isOpen}
-        onOpenChange={(open) =>
-          setDialogConfig((prev) => ({ ...prev, isOpen: open }))
-        }
-      >
-        <AlertDialogContent>
-          <AlertDialogTitle>{dialogConfig.title}</AlertDialogTitle>
-          <AlertDialogDescription>{dialogConfig.description}</AlertDialogDescription>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={() => setDialogConfig((prev) => ({ ...prev, isOpen: false }))}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                dialogConfig.action();
-                setDialogConfig((prev) => ({ ...prev, isOpen: false }));
-              }}
-            >
-              {dialogConfig.actionText}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmationDialog />
     </>
   );
 }

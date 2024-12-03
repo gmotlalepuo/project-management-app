@@ -23,6 +23,10 @@ export type Project = {
   tasks: Task[];
   total_tasks: number;
   completed_tasks: number;
+  permissions: {
+    canEdit: boolean;
+    isCreator: boolean;
+  };
 };
 
 export type PaginatedProject = {

@@ -42,7 +42,19 @@ class HandleInertiaRequests extends Middleware {
                 })
                 ->orderBy('updated_at', 'desc')
                 ->limit(3)
-                ->get();
+                ->get()
+                ->map(function ($project) use ($user) {
+                    return [
+                        'id' => $project->id,
+                        'name' => $project->name,
+                        'status' => $project->status,
+                        'url' => route('project.show', $project->id),
+                        'permissions' => [
+                            'canEdit' => $project->canEditProject($user),
+                            'isCreator' => $project->created_by === $user->id,
+                        ]
+                    ];
+                });
 
             $recentTasks = Task::where('assigned_user_id', $user->id)
                 ->with('labels')
