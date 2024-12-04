@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Task;
+use Carbon\Carbon;
+
+class DashboardService {
+  public function getActiveTasks($user, $filters) {
+    // Start with tasks visible to user
+    $query = Task::visibleToUser($user->id)
+      ->whereIn('status', ['pending', 'in_progress'])
+      ->where('assigned_user_id', $user->id);
+
+    // Apply filters
+    if (isset($filters['name'])) {
+      $query->where('name', 'like', '%' . $filters['name'] . '%');
+    }
+
+    if (isset($filters['project_name'])) {
+      $query->whereHas('project', function ($query) use ($filters) {
+        $query->where('name', 'like', '%' . $filters['project_name'] . '%');
+      });
+    }
+
+    if (isset($filters['status'])) {
+      $statuses = $filters['status'];
+      if (is_array($statuses)) {
+        $query->whereIn('status', $statuses);
+      } else {
+        $query->where('status', $statuses);
+      }
+    }
+
+    if (isset($filters['due_date'])) {
+      $dueDateRange = $filters['due_date'];
+      $startDate = Carbon::parse($dueDateRange[0])->startOfDay();
+      $endDate = Carbon::parse($dueDateRange[1])->endOfDay();
+      $query->whereBetween('due_date', [$startDate, $endDate]);
+    }
+
+    return $query;
+  }
+}

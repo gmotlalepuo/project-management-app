@@ -1,8 +1,15 @@
 import { TASK_STATUS_BADGE_MAP, TASK_STATUS_TEXT_MAP } from "@/utils/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { PaginatedTask } from "@/types/task";
+import { PaginatedTask, Task } from "@/types/task";
 import { Head, Link } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
+import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
+import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
+import { useMemo } from "react";
+import { FilterableColumn } from "@/types/utils";
+import { formatDate } from "@/utils/helpers";
+import { ClipboardList, Timer, CheckCircle2 } from "lucide-react";
 
 type Props = {
   totalPendingTasks: number;
@@ -12,6 +19,7 @@ type Props = {
   totalCompletedTasks: number;
   myCompletedTasks: number;
   activeTasks: PaginatedTask;
+  queryParams: { [key: string]: any };
 };
 
 export default function Dashboard({
@@ -22,7 +30,87 @@ export default function Dashboard({
   totalCompletedTasks,
   myCompletedTasks,
   activeTasks,
+  queryParams,
 }: Props) {
+  queryParams = queryParams || {};
+
+  // Define the table columns
+  const columns = useMemo<ColumnDef<Task, any>[]>(
+    () => [
+      {
+        accessorKey: "id",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+      },
+      {
+        accessorKey: "project.name",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Project" />
+        ),
+        cell: ({ row }) => (
+          <Link href={route("project.show", row.original.project.id)}>
+            {row.original.project.name}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Name" />
+        ),
+        cell: ({ row }) => (
+          <Link href={route("task.show", row.original.id)}>{row.original.name}</Link>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Status" />
+        ),
+        cell: ({ row }) => (
+          <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
+            {TASK_STATUS_TEXT_MAP[row.original.status]}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "due_date",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Due Date" />
+        ),
+        cell: ({ row }) =>
+          row.original.due_date ? formatDate(row.original.due_date) : "No date",
+      },
+    ],
+    [],
+  );
+
+  const filterableColumns: FilterableColumn[] = [
+    {
+      accessorKey: "project_name",
+      title: "Project",
+      filterType: "text",
+    },
+    {
+      accessorKey: "name",
+      title: "Name",
+      filterType: "text",
+    },
+    {
+      accessorKey: "status",
+      title: "Status",
+      filterType: "select",
+      options: Object.entries(TASK_STATUS_TEXT_MAP).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    },
+    {
+      accessorKey: "due_date",
+      title: "Due Date",
+      filterType: "date",
+    },
+  ];
+
   return (
     <AuthenticatedLayout
       header={
@@ -34,84 +122,56 @@ export default function Dashboard({
       <Head title="Dashboard" />
 
       <div className="py-8">
-        <div className="mx-auto grid max-w-7xl grid-cols-3 gap-2 px-3 sm:px-6 lg:px-8">
-          <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            <div className="p-6 text-gray-900 dark:text-gray-100">
-              <h3 className="text-2xl font-semibold text-amber-500">
-                Pending Tasks
-              </h3>
-              <p className="mt-4 text-xl">
-                <span className="mr-2">{myPendingTasks}</span>/
-                <span className="ml-2">{totalPendingTasks}</span>
-              </p>
-            </div>
-          </div>
-          <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            <div className="p-6 text-gray-900 dark:text-gray-100">
-              <h3 className="text-2xl font-semibold text-blue-500">
-                In Progress Tasks
-              </h3>
-              <p className="mt-4 text-xl">
-                <span className="mr-2">{myProgressTasks}</span>/
-                <span className="ml-2">{totalProgressTasks}</span>
-              </p>
-            </div>
-          </div>
-          <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            <div className="p-6 text-gray-900 dark:text-gray-100">
-              <h3 className="text-2xl font-semibold text-green-500">
-                Completed Tasks
-              </h3>
-              <p className="mt-4 text-xl">
-                <span className="mr-2">{myCompletedTasks}</span>/
-                <span className="ml-2">{totalCompletedTasks}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="mx-auto mt-4 max-w-7xl px-3 sm:px-6 lg:px-8">
-          <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-            <div className="p-6 text-gray-900 dark:text-gray-100">
-              <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-200">
-                My Active Tasks
-              </h3>
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-3 md:grid-cols-3 md:px-6 lg:px-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-3">
+              <ClipboardList className="h-6 w-6 text-amber-500" />
+              <CardTitle className="!m-0 text-amber-500">Pending Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xl">
+              <span className="mr-2">{myPendingTasks}</span>/
+              <span className="ml-2">{totalPendingTasks}</span>
+            </CardContent>
+          </Card>
 
-              <table className="mt-3 w-full text-left text-sm text-gray-500 dark:text-gray-400 rtl:text-right">
-                <thead className="border-b-2 border-gray-500 bg-gray-50 text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400">
-                  <tr>
-                    <th className="px-3 py-3">ID</th>
-                    <th className="px-3 py-3">Project Name</th>
-                    <th className="px-3 py-3">Name</th>
-                    <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">Due Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeTasks.data.map((task) => (
-                    <tr key={task.id}>
-                      <td className="px-3 py-2">{task.id}</td>
-                      <td className="px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
-                        <Link href={route("project.show", task.project.id)}>
-                          {task.project.name}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2 text-gray-900 hover:underline dark:text-gray-100">
-                        <Link href={route("task.show", task.id)}>
-                          {task.name}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
-                          {TASK_STATUS_TEXT_MAP[task.status]}
-                        </Badge>
-                      </td>
-                      <td className="text-nowrap px-3 py-2">{task.due_date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-3">
+              <Timer className="h-6 w-6 text-blue-500" />
+              <CardTitle className="!m-0 text-blue-500">In Progress Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xl">
+              <span className="mr-2">{myProgressTasks}</span>/
+              <span className="ml-2">{totalProgressTasks}</span>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-3">
+              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <CardTitle className="!m-0 text-green-500">Completed Tasks</CardTitle>
+            </CardHeader>
+            <CardContent className="text-xl">
+              <span className="mr-2">{myCompletedTasks}</span>/
+              <span className="ml-2">{totalCompletedTasks}</span>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mx-auto mt-4 max-w-7xl px-3 sm:px-6 lg:px-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>My Active Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DataTable
+                columns={columns}
+                entity={activeTasks}
+                filterableColumns={filterableColumns}
+                queryParams={queryParams}
+                routeName="dashboard"
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AuthenticatedLayout>
