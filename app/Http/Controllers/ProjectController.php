@@ -13,6 +13,7 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 use App\Enum\RolesEnum;
+use App\Models\TaskLabel;
 
 class ProjectController extends Controller {
     protected $projectService;
@@ -105,6 +106,11 @@ class ProjectController extends Controller {
             abort(403, 'Project members cannot access the invite section.');
         }
 
+        // Fetch label options for the filter
+        $labelOptions = TaskLabel::all()->map(function ($label) {
+            return ['value' => $label->id, 'label' => $label->name];
+        });
+
         $filters = request()->all();
         $tasks = $this->projectService->getProjectWithTasks($project, $filters);
 
@@ -115,6 +121,7 @@ class ProjectController extends Controller {
             'success' => session('success'),
             'error' => session('error'),
             'activeTab' => request()->query('tab', 'tasks'),
+            'labelOptions' => $labelOptions,
             'permissions' => [
                 'canInviteUsers' => $project->canInviteUsers($user),
                 'canEditProject' => $project->canEditProject($user),

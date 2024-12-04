@@ -171,6 +171,12 @@ export default function Index({
       filterType: "text",
     },
     {
+      accessorKey: "label_ids",
+      title: "Labels",
+      filterType: "select",
+      options: labelOptions,
+    },
+    {
       accessorKey: "priority",
       title: "Priority",
       filterType: "select",
@@ -197,13 +203,6 @@ export default function Index({
       accessorKey: "created_by_name",
       title: "Created By",
       filterType: "text",
-    },
-    {
-      accessorKey: "label_ids",
-      title: "Labels",
-      filterType: "select",
-      options: labelOptions,
-      excludeFromTable: true,
     },
   ];
 

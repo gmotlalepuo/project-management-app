@@ -106,6 +106,18 @@ class ProjectService {
         $query->where("priority", $priorities);
       }
     }
+    if (isset($filters['label_ids'])) {
+      $labelIds = $filters['label_ids'];
+      if (is_array($labelIds)) {
+        $query->whereHas("labels", function ($query) use ($labelIds) {
+          $query->whereIn("id", $labelIds);
+        });
+      } else {
+        $query->whereHas("labels", function ($query) use ($labelIds) {
+          $query->where("id", $labelIds);
+        });
+      }
+    }
 
     $sortField = $filters['sort_field'] ?? "created_at";
     $sortDirection = $filters['sort_direction'] ?? "desc";

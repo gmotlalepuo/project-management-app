@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Models\TaskLabel;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -45,6 +46,11 @@ class DashboardController extends Controller {
         $sortField = request('sort_field', 'created_at');
         $sortDirection = request('sort_direction', 'desc');
 
+        // Fetch label options for the filter
+        $labelOptions = TaskLabel::all()->map(function ($label) {
+            return ['value' => $label->id, 'label' => $label->name];
+        });
+
         // Ensure we're loading the necessary relations
         $activeTasks = $query->with(['project', 'labels', 'assignedUser'])
             ->orderBy($sortField, $sortDirection)
@@ -60,6 +66,11 @@ class DashboardController extends Controller {
             'myCompletedTasks' => $myCompletedTasks,
             'activeTasks' => TaskResource::collection($activeTasks),
             'queryParams' => $filters ?: null,
+            'success' => session('success'),
+            'labelOptions' => $labelOptions,
+            'permissions' => [
+                'canManageTasks' => $activeTasks->first()?->project->canManageTask($user),
+            ],
         ]);
     }
 }

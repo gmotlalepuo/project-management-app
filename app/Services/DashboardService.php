@@ -39,6 +39,19 @@ class DashboardService {
       $query->whereBetween('due_date', [$startDate, $endDate]);
     }
 
+    if (isset($filters['label_ids'])) {
+      $labelIds = $filters['label_ids'];
+      if (is_array($labelIds)) {
+        $query->whereHas("labels", function ($query) use ($labelIds) {
+          $query->whereIn("id", $labelIds);
+        });
+      } else {
+        $query->whereHas("labels", function ($query) use ($labelIds) {
+          $query->where("id", $labelIds);
+        });
+      }
+    }
+
     return $query;
   }
 }

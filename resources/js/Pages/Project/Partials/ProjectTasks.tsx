@@ -20,43 +20,18 @@ type Props = {
   tasks: PaginatedTask;
   queryParams: { [key: string]: any };
   projectId: number;
+  labelOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
 };
-
-const filterableColumns: FilterableColumn[] = [
-  { accessorKey: "name", title: "Task Name", filterType: "text" },
-  {
-    accessorKey: "priority",
-    title: "Priority",
-    filterType: "select",
-    options: Object.entries(TASK_PRIORITY_TEXT_MAP).map(([value, label]) => ({
-      value,
-      label,
-    })),
-  },
-  {
-    accessorKey: "status",
-    title: "Status",
-    filterType: "select",
-    options: Object.entries(PROJECT_STATUS_TEXT_MAP).map(([value, label]) => ({
-      value,
-      label,
-    })),
-  },
-  {
-    accessorKey: "due_date",
-    title: "Due Date",
-    filterType: "date",
-  },
-];
 
 export default function ProjectTasks({
   tasks,
   queryParams,
   projectId,
   permissions,
+  labelOptions,
 }: Props) {
   queryParams = queryParams || {};
 
@@ -147,6 +122,39 @@ export default function ProjectTasks({
           canEdit={permissions.canManageTasks}
         />
       ),
+    },
+  ];
+
+  const filterableColumns: FilterableColumn[] = [
+    { accessorKey: "name", title: "Task Name", filterType: "text" },
+    {
+      accessorKey: "label_ids",
+      title: "Labels",
+      filterType: "select",
+      options: labelOptions,
+    },
+    {
+      accessorKey: "priority",
+      title: "Priority",
+      filterType: "select",
+      options: Object.entries(TASK_PRIORITY_TEXT_MAP).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    },
+    {
+      accessorKey: "status",
+      title: "Status",
+      filterType: "select",
+      options: Object.entries(PROJECT_STATUS_TEXT_MAP).map(([value, label]) => ({
+        value,
+        label,
+      })),
+    },
+    {
+      accessorKey: "due_date",
+      title: "Due Date",
+      filterType: "date",
     },
   ];
 
