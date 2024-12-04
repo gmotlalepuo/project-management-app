@@ -8,7 +8,7 @@ import {
   PROJECT_STATUS_BADGE_MAP,
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@/Components/data-table-components/data-table";
 import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn } from "@/types/utils";
 import { Link, router } from "@inertiajs/react";
@@ -35,7 +35,7 @@ export default function ProjectTasks({
 }: Props) {
   queryParams = queryParams || {};
 
-  const columns: ColumnDef<Task>[] = [
+  const columns: ColumnDef<Task, any>[] = [
     {
       accessorKey: "id",
       header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
@@ -122,6 +122,11 @@ export default function ProjectTasks({
           canEdit={permissions.canManageTasks}
         />
       ),
+    },
+    {
+      accessorKey: "label_ids",
+      defaultHidden: true,
+      hideFromViewOptions: true,
     },
   ];
 

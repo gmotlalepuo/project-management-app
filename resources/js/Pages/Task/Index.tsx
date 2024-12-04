@@ -155,6 +155,11 @@ export default function Index({
           />
         ),
       },
+      {
+        accessorKey: "label_ids",
+        defaultHidden: true,
+        hideFromViewOptions: true,
+      },
     ],
     [permissions],
   );

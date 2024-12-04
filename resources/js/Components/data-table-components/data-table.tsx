@@ -25,16 +25,13 @@ import {
 
 import { DataTableToolbar } from "./data-table-toolbar";
 import { DataTablePagination } from "./data-table-pagination";
-import {
-  FilterableColumn,
-  PaginationLinks,
-  PaginationMeta,
-} from "@/types/utils";
+import { FilterableColumn, PaginationLinks, PaginationMeta } from "@/types/utils";
 import { router } from "@inertiajs/react";
 
 // Extend ColumnDef to include defaultHidden and minWidth
 export type ColumnDef<TData, TValue> = BaseColumnDef<TData, TValue> & {
   defaultHidden?: boolean;
+  hideFromViewOptions?: boolean;
   accessorKey?: string;
   minWidth?: number;
 };
@@ -63,18 +60,15 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const { data, meta } = entity;
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>(
-      columns.reduce((acc, column) => {
-        if (column.defaultHidden) {
-          acc[column.id || (column.accessorKey as string)] = false;
-        }
-        return acc;
-      }, {} as VisibilityState),
-    );
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
+    columns.reduce((acc, column) => {
+      if (column.defaultHidden) {
+        acc[column.id || (column.accessorKey as string)] = false;
+      }
+      return acc;
+    }, {} as VisibilityState),
   );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
 
@@ -173,20 +167,14 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell className="px-4 py-2" key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>

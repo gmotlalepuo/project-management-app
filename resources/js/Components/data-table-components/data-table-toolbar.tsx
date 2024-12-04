@@ -163,11 +163,7 @@ export function DataTableToolbar<TData>({
               variant="ghost"
               onClick={() => {
                 const updatedParams = entityId ? { id: entityId } : {}; // Include entityId if available
-                router.get(
-                  route(routeName, updatedParams),
-                  {},
-                  { replace: true },
-                );
+                router.get(route(routeName, updatedParams), {}, { replace: true });
               }}
               className="h-8 px-2 lg:px-3"
             >

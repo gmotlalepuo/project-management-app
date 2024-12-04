@@ -6,7 +6,7 @@ import {
 } from "@/utils/constants";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PaginatedTask, Task } from "@/types/task";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { Badge } from "@/Components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
@@ -56,6 +56,7 @@ export default function Dashboard({
   permissions,
   success,
 }: Props) {
+  const { allTasks } = usePage().props as unknown as { allTasks: Task[] };
   queryParams = queryParams || {};
 
   const { toast } = useToast();
@@ -136,6 +137,11 @@ export default function Dashboard({
         ),
         cell: ({ row }) =>
           row.original.due_date ? formatDate(row.original.due_date) : "No date",
+      },
+      {
+        accessorKey: "label_ids",
+        defaultHidden: true,
+        hideFromViewOptions: true,
       },
       {
         id: "actions",
@@ -334,7 +340,7 @@ export default function Dashboard({
               </div>
 
               {/* Active Tasks Table */}
-              {activeTasks.data.length > 0 && (
+              {allTasks.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle>My Active Tasks</CardTitle>
