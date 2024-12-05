@@ -25,6 +25,9 @@ type TaskWithPermissions = {
   name: string;
   url: string;
   labels: Label[];
+  permissions: {
+    canDelete: boolean;
+  };
 };
 
 export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
@@ -105,14 +108,18 @@ export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
                   <span>Unassign</span>
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-500"
-                  onSelect={() => handleDeleteClick(item.url.split("/").pop()!)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>Delete Task</span>
-                </DropdownMenuItem>
+                {item.permissions.canDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-red-500"
+                      onSelect={() => handleDeleteClick(item.url.split("/").pop()!)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Task</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

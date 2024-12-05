@@ -20,11 +20,18 @@ trait HasProjectRoles {
   }
 
   public function canEditTask(User $user, Task $task): bool {
+    // Project managers can edit any task
     if ($this->canManageTask($user)) {
       return true;
     }
 
-    return $task->assigned_user_id === $user->id;
+    // Project members can edit tasks assigned to them
+    return $task->isAssignedTo($user);
+  }
+
+  public function canDeleteTask(User $user): bool {
+    // Only project managers can delete tasks
+    return $this->canManageTask($user);
   }
 
   public function isProjectMember(User $user): bool {

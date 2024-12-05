@@ -57,10 +57,21 @@ class HandleInertiaRequests extends Middleware {
                 });
 
             $recentTasks = Task::where('assigned_user_id', $user->id)
-                ->with('labels')
+                ->with(['labels', 'project']) // Add project relationship
                 ->orderBy('updated_at', 'desc')
                 ->limit(3)
-                ->get();
+                ->get()
+                ->map(function ($task) use ($user) {
+                    return [
+                        'id' => $task->id,
+                        'name' => $task->name,
+                        'labels' => $task->labels,
+                        'url' => route('task.show', $task->id),
+                        'permissions' => [
+                            'canDelete' => $task->project->canDeleteTask($user),
+                        ],
+                    ];
+                });
 
             // Fetch all projects and tasks related to the user
             $allProjects = Project::where('created_by', $user->id)

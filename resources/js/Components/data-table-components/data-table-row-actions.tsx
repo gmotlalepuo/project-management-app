@@ -46,6 +46,7 @@ export function DataTableRowActions<TData>({
   const assignedUserId = task.assigned_user_id ?? task.assignedUser?.id;
   const canBeAssigned = !assignedUserId;
   const isAssignedToCurrentUser = assignedUserId === auth.user.id;
+  const canEditTask = isAssignedToCurrentUser || canEdit; // canEdit represents project manager privileges
 
   const handleDeleteClick = () => {
     showConfirmation({
@@ -104,7 +105,7 @@ export function DataTableRowActions<TData>({
             </DropdownMenuItem>
           )}
 
-          {canEdit && onEdit && (
+          {canEditTask && onEdit && (
             <DropdownMenuItem onClick={() => onEdit(row)}>
               <Pencil className="h-4 w-4" />
               <span>Edit</span>

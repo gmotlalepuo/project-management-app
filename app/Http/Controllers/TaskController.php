@@ -233,6 +233,13 @@ class TaskController extends Controller {
      * Remove the specified resource from storage.
      */
     public function destroy(Task $task) {
+        $user = Auth::user();
+        $project = $task->project;
+
+        if (!$project->canDeleteTask($user)) {
+            abort(403, 'You are not authorized to delete this task.');
+        }
+
         $this->taskService->deleteTask($task);
 
         return to_route('task.index')->with('success', "Task '{$task->name}' deleted successfully.");

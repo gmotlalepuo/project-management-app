@@ -85,6 +85,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       name: task.name,
       url: route("task.show", task.id),
       labels: task.labels,
+      permissions: task.permissions,
     })),
   };
 

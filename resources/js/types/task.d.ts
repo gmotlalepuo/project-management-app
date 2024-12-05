@@ -16,6 +16,9 @@ export type Task = {
   createdBy: User;
   updatedBy: User;
   labels: Label[];
+  permissions: {
+    canDelete: boolean;
+  };
 };
 
 export type Label = {
