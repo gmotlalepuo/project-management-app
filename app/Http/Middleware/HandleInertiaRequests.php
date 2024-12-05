@@ -81,7 +81,10 @@ class HandleInertiaRequests extends Middleware {
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $user,
+                'user' => $user ? array_merge($user->toArray(), [
+                    'permissions' => $user->getPermissionNames()->toArray(),
+                    'roles' => $user->getRoleNames()->toArray(),
+                ]) : null,
             ],
             'timezone' => $request->header('User-Timezone', 'UTC'),
             'ziggy' => fn() => [

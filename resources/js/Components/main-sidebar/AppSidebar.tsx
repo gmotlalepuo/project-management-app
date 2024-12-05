@@ -1,4 +1,5 @@
 import { ListTodo, SquareChartGantt, Users } from "lucide-react";
+import { RolesEnum } from "@/types/enums";
 
 import { NavMain } from "./NavMain";
 import { NavProjects } from "./NavProjects";
@@ -61,12 +62,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           },
         ],
       },
-      {
-        title: "Users",
-        url: route("user.index"),
-        icon: Users,
-        prefetch: true,
-      },
+      // Only show Users nav item if user has admin role
+      ...(auth.user.roles?.includes(RolesEnum.Admin)
+        ? [
+            {
+              title: "Users",
+              url: route("user.index"),
+              icon: Users,
+              prefetch: true,
+            },
+          ]
+        : []),
     ],
     projects: recentProjects.map((project) => ({
       name: project.name,

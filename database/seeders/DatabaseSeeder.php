@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder {
         $adminRole = Role::create(['name' => RolesEnum::Admin->value]);
         $adminRole->givePermissionTo(Permission::all());
 
+        // Additionally assign the project manager role to give project management capabilities
         $projectManagerRole = Role::create(['name' => RolesEnum::ProjectManager->value]);
         $projectManagerRole->givePermissionTo([
             PermissionsEnum::ManageProjects->value,
@@ -63,8 +64,9 @@ class DatabaseSeeder extends Seeder {
             'email_verified_at' => time(),
         ]);
 
-        // Assign the admin role to the sample user
-        $user->assignRole(RolesEnum::Admin->value);
+        // Assign both admin and project manager roles
+        $user->assignRole([RolesEnum::Admin->value, RolesEnum::ProjectManager->value]);
+        $user->syncPermissions(Permission::all());
 
         // Seed generic task labels
         $genericLabels = [
@@ -79,6 +81,12 @@ class DatabaseSeeder extends Seeder {
             TaskLabel::create(array_merge($label, ['project_id' => null]));
         }
 
-        // Project::factory()->count(30)->hasTasks(30)->create();
+        // Create projects with proper role assignments
+        Project::factory()
+            ->count(30)
+            ->hasTasks(30)
+            ->create([
+                'created_by' => $user->id // This ensures the admin user is the creator
+            ]);
     }
 }

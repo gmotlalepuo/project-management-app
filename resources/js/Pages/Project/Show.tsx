@@ -60,7 +60,7 @@ export default function Show({
       <div className="space-y-12 py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid auto-cols-[minmax(0,_2fr)] grid-flow-col">
+            <TabsList className="grid auto-cols-[minmax(0,_2fr)] grid-flow-col shadow-sm">
               <TabsTrigger value="tasks">Project Tasks</TabsTrigger>
               <TabsTrigger value="info">Project Info</TabsTrigger>
               {permissions.canInviteUsers && (

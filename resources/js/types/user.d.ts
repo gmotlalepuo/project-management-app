@@ -1,3 +1,5 @@
+import { PermissionsEnum, RolesEnum } from "./enums";
+
 export type User = {
   id: number;
   name: string;
@@ -9,6 +11,8 @@ export type User = {
     role: string;
     status: string;
   };
+  roles?: RolesEnum[];
+  permissions?: PermissionsEnum[];
 };
 
 export type PaginatedUser = {

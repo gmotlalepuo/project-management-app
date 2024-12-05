@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enum\RolesEnum;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,13 +19,31 @@ class ProjectFactory extends Factory {
         return [
             'name' => fake()->sentence(),
             'description' => fake()->realText(),
-            'due_date' => fake()->dateTimeBetween('now', '+1 year'),
+            'due_date' => fake()->dateTimeBetween('now', '+1 year')->format('Y-m-d H:i:s'),
             'status' => fake()->randomElement(['pending', 'in_progress', 'completed']),
             'image_path' => fake()->imageUrl(),
             'created_by' => 1,
             'updated_by' => 1,
-            'created_at' => time(),
-            'updated_at' => time(),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
+    }
+
+    public function configure() {
+        return $this->afterCreating(function ($project) {
+            // Attach the creator (admin) as a project manager
+            $project->acceptedUsers()->attach($project->created_by, [
+                'role' => 'project_manager',
+                'status' => 'accepted',
+            ]);
+
+            // Create and attach another project manager if needed
+            $projectManager = User::factory()->create();
+            $projectManager->assignRole(RolesEnum::ProjectManager->value);
+            $project->acceptedUsers()->attach($projectManager->id, [
+                'role' => 'project_manager',
+                'status' => 'accepted',
+            ]);
+        });
     }
 }

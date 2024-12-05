@@ -16,6 +16,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/Components/ui/chart";
+import { ChartPie, CheckCircle2, Trophy } from "lucide-react";
 
 const chartConfig = {
   count: { label: "Projects" },
@@ -61,8 +62,11 @@ export default function ProjectSidebar({ projects }: ProjectSidebarProps) {
     >
       {projects.length > 0 && (
         <Card className="flex flex-col">
-          <CardHeader className="items-center pb-0">
-            <CardTitle>Project Status Overview</CardTitle>
+          <CardHeader className="pb-0 sm:items-center">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+              <ChartPie className="h-6 w-6 text-primary" />
+              <span>Project Status Overview</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 pb-0">
             <ChartContainer
@@ -139,26 +143,39 @@ export default function ProjectSidebar({ projects }: ProjectSidebarProps) {
       )}
 
       {projects.some((project) => project.status === "completed") && (
-        <div className="rounded-lg bg-card p-4 shadow">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            Recently Completed Projects
-          </h3>
-          <ul className="mt-3 space-y-2 text-sm">
-            {projects
-              .filter((project) => project.status === "completed")
-              .slice(0, 3)
-              .map((project) => (
-                <li key={project.id} className="flex items-center">
-                  <Link
-                    href={route("project.show", project.id)}
-                    className="hover:underline"
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
+              <Trophy className="h-5 w-5 text-primary" />
+              <span>Recently Completed</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5">
+              {projects
+                .filter((project) => project.status === "completed")
+                .slice(0, 5)
+                .map((project) => (
+                  <li
+                    key={project.id}
+                    className="group flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-muted/50"
                   >
-                    {project.name}
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </div>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <Link
+                      href={route("project.show", project.id)}
+                      className="line-through decoration-muted-foreground/50 decoration-1 hover:text-primary"
+                    >
+                      {project.name}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </CardContent>
+          <CardFooter className="text-sm text-muted-foreground">
+            Total completed:{" "}
+            {projects.filter((p) => p.status === "completed").length}
+          </CardFooter>
+        </Card>
       )}
     </div>
   );

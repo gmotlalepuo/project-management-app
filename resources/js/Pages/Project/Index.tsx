@@ -177,13 +177,13 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               </h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("project.create")}>
-                  <Button className="w-full sm:w-auto">
+                  <Button className="w-full shadow-md sm:w-auto">
                     <CirclePlus className="h-5 w-5" />
                     <span>Create Project</span>
                   </Button>
                 </Link>
                 <Link href={route("project.invitations")}>
-                  <Button variant="secondary" className="w-full sm:w-auto">
+                  <Button variant="secondary" className="w-full shadow-md sm:w-auto">
                     <UsersRound className="h-5 w-5" />
                     <span>Invitations</span>
                   </Button>
@@ -196,7 +196,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
         {allProjects.length > 0 ? (
           <section className="px-3 sm:px-6 lg:px-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 shadow-sm">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="list">List View</TabsTrigger>
               </TabsList>
