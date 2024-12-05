@@ -68,7 +68,6 @@ class TaskController extends Controller {
             })
             ->orderBy('name', 'asc')
             ->get();
-        $users = User::query()->orderBy('name', 'asc')->get();
 
         // Get the project ID from the request
         $projectId = request('project_id');
@@ -76,6 +75,12 @@ class TaskController extends Controller {
 
         // Should they be restricted to self-assignment?
         $canAssignOthers = !$project || !$project->isProjectMember($user);
+
+        // Fetch initial users if project is selected
+        $users = collect();
+        if ($projectId) {
+            $users = $this->getProjectUsers($project);
+        }
 
         // Fetch labels
         $labels = TaskLabel::whereNull('project_id')
@@ -90,6 +95,45 @@ class TaskController extends Controller {
             'canAssignOthers' => $canAssignOthers,
             'currentUserId' => $user->id,
             'selectedProjectId' => $projectId, // Add this to help frontend validation
+        ]);
+    }
+
+    /**
+     * Get users that belong to a project
+     */
+    private function getProjectUsers(?Project $project): \Illuminate\Support\Collection {
+        if (!$project) {
+            return collect();
+        }
+
+        $user = Auth::user();
+
+        // If user is a project member, only return themselves
+        if ($project->isProjectMember($user)) {
+            return collect([$user]);
+        }
+
+        // Otherwise, return all project users (for project managers)
+        return $project->acceptedUsers()
+            ->orderBy('name', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get users for a specific project (API endpoint)
+     */
+    public function getUsers(Project $project) {
+        $user = Auth::user();
+
+        if (!$project->acceptedUsers()->where('user_id', $user->id)->exists()) {
+            abort(403, 'You are not authorized to view project users.');
+        }
+
+        $users = $this->getProjectUsers($project);
+        return response()->json([
+            'users' => [
+                'data' => UserResource::collection($users)
+            ]
         ]);
     }
 
@@ -139,17 +183,14 @@ class TaskController extends Controller {
         }
 
         // Project managers can always change assignee
-        $canChangeAssignee = true;
-
-        // Only restrict if user is not a project manager
-        if (!$project->canManageTask($user)) {
-            $canChangeAssignee = false;
-        }
+        $canChangeAssignee = !$project->isProjectMember($user);
 
         $task->load('labels');
         // We only need the current project for edit mode
         $projects = Project::where('id', $project->id)->get();
-        $users = User::query()->orderBy('name', 'asc')->get();
+
+        // Get users based on role (similar to create form)
+        $users = $this->getProjectUsers($project);
 
         $projectId = $task->project_id;
         $labels = TaskLabel::whereNull('project_id')

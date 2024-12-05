@@ -35,12 +35,13 @@ type Props = {
 
 export default function Create({
   projects,
-  users,
+  users: initialUsers,
   labels,
   currentUserId,
   selectedProjectId,
 }: Props) {
   const [canAssignOthers, setCanAssignOthers] = useState(true);
+  const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
 
   const { data, setData, post, errors, reset } = useForm({
     image: null as File | null,
@@ -102,17 +103,45 @@ export default function Create({
 
       setCanAssignOthers(!isProjectMember);
 
+      // If project member, set their ID and update users list to only include themselves
       if (isProjectMember) {
         setData("assigned_user_id", currentUserId.toString());
+        setUsers({
+          data: [
+            {
+              id: currentUserId,
+              name:
+                initialUsers.data.find((u) => u.id === currentUserId)?.name || "",
+              email:
+                initialUsers.data.find((u) => u.id === currentUserId)?.email || "",
+            },
+          ],
+        });
       }
     } catch (error) {
       console.error("Failed to check project role:", error);
     }
   };
 
+  const fetchProjectUsers = async (projectId: string) => {
+    try {
+      const response = await axios.get(route("task.users", projectId));
+      setUsers(response.data.users || { data: [] });
+    } catch (error) {
+      console.error("Failed to fetch project users:", error);
+      setUsers({ data: [] }); // Set empty data on error
+      toast({
+        title: "Error",
+        description: "Failed to fetch project users",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleProjectChange = (projectId: string) => {
     setData("project_id", projectId);
     checkProjectRole(projectId);
+    fetchProjectUsers(projectId);
   };
 
   return (
@@ -145,10 +174,7 @@ export default function Create({
                   </SelectTrigger>
                   <SelectContent>
                     {projects.data.map((project) => (
-                      <SelectItem
-                        key={project.id}
-                        value={project.id.toString()}
-                      >
+                      <SelectItem key={project.id} value={project.id.toString()}>
                         {project.name}
                       </SelectItem>
                     ))}
@@ -209,8 +235,8 @@ export default function Create({
                     <Info className="h-4 w-4" />
                     <AlertTitle>No labels found</AlertTitle>
                     <AlertDescription className="mb-1">
-                      If you want to label your tasks, please create labels from
-                      the button below.
+                      If you want to label your tasks, please create labels from the
+                      button below.
                     </AlertDescription>
                     <Link
                       href={route("task_labels.create", {
@@ -300,28 +326,28 @@ export default function Create({
                   required
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select User" />
+                    <SelectValue
+                      placeholder={
+                        !canAssignOthers && users.data.length > 0
+                          ? `${users.data[0].name} (${users.data[0].email})`
+                          : "Select User"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {users.data.map((user) => (
+                    {(users?.data || []).map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} ({user.email})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <InputError
-                  message={errors.assigned_user_id}
-                  className="mt-2"
-                />
+                <InputError message={errors.assigned_user_id} className="mt-2" />
               </div>
 
               {/* Actions */}
               <div className="flex justify-end space-x-4">
-                <Button
-                  variant="secondary"
-                  onClick={() => window.history.back()}
-                >
+                <Button variant="secondary" onClick={() => window.history.back()}>
                   Cancel
                 </Button>
                 <Button type="submit">Submit</Button>

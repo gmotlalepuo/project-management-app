@@ -306,9 +306,14 @@ export default function Dashboard({
                       Pending Tasks
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-xl">
-                    <span className="mr-2">{myPendingTasks}</span>/
-                    <span className="ml-2">{totalPendingTasks}</span>
+                  <CardContent>
+                    <div className="text-xl">
+                      <span className="mr-2">{myPendingTasks}</span>/
+                      <span className="ml-2">{totalPendingTasks}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Tasks assigned to you / Total tasks in your projects
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -319,9 +324,14 @@ export default function Dashboard({
                       In Progress Tasks
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-xl">
-                    <span className="mr-2">{myProgressTasks}</span>/
-                    <span className="ml-2">{totalProgressTasks}</span>
+                  <CardContent>
+                    <div className="text-xl">
+                      <span className="mr-2">{myProgressTasks}</span>/
+                      <span className="ml-2">{totalProgressTasks}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Tasks assigned to you / Total tasks in your projects
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -332,9 +342,14 @@ export default function Dashboard({
                       Completed Tasks
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="text-xl">
-                    <span className="mr-2">{myCompletedTasks}</span>/
-                    <span className="ml-2">{totalCompletedTasks}</span>
+                  <CardContent>
+                    <div className="text-xl">
+                      <span className="mr-2">{myCompletedTasks}</span>/
+                      <span className="ml-2">{totalCompletedTasks}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Tasks assigned to you / Total tasks in your projects
+                    </p>
                   </CardContent>
                 </Card>
               </div>

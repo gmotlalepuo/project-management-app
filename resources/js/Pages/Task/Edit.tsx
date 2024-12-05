@@ -142,10 +142,7 @@ export default function Edit({
                   </SelectTrigger>
                   <SelectContent>
                     {projects.data.map((project) => (
-                      <SelectItem
-                        key={project.id}
-                        value={project.id.toString()}
-                      >
+                      <SelectItem key={project.id} value={project.id.toString()}>
                         {project.name}
                       </SelectItem>
                     ))}
@@ -208,8 +205,8 @@ export default function Edit({
                     <Info className="h-4 w-4" />
                     <AlertTitle>No labels found</AlertTitle>
                     <AlertDescription className="mb-1">
-                      If you want to label your tasks, please create labels from
-                      the button below.
+                      If you want to label your tasks, please create labels from the
+                      button below.
                     </AlertDescription>
                     <Link
                       href={route("task_labels.create", {
@@ -303,20 +300,23 @@ export default function Edit({
                   required
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select User" />
+                    <SelectValue
+                      placeholder={
+                        !canChangeAssignee && users.data.length > 0
+                          ? `${users.data[0].name} (${users.data[0].email})`
+                          : "Select User"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {users.data.map((user) => (
+                    {(users?.data || []).map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} ({user.email})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <InputError
-                  message={errors.assigned_user_id}
-                  className="mt-2"
-                />
+                <InputError message={errors.assigned_user_id} className="mt-2" />
               </div>
 
               {/* Actions */}

@@ -75,6 +75,9 @@ Route::middleware('auth')->group(function () {
         // Task label routes
         Route::get('/task_labels/search', [TaskLabelController::class, 'search'])->name('task_labels.search');
         Route::resource('task_labels', TaskLabelController::class);
+
+        // New route
+        Route::get('/projects/{project}/users', [TaskController::class, 'getUsers'])->name('task.users');
     });
 });
 

@@ -17,13 +17,13 @@ export type User = {
 
 export type PaginatedUser = {
   data: User[];
-  links: {
+  links?: {
     first: string | null;
     last: string | null;
     prev: string | null;
     next: string | null;
   };
-  meta: {
+  meta?: {
     current_page: number;
     from: number;
     last_page: number;

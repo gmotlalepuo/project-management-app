@@ -20,24 +20,36 @@ class DashboardController extends Controller {
         $user = Auth::user();
         $filters = request()->all();
 
-        // Get task counts
-        $totalPendingTasks = Task::visibleToUser($user->id)
-            ->where('status', 'pending')->count();
-        $myPendingTasks = Task::visibleToUser($user->id)
+        // Get task counts from projects where user participates (as creator or accepted member)
+        $taskQuery = Task::whereHas('project', function ($query) use ($user) {
+            $query->where(function ($q) use ($user) {
+                $q->where('created_by', $user->id)
+                    ->orWhereHas('acceptedUsers', function ($sq) use ($user) {
+                        $sq->where('user_id', $user->id)
+                            ->where('status', 'accepted');
+                    });
+            });
+        });
+
+        // Get total counts for all tasks in user's projects
+        $totalPendingTasks = (clone $taskQuery)->where('status', 'pending')->count();
+        $totalProgressTasks = (clone $taskQuery)->where('status', 'in_progress')->count();
+        $totalCompletedTasks = (clone $taskQuery)->where('status', 'completed')->count();
+
+        // Get counts for tasks assigned to the user in their projects
+        $myPendingTasks = (clone $taskQuery)
+            ->where('assigned_user_id', $user->id)
             ->where('status', 'pending')
-            ->where('assigned_user_id', $user->id)->count();
-
-        $totalProgressTasks = Task::visibleToUser($user->id)
-            ->where('status', 'in_progress')->count();
-        $myProgressTasks = Task::visibleToUser($user->id)
+            ->count();
+        $myProgressTasks = (clone $taskQuery)
             ->where('status', 'in_progress')
-            ->where('assigned_user_id', $user->id)->count();
-
-        $totalCompletedTasks = Task::visibleToUser($user->id)
-            ->where('status', 'completed')->count();
-        $myCompletedTasks = Task::visibleToUser($user->id)
+            ->where('assigned_user_id', $user->id)
+            ->count();
+        $myCompletedTasks = (clone $taskQuery)
             ->where('status', 'completed')
-            ->where('assigned_user_id', $user->id)->count();
+            ->where('assigned_user_id', $user->id)
+            ->count();
+
 
         // Get active try with proper relations
         $query = $this->dashboardService->getActiveTasks($user, $filters);

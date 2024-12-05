@@ -7,8 +7,14 @@ use Carbon\Carbon;
 
 class DashboardService {
   public function getActiveTasks($user, $filters) {
-    // Start with tasks visible to user
-    $query = Task::visibleToUser($user->id)
+    // Start with tasks from projects where user is a member
+    $query = Task::whereHas('project', function ($query) use ($user) {
+      $query->where('created_by', $user->id)
+        ->orWhereHas('acceptedUsers', function ($q) use ($user) {
+          $q->where('user_id', $user->id)
+            ->where('status', 'accepted');
+        });
+    })
       ->whereIn('status', ['pending', 'in_progress'])
       ->where('assigned_user_id', $user->id);
 
