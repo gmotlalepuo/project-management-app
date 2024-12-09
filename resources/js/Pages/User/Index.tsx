@@ -4,7 +4,7 @@ import { PaginatedUser, User } from "@/types/user";
 import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
-import { FilterableColumn } from "@/types/utils";
+import { FilterableColumn, PaginationLinks, PaginationMeta } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useMemo } from "react";
@@ -13,7 +13,7 @@ import { CirclePlus } from "lucide-react";
 import { formatDate } from "@/utils/helpers";
 
 type IndexProps = {
-  users: PaginatedUser;
+  users: PaginatedUser & { meta: PaginationMeta; links: PaginationLinks };
   queryParams: { [key: string]: any } | null;
   success: string | null;
 };

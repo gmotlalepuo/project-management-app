@@ -18,6 +18,6 @@ export type User = {
 
 export type PaginatedUser = {
   data: User[];
-  meta: PaginationMeta;
-  links: PaginationLinks;
+  meta?: PaginationMeta;
+  links?: PaginationLinks;
 };
