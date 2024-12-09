@@ -18,7 +18,9 @@ class UserCrudResource extends JsonResource {
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email,
-            "created_at" => (new Carbon($this->created_at))->format("M d, Y"),
+            "created_at" => Carbon::parse($this->created_at)
+                ->setTimezone($request->header('User-Timezone', 'UTC'))
+                ->toISOString(),
         ];
     }
 }

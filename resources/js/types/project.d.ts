@@ -1,4 +1,5 @@
 import { PaginatedUser, User } from "./user";
+import { PaginationLinks, PaginationMeta } from "./utils";
 
 export type Project = {
   id: number;
@@ -31,26 +32,8 @@ export type Project = {
 
 export type PaginatedProject = {
   data: Project[];
-  links: {
-    first: string | null;
-    last: string | null;
-    prev: string | null;
-    next: string | null;
-  };
-  meta: {
-    current_page: number;
-    from: number;
-    last_page: number;
-    links: Array<{
-      url: string | null;
-      label: string;
-      active: boolean;
-    }>;
-    path: string;
-    per_page: number;
-    to: number;
-    total: number;
-  };
+  links: PaginationLinks;
+  meta: PaginationMeta;
 };
 
 // Events

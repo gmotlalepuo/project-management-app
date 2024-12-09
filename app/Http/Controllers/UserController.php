@@ -21,6 +21,7 @@ class UserController extends Controller {
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
 
+        // Handle filters
         if (request("name")) {
             $query->where("name", "like", "%" . request("name") . "%");
         }
@@ -29,10 +30,14 @@ class UserController extends Controller {
             $query->where("email", "like", "%" . request("email") . "%");
         }
 
+        if (request("created_at")) {
+            $query->whereDate("created_at", request("created_at"));
+        }
+
         $users = $query
             ->orderBy($sortField, $sortDirection)
-            ->paginate(10)
-            ->onEachSide(1);
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
 
         return Inertia::render('User/Index', [
             'users' => UserCrudResource::collection($users),
