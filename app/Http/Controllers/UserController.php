@@ -56,7 +56,9 @@ class UserController extends Controller {
      * Show the form for creating a new resource.
      */
     public function create() {
-        return Inertia::render('User/Create');
+        return Inertia::render('User/Create', [
+            'success' => session('success'),
+        ]);
     }
 
     /**
@@ -84,6 +86,7 @@ class UserController extends Controller {
     public function edit(User $user) {
         return Inertia::render('User/Edit', [
             'user' => new UserCrudResource($user),
+            'success' => session('success'),
         ]);
     }
 

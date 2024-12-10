@@ -26,8 +26,8 @@ export default function Index({ users, queryParams, success }: IndexProps) {
     if (success) {
       toast({
         title: "Success",
-        variant: "success",
         description: success,
+        variant: "success",
       });
     }
   }, [success]);

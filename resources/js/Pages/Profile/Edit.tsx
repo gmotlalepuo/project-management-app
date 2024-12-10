@@ -36,9 +36,9 @@ export default function Edit({ mustVerifyEmail, status, success }: Props) {
       <Head title="Profile" />
 
       <div className="py-8">
-        <div className="mx-auto max-w-7xl px-3 space-y-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8">
           {/* Update Profile Information */}
-          <div className="bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8">
+          <div className="bg-card p-4 shadow sm:rounded-lg sm:p-8">
             <UpdateProfileInformationForm
               mustVerifyEmail={mustVerifyEmail}
               status={status}
@@ -47,12 +47,12 @@ export default function Edit({ mustVerifyEmail, status, success }: Props) {
           </div>
 
           {/* Update Password */}
-          <div className="bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8">
+          <div className="bg-card p-4 shadow sm:rounded-lg sm:p-8">
             <UpdatePasswordForm className="max-w-xl" />
           </div>
 
           {/* Delete User Account */}
-          <div className="bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8">
+          <div className="bg-card p-4 shadow sm:rounded-lg sm:p-8">
             <DeleteUserForm className="max-w-xl" />
           </div>
         </div>
