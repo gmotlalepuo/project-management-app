@@ -30,6 +30,10 @@ type TaskWithPermissions = {
   };
 };
 
+const truncateText = (text: string, maxLength: number = 8) => {
+  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+};
+
 export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
   const { isMobile } = useSidebar();
   const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
@@ -68,9 +72,14 @@ export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
           <SidebarMenuItem key={`${item.name}-${index}`}>
             <SidebarMenuButton asChild>
               <Link href={item.url}>
-                {item.labels.map((label) => (
-                  <Badge key={label.id} variant={label.variant} size="small">
-                    {label.name}
+                {item.labels.slice(0, 2).map((label) => (
+                  <Badge
+                    key={label.id}
+                    variant={label.variant}
+                    size="small"
+                    className="mr-1"
+                  >
+                    {truncateText(label.name)}
                   </Badge>
                 ))}
                 <span>{item.name}</span>
