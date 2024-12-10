@@ -14,7 +14,7 @@ import { Task } from "@/types/task";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { User } from "@/types/user";
 
-// Add helper function at the top of the file
+// Update the helper function to handle null values
 const getUserDisplayInfo = (user: User | null) => {
   if (!user) {
     return {
@@ -26,12 +26,16 @@ const getUserDisplayInfo = (user: User | null) => {
   return user;
 };
 
+// Add new helper function for created/updated by
+const getUserReferenceInfo = (user: User | null) => {
+  return user?.name ?? "Deleted User";
+};
+
 type Props = {
   task: Task;
 };
 
 export default function Show({ task }: Props) {
-  // Use the helper function when displaying assigned user info
   const assignedUserInfo = getUserDisplayInfo(task.assignedUser);
 
   return (
@@ -69,9 +73,7 @@ export default function Show({ task }: Props) {
                 </div>
                 <div>
                   <Label>Task Name</Label>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {task.name}
-                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">{task.name}</p>
                 </div>
                 <div className="flex flex-col items-baseline space-y-3">
                   <Label>Task Status</Label>
@@ -88,7 +90,7 @@ export default function Show({ task }: Props) {
                 <div>
                   <Label>Created By</Label>
                   <p className="text-gray-700 dark:text-gray-300">
-                    {task.createdBy.name}
+                    {getUserReferenceInfo(task.createdBy)}
                   </p>
                 </div>
               </CardContent>
@@ -117,7 +119,7 @@ export default function Show({ task }: Props) {
                 <div>
                   <Label>Updated By</Label>
                   <p className="text-gray-700 dark:text-gray-300">
-                    {task.updatedBy.name}
+                    {getUserReferenceInfo(task.updatedBy)}
                   </p>
                 </div>
                 <div>

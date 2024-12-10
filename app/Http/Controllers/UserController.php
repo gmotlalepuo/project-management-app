@@ -10,8 +10,15 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserCrudResource;
+use App\Services\UserService;
 
 class UserController extends Controller {
+    protected $userService;
+
+    public function __construct(UserService $userService) {
+        $this->userService = $userService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -107,7 +114,8 @@ class UserController extends Controller {
         if ($user->id === Auth::id()) {
             return to_route('user.index')->with('error', "You can't delete yourself.");
         }
-        $user->delete();
+
+        $this->userService->deleteUser($user);
 
         return to_route('user.index')->with('success', "User '$name' deleted successfully.");
     }
