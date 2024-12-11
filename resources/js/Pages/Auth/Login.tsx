@@ -8,7 +8,7 @@ import { Checkbox } from "@/Components/ui/checkbox";
 import { FormEventHandler } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Check, LogIn } from "lucide-react";
-import { FaGoogle } from "react-icons/fa";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 import {
   Card,
   CardContent,
@@ -122,10 +122,24 @@ export default function Login({
                 <LogIn />
                 <span>Login</span>
               </Button>
-              <Button variant="outline" className="w-full">
-                <FaGoogle />
-                <span>Sign in with Google</span>
-              </Button>
+              <Link
+                href={route("socialite.redirect", { provider: "google" })}
+                className="block"
+              >
+                <Button variant="outline" className="w-full">
+                  <FaGoogle />
+                  <span>Sign in with Google</span>
+                </Button>
+              </Link>
+              <Link
+                href={route("socialite.redirect", { provider: "github" })}
+                className="block"
+              >
+                <Button variant="outline" className="w-full">
+                  <FaGithub />
+                  <span>Sign in with Github</span>
+                </Button>
+              </Link>
             </div>
           </form>
         </CardContent>
