@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Models\User;
 use Exception;
+use App\Models\User;
+use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller {
     public function redirect($provider) {
-        return Socialite::driver($provider)->redirect();
+        $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+        return response()->json(['url' => $url]);
     }
 
     public function callback($provider) {
@@ -51,7 +52,8 @@ class SocialiteController extends Controller {
 
             return redirect()->intended(route('dashboard', absolute: false));
         } catch (Exception $e) {
-            return redirect()->route('login')->withErrors(['error' => 'An error occurred during social login']);
+            return redirect()->route('login')
+                ->withErrors(['error' => 'An error occurred during social login: ' . $e->getMessage()]);
         }
     }
 }
