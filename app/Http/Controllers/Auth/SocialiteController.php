@@ -12,16 +12,27 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller {
     public function redirect($provider) {
-        $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
-        return response()->json(['url' => $url]);
+        try {
+            $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+            return response()->json(['url' => $url]);
+        } catch (Exception $e) {
+            \Log::error('Social login redirect error:', [
+                'provider' => $provider,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'error' => 'Failed to initialize ' . $provider . ' login'
+            ], 500);
+        }
     }
 
     public function callback($provider) {
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            $socialUser = Socialite::driver($provider)->stateless()->user();
 
             if (!$socialUser->getEmail()) {
-                throw new Exception('No email provided from ' . $provider);
+                throw new Exception("No email provided from {$provider}. User data received: " . json_encode($socialUser));
             }
 
             // Get the name based on provider
@@ -57,9 +68,25 @@ class SocialiteController extends Controller {
 
             return redirect()->intended(route('dashboard'));
         } catch (Exception $e) {
-            \Log::error('Social login error: ' . $e->getMessage());
+            \Log::error('Social login callback error:', [
+                'provider' => $provider,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => [
+                    'method' => request()->method(),
+                    'url' => request()->fullUrl(),
+                    'query' => request()->query(),
+                    'body' => request()->all()
+                ]
+            ]);
+
+            $errorMessage = 'Authentication failed. ';
+            if (app()->environment('local', 'development')) {
+                $errorMessage .= $e->getMessage();
+            }
+
             return redirect()->route('login')
-                ->withErrors(['error' => 'An error occurred during social login: ' . $e->getMessage()]);
+                ->withErrors(['error' => $errorMessage]);
         }
     }
 }
