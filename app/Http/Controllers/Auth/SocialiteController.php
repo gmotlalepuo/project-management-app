@@ -12,13 +12,19 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller {
     public function redirect($provider) {
-        $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
-        return response()->json(['url' => $url]);
+        return Socialite::driver($provider)
+            ->with(['prompt' => 'select_account'])
+            ->stateless()
+            ->redirect();
     }
 
     public function callback($provider) {
         try {
-            $socialUser = Socialite::driver($provider)->user();
+            $socialUser = Socialite::driver($provider)->stateless()->user();
+
+            if (!$socialUser->getEmail()) {
+                throw new Exception('No email provided from ' . $provider);
+            }
 
             // Get the name based on provider
             $name = match ($provider) {
@@ -30,7 +36,7 @@ class SocialiteController extends Controller {
             // Handle profile picture if available
             $profilePicture = null;
             if ($avatarUrl = $socialUser->getAvatar()) {
-                $imageContents = file_get_contents($avatarUrl);
+                $imageContents = @file_get_contents($avatarUrl);
                 if ($imageContents) {
                     $path = 'profile_pictures/' . Str::random(10);
                     $filename = Str::random(10) . '.jpg';
@@ -44,16 +50,19 @@ class SocialiteController extends Controller {
                 [
                     'name' => $name,
                     'email_verified_at' => now(),
-                    'profile_picture' => $profilePicture ?? null,
+                    'profile_picture' => $profilePicture,
+                    // Add a random password for social login users
+                    'password' => bcrypt(Str::random(16))
                 ]
             );
 
-            Auth::login($user);
+            Auth::login($user, true); // Remember the user
 
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('dashboard'));
         } catch (Exception $e) {
+            \Log::error('Social login error: ' . $e->getMessage());
             return redirect()->route('login')
-                ->withErrors(['error' => 'An error occurred during social login: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'An error occurred during social login. Please try again.']);
         }
     }
 }
