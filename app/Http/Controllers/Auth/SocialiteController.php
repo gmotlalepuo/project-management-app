@@ -12,15 +12,13 @@ use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller {
     public function redirect($provider) {
-        return Socialite::driver($provider)
-            ->with(['prompt' => 'select_account'])
-            ->stateless()
-            ->redirect();
+        $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+        return response()->json(['url' => $url]);
     }
 
     public function callback($provider) {
         try {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
+            $socialUser = Socialite::driver($provider)->user();
 
             if (!$socialUser->getEmail()) {
                 throw new Exception('No email provided from ' . $provider);
@@ -50,19 +48,18 @@ class SocialiteController extends Controller {
                 [
                     'name' => $name,
                     'email_verified_at' => now(),
-                    'profile_picture' => $profilePicture,
-                    // Add a random password for social login users
+                    'profile_picture' => $profilePicture ?? null,
                     'password' => bcrypt(Str::random(16))
                 ]
             );
 
-            Auth::login($user, true); // Remember the user
+            Auth::login($user, true);
 
             return redirect()->intended(route('dashboard'));
         } catch (Exception $e) {
             \Log::error('Social login error: ' . $e->getMessage());
             return redirect()->route('login')
-                ->withErrors(['error' => 'An error occurred during social login. Please try again.']);
+                ->withErrors(['error' => 'An error occurred during social login: ' . $e->getMessage()]);
         }
     }
 }
