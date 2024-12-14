@@ -29,17 +29,17 @@ class TaskController extends Controller {
     public function index() {
         $user = Auth::user();
         $filters = request()->all();
-        $query = $this->taskService->getTasks($user, $filters);
 
-        $sortField = request("sort_field", "created_at");
-        $sortDirection = request("sort_direction", "desc");
-        $perPage = request("per_page", 10);
-        $page = request("page", 1); // Ensure page parameter is set
+        // Ensure sorting parameters are set correctly
+        $filters['sort_field'] = request('sort_field', 'created_at');
+        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
+            ? request('sort_direction')
+            : 'desc';
+        $filters['per_page'] = (int) request('per_page', 10);
+        $filters['page'] = (int) request('page', 1);
 
-        $tasks = $query->with('labels')
-            ->orderBy($sortField, $sortDirection)
-            ->paginate($perPage, ['*'], 'page', $page)
-            ->withQueryString();
+        // Get tasks with sorting and pagination
+        $tasks = $this->taskService->getTasks($user, $filters);
 
         // Fetch label options for the filter
         $labelOptions = TaskLabel::all()->map(function ($label) {
@@ -250,20 +250,20 @@ class TaskController extends Controller {
     public function myTasks() {
         $user = Auth::user();
         $filters = request()->all();
-        $query = $this->taskService->getMyTasks($user, $filters);
 
-        $sortField = request("sort_field", 'created_at');
-        $sortDirection = request("sort_direction", "desc");
-        $perPage = request("per_page", 10);
-        $page = request("page", 1);
+        // Ensure sorting parameters are set correctly
+        $filters['sort_field'] = request('sort_field', 'created_at');
+        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
+            ? request('sort_direction')
+            : 'desc';
+        $filters['per_page'] = (int) request('per_page', 10);
+        $filters['page'] = (int) request('page', 1);
 
-        $tasks = $query->with('labels')
-            ->orderBy($sortField, $sortDirection)
-            ->paginate($perPage, ['*'], 'page', $page)
-            ->withQueryString();
+        // Get tasks with sorting and pagination
+        $tasks = $this->taskService->getMyTasks($user, $filters);
 
         return Inertia::render('Task/Index', [
-            "tasks" => TaskResource::collection($tasks),
+            'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
             'permissions' => [

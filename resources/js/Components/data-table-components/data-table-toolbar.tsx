@@ -16,6 +16,9 @@ interface DataTableToolbarProps<TData> {
   queryParams: QueryParams;
   routeName: string; // Dynamic route to pass in Inertia router
   entityId?: string | number;
+  isLoading: boolean;
+  onFilter: (name: string, value: string | string[]) => void;
+  onReset: () => void;
 }
 
 export function DataTableToolbar<TData>({
@@ -24,6 +27,9 @@ export function DataTableToolbar<TData>({
   queryParams,
   routeName,
   entityId,
+  isLoading,
+  onFilter,
+  onReset,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = Object.keys(queryParams).length > 0;
 
@@ -112,15 +118,16 @@ export function DataTableToolbar<TData>({
                   key={column.accessorKey}
                   placeholder={`Filter by ${column.title}`}
                   defaultValue={queryParams[column.accessorKey] || ""}
+                  disabled={isLoading}
                   onBlur={(event) => {
-                    updateQuery(
+                    onFilter(
                       column.accessorKey,
                       (event.target as HTMLInputElement).value,
                     );
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
-                      updateQuery(
+                      onFilter(
                         column.accessorKey,
                         (event.target as HTMLInputElement).value,
                       );
@@ -139,9 +146,10 @@ export function DataTableToolbar<TData>({
                   title={column.title}
                   options={column.options}
                   onSelect={(selectedValues: string[]) => {
-                    updateQuery(column.accessorKey, selectedValues);
+                    onFilter(column.accessorKey, selectedValues);
                   }}
                   initialSelectedValues={queryParams[column.accessorKey] || []}
+                  disabled={isLoading}
                 />
               );
             }
@@ -165,10 +173,8 @@ export function DataTableToolbar<TData>({
           {isFiltered && (
             <Button
               variant="ghost"
-              onClick={() => {
-                const updatedParams = entityId ? { id: entityId } : {}; // Include entityId if available
-                router.get(route(routeName, updatedParams), {}, { replace: true });
-              }}
+              onClick={onReset}
+              disabled={isLoading}
               className="h-8 px-2 lg:px-3"
             >
               Reset

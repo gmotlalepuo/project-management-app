@@ -9,12 +9,37 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TaskService {
-  public function getTasks($user, $filters) {
-    $query = Task::visibleToUser($user->id)->with('labels'); // Ensure labels are loaded
+  private function applySorting($query, $sortField, $sortDirection) {
+    // Ensure clean sort direction
+    $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
 
-    // Ensure we're not affecting pagination
-    unset($filters['page']);
-    unset($filters['per_page']);
+    // Handle relationship fields
+    if ($sortField === 'assignedUser.name') {
+      return $query->leftJoin('users', 'tasks.assigned_user_id', '=', 'users.id')
+        ->orderBy('users.name', $sortDirection)
+        ->select('tasks.*');
+    }
+
+    // For ID field, use proper numeric sorting
+    if ($sortField === 'id') {
+      // Use length-aware sorting for IDs to handle both numeric and string IDs
+      return $query->orderByRaw("CAST(tasks.id AS UNSIGNED) $sortDirection");
+    }
+
+    // Default sorting
+    return $query->orderBy($sortField, $sortDirection);
+  }
+
+  public function getTasks($user, array $filters) {
+    $query = Task::visibleToUser($user->id)->with('labels');
+
+    // Extract pagination and sorting params
+    $page = $filters['page'] ?? 1;
+    $perPage = $filters['per_page'] ?? 10;
+    $sortField = $filters['sort_field'] ?? 'created_at';
+    $sortDirection = in_array($filters['sort_direction'] ?? 'desc', ['asc', 'desc'])
+      ? $filters['sort_direction']
+      : 'desc';
 
     // Apply filters
     if (isset($filters['name'])) {
@@ -65,7 +90,10 @@ class TaskService {
       }
     }
 
-    return $query;
+    // Apply sorting
+    $query = $this->applySorting($query, $sortField, $sortDirection);
+
+    return $query->paginate($perPage, ['*'], 'page', $page);
   }
 
   public function storeTask($data) {
@@ -133,17 +161,15 @@ class TaskService {
         $query->visibleToUser($user->id);
       });
 
-    // Ensure we're not affecting pagination
-    unset($filters['page']);
-    unset($filters['per_page']);
+    // Basic pagination and sorting
+    $perPage = $filters['per_page'] ?? 10;
+    $page = $filters['page'] ?? 1;
+    $sortField = $filters['sort_field'] ?? 'created_at';
+    $sortDirection = $filters['sort_direction'] ?? 'desc';
 
-    if (isset($filters['name'])) {
-      $query->where("name", "like", "%" . $filters['name'] . "%");
-    }
-    if (isset($filters['status'])) {
-      $query->where("status", $filters['status']);
-    }
+    // Simple sorting
+    $query->orderBy($sortField, $sortDirection);
 
-    return $query;
+    return $query->paginate($perPage, ['*'], 'page', $page);
   }
 }

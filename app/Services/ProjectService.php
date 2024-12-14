@@ -12,6 +12,26 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProjectService {
+  private function applySorting($query, $sortField, $sortDirection) {
+    // Ensure clean sort direction
+    $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+
+    // For ID field, use proper numeric sorting
+    if ($sortField === 'id') {
+      return $query->orderByRaw("CAST(tasks.id AS SIGNED) $sortDirection");
+    }
+
+    // Handle relationship fields
+    if ($sortField === 'assignedUser.name') {
+      return $query->leftJoin('users', 'tasks.assigned_user_id', '=', 'users.id')
+        ->orderBy('users.name', $sortDirection)
+        ->select('tasks.*');
+    }
+
+    // Default sorting
+    return $query->orderBy($sortField, $sortDirection);
+  }
+
   public function getProjects($user, $filters) {
     $query = Project::visibleToUser($user->id);
 
@@ -83,14 +103,19 @@ class ProjectService {
     $project->delete();
   }
 
-  public function getProjectWithTasks(Project $project, $filters) {
-    $query = $project->tasks();
+  public function getProjectWithTasks(Project $project, array $filters) {
+    $query = $project->tasks()->with(['labels', 'project', 'assignedUser']);
 
-    // Ensure we're not affecting pagination
-    $perPage = $filters['per_page'] ?? 10;
+    // Clean and validate sort parameters
+    $sortField = $filters['sort_field'] ?? 'created_at';
+    $sortDirection = strtolower($filters['sort_direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
+    // Apply sorting before pagination
+    $query = $this->applySorting($query, $sortField, $sortDirection);
+
+    // Extract pagination params
     $page = $filters['page'] ?? 1;
-    unset($filters['page']);
-    unset($filters['per_page']);
+    $perPage = $filters['per_page'] ?? 10;
 
     // Apply filters
     if (isset($filters['name'])) {
@@ -125,13 +150,7 @@ class ProjectService {
       }
     }
 
-    $sortField = $filters['sort_field'] ?? "created_at";
-    $sortDirection = $filters['sort_direction'] ?? "desc";
-
-    return $query->with('labels')
-      ->orderBy($sortField, $sortDirection)
-      ->paginate($perPage, ['*'], 'page', $page)
-      ->withQueryString();
+    return $query->paginate($perPage, ['*'], 'page', $page);
   }
 
   public function handleInvitation(Project $project, string $email) {

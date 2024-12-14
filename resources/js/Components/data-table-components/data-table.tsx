@@ -32,6 +32,7 @@ import {
   QueryParams,
 } from "@/types/utils";
 import { router } from "@inertiajs/react";
+import { Loader2 } from "lucide-react";
 
 // Extend ColumnDef to include defaultHidden and minWidth
 export type ColumnDef<TData, TValue> = BaseColumnDef<TData, TValue> & {
@@ -77,9 +78,22 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
+  const [isLoading, setIsLoading] = React.useState(false); // Add loading state
 
   // This is a workaround to handle the initial page load
   queryParams.page = queryParams.page || 1;
+
+  // Initialize sorting state from URL params
+  React.useEffect(() => {
+    if (queryParams.sort_field) {
+      setSorting([
+        {
+          id: queryParams.sort_field,
+          desc: queryParams.sort_direction === "desc",
+        },
+      ]);
+    }
+  }, [queryParams.sort_field, queryParams.sort_direction]);
 
   const table = useReactTable({
     data,
@@ -109,33 +123,110 @@ export function DataTable<TData, TValue>({
     pageCount: meta.last_page, // Use last_page from meta data
   });
 
-  // Updated sortChanged function with proper typing
+  // Fix event handlers for loading state
+  React.useEffect(() => {
+    let startHandler = (event: any) => {
+      const url = new URL(event.detail.visit.url, window.location.origin);
+      const hasTableParams =
+        url.searchParams.has("page") ||
+        url.searchParams.has("sort_field") ||
+        url.searchParams.has("sort_direction");
+
+      if (hasTableParams && !event.detail.visit.preserveScroll) {
+        setIsLoading(true);
+      }
+    };
+
+    let finishHandler = () => {
+      setIsLoading(false);
+    };
+
+    document.addEventListener("inertia:start", startHandler);
+    document.addEventListener("inertia:finish", finishHandler);
+    document.addEventListener("inertia:error", finishHandler);
+
+    return () => {
+      document.removeEventListener("inertia:start", startHandler);
+      document.removeEventListener("inertia:finish", finishHandler);
+      document.removeEventListener("inertia:error", finishHandler);
+    };
+  }, []);
+
+  const handleTableOperation = (params: QueryParams) => {
+    setIsLoading(true);
+
+    // Preserve the tab parameter if it exists
+    const tab = queryParams.tab;
+    if (tab) {
+      params.tab = tab;
+    }
+
+    router.get(route(routeName, { id: entityId }), params, {
+      preserveState: true,
+      preserveScroll: true,
+      onFinish: () => setIsLoading(false),
+      onError: () => setIsLoading(false),
+    });
+  };
+
+  // Simplified sort handler with fixed logic
   const sortChanged = (columnId: string) => {
     const column = table.getColumn(columnId);
-
     if (!column || !column.getCanSort()) return;
+
+    setIsLoading(true);
+
+    // Always toggle between asc/desc for the same column
+    // Start with asc for a new column
+    const newDirection =
+      columnId === queryParams.sort_field
+        ? queryParams.sort_direction === "asc"
+          ? "desc"
+          : "asc"
+        : "asc";
 
     const updatedParams: QueryParams = {
       ...queryParams,
-      page: queryParams.page || 1,
+      page: 1, // Reset to first page on sort change
+      sort_field: columnId,
+      sort_direction: newDirection,
     };
 
-    if (columnId === updatedParams.sort_field) {
-      updatedParams.sort_direction =
-        updatedParams.sort_direction === "asc" ? "desc" : "asc";
-    } else {
-      updatedParams.sort_field = columnId;
-      updatedParams.sort_direction = "asc";
+    // Preserve the tab parameter if it exists
+    if (queryParams.tab) {
+      updatedParams.tab = queryParams.tab;
     }
 
-    if (entityId) {
-      updatedParams.entityId = entityId;
-    }
-
-    router.get(route(routeName, { id: entityId }), updatedParams, {
+    router.visit(route(routeName, { id: entityId }), {
+      data: updatedParams,
       preserveState: true,
       preserveScroll: true,
+      onFinish: () => setIsLoading(false),
+      onError: () => setIsLoading(false),
+      replace: true, // Use replace to avoid breaking browser history
     });
+  };
+
+  // Move filter handler here from toolbar
+  const handleFilter = (name: string, value: string | string[]) => {
+    const updatedParams: QueryParams = {
+      ...queryParams,
+      page: 1, // Reset to first page when filtering
+      [name]: value,
+    };
+
+    // Remove empty filters
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      delete updatedParams[name];
+    }
+
+    handleTableOperation(updatedParams);
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    const resetParams = queryParams.tab ? { tab: queryParams.tab } : {};
+    handleTableOperation(resetParams);
   };
 
   return (
@@ -146,8 +237,16 @@ export function DataTable<TData, TValue>({
         queryParams={queryParams}
         routeName={routeName}
         entityId={entityId}
+        isLoading={isLoading}
+        onFilter={handleFilter}
+        onReset={handleReset}
       />
-      <div className="overflow-y-auto rounded-md border">
+      <div className="relative overflow-y-auto rounded-md border">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -199,6 +298,7 @@ export function DataTable<TData, TValue>({
         queryParams={queryParams}
         routeName={routeName}
         entityId={entityId}
+        isLoading={isLoading}
       />
     </div>
   );

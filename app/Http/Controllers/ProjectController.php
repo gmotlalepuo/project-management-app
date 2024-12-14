@@ -114,17 +114,16 @@ class ProjectController extends Controller {
         });
 
         $filters = request()->all();
-        $sortField = request("sort_field", "created_at");
-        $sortDirection = request("sort_direction", "desc");
-        $perPage = request("per_page", 10);
-        $page = request("page", 1);
 
-        $tasks = $this->projectService->getProjectWithTasks($project, array_merge($filters, [
-            'sort_field' => $sortField,
-            'sort_direction' => $sortDirection,
-            'per_page' => $perPage,
-            'page' => $page,
-        ]));
+        // Ensure consistent sorting behavior
+        $filters['sort_field'] = request('sort_field', 'created_at');
+        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
+            ? request('sort_direction')
+            : 'desc';
+        $filters['per_page'] = (int) request('per_page', 10);
+        $filters['page'] = (int) request('page', 1);
+
+        $tasks = $this->projectService->getProjectWithTasks($project, $filters);
 
         return Inertia::render('Project/Show', [
             'project' => new ProjectResource($project->load(['acceptedUsers'])),

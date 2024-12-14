@@ -14,11 +14,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/Components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/Components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/Components/ui/popover";
 import { Separator } from "@/Components/ui/separator";
 
 interface FilterOption {
@@ -33,6 +29,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   options: FilterOption[];
   onSelect: (selectedValues: string[]) => void; // New prop to handle selection change
   initialSelectedValues: string[]; // Prop to handle initial selected values
+  disabled?: boolean; // Add disabled prop
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
@@ -41,6 +38,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   options,
   onSelect,
   initialSelectedValues = [],
+  disabled = false, // Add default value
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const [selectedValues, setSelectedValues] = React.useState(
     new Set(initialSelectedValues),
@@ -64,7 +62,12 @@ export function DataTableFacetedFilter<TData, TValue>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 border-dashed"
+          disabled={disabled}
+        >
           <PlusCircledIcon className="mr-2 h-4 w-4" />
           {title}
           {selectedValues.size > 0 && (
@@ -78,10 +81,7 @@ export function DataTableFacetedFilter<TData, TValue>({
               </Badge>
               <div className="hidden space-x-1 lg:flex">
                 {selectedValues.size > 2 ? (
-                  <Badge
-                    variant="secondary"
-                    className="rounded-sm px-1 font-normal"
-                  >
+                  <Badge variant="secondary" className="rounded-sm px-1 font-normal">
                     {selectedValues.size} selected
                   </Badge>
                 ) : (
@@ -114,6 +114,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => handleSelect(option.value)}
+                    disabled={disabled}
                   >
                     <div
                       className={cn(
@@ -148,6 +149,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                       onSelect([]); // Reset filter
                     }}
                     className="justify-center text-center"
+                    disabled={disabled}
                   >
                     Clear filters
                   </CommandItem>
