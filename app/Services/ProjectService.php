@@ -86,6 +86,12 @@ class ProjectService {
   public function getProjectWithTasks(Project $project, $filters) {
     $query = $project->tasks();
 
+    // Ensure we're not affecting pagination
+    $perPage = $filters['per_page'] ?? 10;
+    $page = $filters['page'] ?? 1;
+    unset($filters['page']);
+    unset($filters['per_page']);
+
     // Apply filters
     if (isset($filters['name'])) {
       $query->where("name", "like", "%" . $filters['name'] . "%");
@@ -122,11 +128,10 @@ class ProjectService {
     $sortField = $filters['sort_field'] ?? "created_at";
     $sortDirection = $filters['sort_direction'] ?? "desc";
 
-    $tasks = $query->with('labels')->orderBy($sortField, $sortDirection)
-      ->paginate(10)
-      ->onEachSide(1);
-
-    return $tasks;
+    return $query->with('labels')
+      ->orderBy($sortField, $sortDirection)
+      ->paginate($perPage, ['*'], 'page', $page)
+      ->withQueryString();
   }
 
   public function handleInvitation(Project $project, string $email) {

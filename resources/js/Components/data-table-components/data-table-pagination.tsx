@@ -13,11 +13,11 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { router } from "@inertiajs/react";
-import { PaginationData } from "@/types/utils";
+import { PaginationData, QueryParams } from "@/types/utils";
 
 interface DataTablePaginationProps {
   paginationData: PaginationData;
-  queryParams: { [key: string]: any }; // For Inertia query state
+  queryParams: QueryParams;
   routeName: string; // Route for Inertia requests
   entityId?: string | number; // Optional entity ID (e.g., project ID)
 }
@@ -44,8 +44,7 @@ export function DataTablePagination({
     const page = extractPageNumber(link);
     if (page) {
       const updatedParams = { ...queryParams, page };
-      if (entityId)
-        (updatedParams as { [key: string]: any }).entityId = entityId; // Include entityId if provided
+      if (entityId) (updatedParams as { [key: string]: any }).entityId = entityId; // Include entityId if provided
 
       router.get(route(routeName, { id: entityId }), updatedParams, {
         preserveState: true,

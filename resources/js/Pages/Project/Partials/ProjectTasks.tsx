@@ -10,7 +10,7 @@ import {
 } from "@/utils/constants";
 import { ColumnDef } from "@/Components/data-table-components/data-table";
 import { PaginatedTask, Task } from "@/types/task";
-import { FilterableColumn } from "@/types/utils";
+import { FilterableColumn, QueryParams } from "@/types/utils";
 import { Link, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
 import { CirclePlus } from "lucide-react";
@@ -18,7 +18,7 @@ import { DataTableRowActions } from "@/Components/data-table-components/data-tab
 
 type Props = {
   tasks: PaginatedTask;
-  queryParams: { [key: string]: any };
+  queryParams: QueryParams;
   projectId: number;
   labelOptions: { value: string; label: string }[];
   permissions: {

@@ -8,12 +8,12 @@ import { TrashIcon } from "lucide-react";
 import { CalendarDatePicker } from "../ui/calendar-datetime-picker";
 import { useState, useEffect } from "react";
 import { router } from "@inertiajs/react";
-import { FilterableColumn } from "@/types/utils";
+import { FilterableColumn, QueryParams } from "@/types/utils";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   filterableColumns: FilterableColumn[];
-  queryParams: { [key: string]: any }; // Include queryParams to handle initial filter state
+  queryParams: QueryParams;
   routeName: string; // Dynamic route to pass in Inertia router
   entityId?: string | number;
 }
@@ -62,7 +62,11 @@ export function DataTableToolbar<TData>({
   }, []);
 
   const updateQuery = (name: string, value: string | string[]) => {
-    const updatedParams = { ...queryParams, [name]: value };
+    const updatedParams = {
+      ...queryParams,
+      [name]: value,
+      page: queryParams.page || 1, // Ensure page is preserved
+    };
 
     if (!value || (Array.isArray(value) && value.length === 0)) {
       delete updatedParams[name]; // Remove param if value is empty

@@ -11,7 +11,7 @@ import {
   TASK_PRIORITY_BADGE_MAP,
 } from "@/utils/constants";
 import { formatDate } from "@/utils/helpers";
-import { FilterableColumn } from "@/types/utils";
+import { FilterableColumn, QueryParams } from "@/types/utils";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -22,7 +22,7 @@ import { CirclePlus } from "lucide-react";
 type IndexProps = {
   tasks: PaginatedTask;
   success: string | null;
-  queryParams: { [key: string]: any };
+  queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;

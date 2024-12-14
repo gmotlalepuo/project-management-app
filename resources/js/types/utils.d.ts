@@ -39,3 +39,11 @@ export type PaginationData = {
   meta: PaginationMeta;
   links: PaginationLinks;
 };
+
+export type QueryParams = {
+  page?: number;
+  per_page?: number;
+  sort_field?: string;
+  sort_direction?: "asc" | "desc";
+  [key: string]: any;
+};

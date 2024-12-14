@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { useEffect, useMemo } from "react";
-import { FilterableColumn } from "@/types/utils";
+import { FilterableColumn, QueryParams } from "@/types/utils";
 import { formatDate } from "@/utils/helpers";
 import {
   ClipboardList,
@@ -36,7 +36,7 @@ type Props = {
   myCompletedTasks: number;
   activeTasks: PaginatedTask;
   success: string | null;
-  queryParams: { [key: string]: any };
+  queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;

@@ -7,13 +7,14 @@ import InviteUsers from "./Partials/InviteUsers";
 import ProjectTasks from "./Partials/ProjectTasks";
 import { Project } from "@/types/project";
 import { PaginatedTask } from "@/types/task";
+import { QueryParams } from "@/types/utils";
 
 type Props = {
   project: Project;
   tasks: PaginatedTask;
   error: string | null;
   success: string | null;
-  queryParams: { [key: string]: any };
+  queryParams: QueryParams;
   activeTab: string;
   labelOptions: { value: string; label: string }[];
   permissions: {

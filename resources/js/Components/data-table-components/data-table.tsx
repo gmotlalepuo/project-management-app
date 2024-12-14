@@ -25,7 +25,12 @@ import {
 
 import { DataTableToolbar } from "./data-table-toolbar";
 import { DataTablePagination } from "./data-table-pagination";
-import { FilterableColumn, PaginationLinks, PaginationMeta } from "@/types/utils";
+import {
+  FilterableColumn,
+  PaginationLinks,
+  PaginationMeta,
+  QueryParams,
+} from "@/types/utils";
 import { router } from "@inertiajs/react";
 
 // Extend ColumnDef to include defaultHidden and minWidth
@@ -36,6 +41,7 @@ export type ColumnDef<TData, TValue> = BaseColumnDef<TData, TValue> & {
   minWidth?: number;
 };
 
+// Update the DataTableProps interface
 type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   entity: {
@@ -44,7 +50,7 @@ type DataTableProps<TData, TValue> = {
     links: PaginationLinks;
   };
   filterableColumns: FilterableColumn[];
-  queryParams: { [key: string]: any };
+  queryParams: QueryParams;
   routeName: string;
   entityId?: string | number;
   children?: React.ReactNode;
@@ -71,6 +77,9 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
+
+  // This is a workaround to handle the initial page load
+  queryParams.page = queryParams.page || 1;
 
   const table = useReactTable({
     data,
@@ -100,27 +109,30 @@ export function DataTable<TData, TValue>({
     pageCount: meta.last_page, // Use last_page from meta data
   });
 
-  // Sort change function
-  // Updated sortChanged function in DataTable
+  // Updated sortChanged function with proper typing
   const sortChanged = (columnId: string) => {
     const column = table.getColumn(columnId);
 
-    // Skip sorting if the column does not allow sorting
     if (!column || !column.getCanSort()) return;
 
-    if (columnId === queryParams.sort_field) {
-      queryParams.sort_direction =
-        queryParams.sort_direction === "asc" ? "desc" : "asc";
+    const updatedParams: QueryParams = {
+      ...queryParams,
+      page: queryParams.page || 1,
+    };
+
+    if (columnId === updatedParams.sort_field) {
+      updatedParams.sort_direction =
+        updatedParams.sort_direction === "asc" ? "desc" : "asc";
     } else {
-      queryParams.sort_field = columnId;
-      queryParams.sort_direction = "asc";
+      updatedParams.sort_field = columnId;
+      updatedParams.sort_direction = "asc";
     }
 
     if (entityId) {
-      queryParams.entityId = entityId; // Include entityId if provided
+      updatedParams.entityId = entityId;
     }
 
-    router.get(route(routeName, { id: entityId }), queryParams, {
+    router.get(route(routeName, { id: entityId }), updatedParams, {
       preserveState: true,
       preserveScroll: true,
     });

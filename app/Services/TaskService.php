@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Task;
-use App\Models\TaskLabel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +11,10 @@ use Illuminate\Support\Str;
 class TaskService {
   public function getTasks($user, $filters) {
     $query = Task::visibleToUser($user->id)->with('labels'); // Ensure labels are loaded
+
+    // Ensure we're not affecting pagination
+    unset($filters['page']);
+    unset($filters['per_page']);
 
     // Apply filters
     if (isset($filters['name'])) {
@@ -122,5 +125,25 @@ class TaskService {
 
     $task->labels()->detach();
     $task->delete();
+  }
+
+  public function getMyTasks($user, $filters) {
+    $query = Task::where('assigned_user_id', $user->id)
+      ->whereHas('project', function ($query) use ($user) {
+        $query->visibleToUser($user->id);
+      });
+
+    // Ensure we're not affecting pagination
+    unset($filters['page']);
+    unset($filters['per_page']);
+
+    if (isset($filters['name'])) {
+      $query->where("name", "like", "%" . $filters['name'] . "%");
+    }
+    if (isset($filters['status'])) {
+      $query->where("status", $filters['status']);
+    }
+
+    return $query;
   }
 }

@@ -32,6 +32,8 @@ class ProjectController extends Controller {
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
+        $perPage = request("per_page", 10);
+        $page = request("page", 1);
 
         $projects = $query->with(['tasks' => function ($query) {
             $query->latest()->limit(5)->with('labels');
@@ -40,7 +42,7 @@ class ProjectController extends Controller {
                 $query->where('status', 'completed');
             }])
             ->orderBy($sortField, $sortDirection)
-            ->paginate(request('per_page', 10))
+            ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString();
 
         return Inertia::render('Project/Index', [
@@ -112,7 +114,17 @@ class ProjectController extends Controller {
         });
 
         $filters = request()->all();
-        $tasks = $this->projectService->getProjectWithTasks($project, $filters);
+        $sortField = request("sort_field", "created_at");
+        $sortDirection = request("sort_direction", "desc");
+        $perPage = request("per_page", 10);
+        $page = request("page", 1);
+
+        $tasks = $this->projectService->getProjectWithTasks($project, array_merge($filters, [
+            'sort_field' => $sortField,
+            'sort_direction' => $sortDirection,
+            'per_page' => $perPage,
+            'page' => $page,
+        ]));
 
         return Inertia::render('Project/Show', [
             'project' => new ProjectResource($project->load(['acceptedUsers'])),

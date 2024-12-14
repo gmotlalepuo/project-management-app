@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enum\RolesEnum;
 use App\Models\Task;
-use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Project;
 use App\Services\TaskService;
@@ -34,9 +33,12 @@ class TaskController extends Controller {
 
         $sortField = request("sort_field", "created_at");
         $sortDirection = request("sort_direction", "desc");
+        $perPage = request("per_page", 10);
+        $page = request("page", 1); // Ensure page parameter is set
 
-        $tasks = $query->with('labels')->orderBy($sortField, $sortDirection)
-            ->paginate(request('per_page', 10))
+        $tasks = $query->with('labels')
+            ->orderBy($sortField, $sortDirection)
+            ->paginate($perPage, ['*'], 'page', $page)
             ->withQueryString();
 
         // Fetch label options for the filter
@@ -248,24 +250,17 @@ class TaskController extends Controller {
     public function myTasks() {
         $user = Auth::user();
         $filters = request()->all();
-        $query = Task::where('assigned_user_id', $user->id)
-            ->whereHas('project', function ($query) use ($user) {
-                $query->visibleToUser($user->id);
-            });
+        $query = $this->taskService->getMyTasks($user, $filters);
 
         $sortField = request("sort_field", 'created_at');
         $sortDirection = request("sort_direction", "desc");
+        $perPage = request("per_page", 10);
+        $page = request("page", 1);
 
-        if (isset($filters['name'])) {
-            $query->where("name", "like", "%" . $filters['name'] . "%");
-        }
-        if (isset($filters['status'])) {
-            $query->where("status", $filters['status']);
-        }
-
-        $tasks = $query->orderBy($sortField, $sortDirection)
-            ->paginate(10)
-            ->onEachSide(1);
+        $tasks = $query->with('labels')
+            ->orderBy($sortField, $sortDirection)
+            ->paginate($perPage, ['*'], 'page', $page)
+            ->withQueryString();
 
         return Inertia::render('Task/Index', [
             "tasks" => TaskResource::collection($tasks),
