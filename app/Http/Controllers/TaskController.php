@@ -32,9 +32,7 @@ class TaskController extends Controller {
 
         // Ensure sorting parameters are set correctly
         $filters['sort_field'] = request('sort_field', 'created_at');
-        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
-            ? request('sort_direction')
-            : 'desc';
+        $filters['sort_direction'] = request('sort_direction'); // No default
         $filters['per_page'] = (int) request('per_page', 10);
         $filters['page'] = (int) request('page', 1);
 
@@ -253,9 +251,7 @@ class TaskController extends Controller {
 
         // Ensure sorting parameters are set correctly
         $filters['sort_field'] = request('sort_field', 'created_at');
-        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
-            ? request('sort_direction')
-            : 'desc';
+        $filters['sort_direction'] = request('sort_direction'); // No default
         $filters['per_page'] = (int) request('per_page', 10);
         $filters['page'] = (int) request('page', 1);
 

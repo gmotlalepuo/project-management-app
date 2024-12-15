@@ -83,6 +83,7 @@ export default function Dashboard({
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Project" />
         ),
+        enableSorting: false,
         cell: ({ row }) => (
           <Link href={route("project.show", row.original.project.id)}>
             {row.original.project.name}
@@ -176,7 +177,7 @@ export default function Dashboard({
 
   const filterableColumns: FilterableColumn[] = [
     {
-      accessorKey: "project_name",
+      accessorKey: "project.name", // Change from project_name to project.name
       title: "Project",
       filterType: "text",
     },

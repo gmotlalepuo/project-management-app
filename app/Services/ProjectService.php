@@ -2,57 +2,36 @@
 
 namespace App\Services;
 
-use App\Enum\RolesEnum;
-use App\Events\ProjectInvitationRequestReceived;
-use App\Models\Project;
-use App\Models\User;
 use Carbon\Carbon;
+use App\Models\User;
+use App\Enum\RolesEnum;
+use App\Models\Project;
+use Illuminate\Support\Str;
+use App\Traits\FilterableTrait;
+use App\Traits\SortableTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Events\ProjectInvitationRequestReceived;
 
-class ProjectService {
-  private function applySorting($query, $sortField, $sortDirection) {
-    // Ensure clean sort direction
-    $sortDirection = strtolower($sortDirection) === 'asc' ? 'asc' : 'desc';
+class ProjectService extends BaseService {
+  use FilterableTrait, SortableTrait;
 
-    // For ID field, use proper numeric sorting
-    if ($sortField === 'id') {
-      return $query->orderByRaw("CAST(tasks.id AS SIGNED) $sortDirection");
-    }
-
-    // Handle relationship fields
-    if ($sortField === 'assignedUser.name') {
-      return $query->leftJoin('users', 'tasks.assigned_user_id', '=', 'users.id')
-        ->orderBy('users.name', $sortDirection)
-        ->select('tasks.*');
-    }
-
-    // Default sorting
-    return $query->orderBy($sortField, $sortDirection);
-  }
-
-  public function getProjects($user, $filters) {
+  public function getProjects($user, array $filters) {
     $query = Project::visibleToUser($user->id);
 
-    // Apply filters
+    // Apply filters using trait methods
     if (isset($filters['name'])) {
-      $query->where("name", "like", "%" . $filters['name'] . "%");
+      $this->applyNameFilter($query, $filters['name']);
     }
     if (isset($filters['status'])) {
-      $statuses = $filters['status'];
-      if (is_array($statuses)) {
-        $query->whereIn("status", $statuses);
-      } else {
-        $query->where("status", $statuses);
-      }
+      $this->applyStatusFilter($query, $filters['status']);
     }
     if (isset($filters['created_at'])) {
-      $createdAtRange = $filters['created_at'];
-      $startDate = Carbon::parse($createdAtRange[0])->startOfDay();
-      $endDate = Carbon::parse($createdAtRange[1])->endOfDay();
-      $query->whereBetween("created_at", [$startDate, $endDate]);
+      $this->applyDateRangeFilter($query, $filters['created_at'], 'created_at');
     }
+
+    $basicFilters = $this->getBasicFilters($filters);
+    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'projects');
 
     return $query;
   }
@@ -60,15 +39,10 @@ class ProjectService {
   public function storeProject($data) {
     $data['created_by'] = Auth::id();
     $data['updated_by'] = Auth::id();
-
-    if (isset($data['due_date'])) {
-      $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');
-    } else {
-      $data['due_date'] = null;
-    }
+    $data['due_date'] = $this->formatDate($data['due_date'] ?? null);
 
     if (isset($data['image'])) {
-      $data['image_path'] = $data['image']->store('project/' . Str::random(10), 'public');
+      $data['image_path'] = $this->handleImageUpload($data['image'], 'project');
     }
 
     return Project::create($data);
@@ -106,51 +80,24 @@ class ProjectService {
   public function getProjectWithTasks(Project $project, array $filters) {
     $query = $project->tasks()->with(['labels', 'project', 'assignedUser']);
 
-    // Clean and validate sort parameters
-    $sortField = $filters['sort_field'] ?? 'created_at';
-    $sortDirection = strtolower($filters['sort_direction'] ?? 'desc') === 'asc' ? 'asc' : 'desc';
-
-    // Apply sorting before pagination
-    $query = $this->applySorting($query, $sortField, $sortDirection);
-
-    // Extract pagination params
-    $page = $filters['page'] ?? 1;
-    $perPage = $filters['per_page'] ?? 10;
-
-    // Apply filters
+    // Apply filters using trait methods
     if (isset($filters['name'])) {
-      $query->where("name", "like", "%" . $filters['name'] . "%");
+      $this->applyNameFilter($query, $filters['name']);
     }
     if (isset($filters['status'])) {
-      $statuses = $filters['status'];
-      if (is_array($statuses)) {
-        $query->whereIn("status", $statuses);
-      } else {
-        $query->where("status", $statuses);
-      }
+      $this->applyStatusFilter($query, $filters['status']);
     }
     if (isset($filters['priority'])) {
-      $priorities = $filters['priority'];
-      if (is_array($priorities)) {
-        $query->whereIn("priority", $priorities);
-      } else {
-        $query->where("priority", $priorities);
-      }
+      $this->applyPriorityFilter($query, $filters['priority']);
     }
     if (isset($filters['label_ids'])) {
-      $labelIds = $filters['label_ids'];
-      if (is_array($labelIds)) {
-        $query->whereHas("labels", function ($query) use ($labelIds) {
-          $query->whereIn("id", $labelIds);
-        });
-      } else {
-        $query->whereHas("labels", function ($query) use ($labelIds) {
-          $query->where("id", $labelIds);
-        });
-      }
+      $this->applyLabelFilter($query, $filters['label_ids']);
     }
 
-    return $query->paginate($perPage, ['*'], 'page', $page);
+    $basicFilters = $this->getBasicFilters($filters);
+    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
+
+    return $query->paginate($basicFilters['per_page'], ['*'], 'page', $basicFilters['page']);
   }
 
   public function handleInvitation(Project $project, string $email) {
@@ -194,27 +141,28 @@ class ProjectService {
   }
 
   public function getPendingInvitations(User $user, array $filters = []) {
-    $query = $user->projectInvitations()->wherePivot('status', 'pending');
+    // Initialize basic filters with defaults to prevent undefined array key errors
+    $filters['sort_field'] = $filters['sort_field'] ?? 'created_at';
+    $filters['sort_direction'] = $filters['sort_direction'] ?? 'desc';
+    $filters['per_page'] = $filters['per_page'] ?? 10;
+
+    $basicFilters = $this->getBasicFilters($filters);
+
+    $query = $user->projectInvitations()
+      ->wherePivot('status', 'pending')
+      ->withPivot('created_at', 'updated_at', 'status');
 
     if (isset($filters['name'])) {
-      $query->where('name', 'like', '%' . $filters['name'] . '%');
+      $this->applyNameFilter($query, $filters['name']);
     }
 
-    if (isset($filters['status'])) {
-      $statuses = $filters['status'];
-      if (is_array($statuses)) {
-        $query->wherePivotIn('status', $statuses);
-      } else {
-        $query->wherePivot('status', $statuses);
-      }
-    }
+    // For pivot table relations, we need to properly handle sorting
+    $sortField = $basicFilters['sort_field'] === 'created_at'
+      ? 'project_user.created_at'
+      : 'projects.' . $basicFilters['sort_field'];
 
-    $sortField = $filters['sort_field'] ?? 'created_at';
-    $sortDirection = $filters['sort_direction'] ?? 'desc';
-    $perPage = $filters['per_page'] ?? 10;
-
-    return $query->orderBy($sortField, $sortDirection)
-      ->paginate($perPage)
+    return $query->orderBy($sortField, $basicFilters['sort_direction'])
+      ->paginate($basicFilters['per_page'])
       ->withQueryString();
   }
 

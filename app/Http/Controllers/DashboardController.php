@@ -51,23 +51,21 @@ class DashboardController extends Controller {
             ->count();
 
 
-        // Get active try with proper relations
+        // Get active tasks with proper relations
         $query = $this->dashboardService->getActiveTasks($user, $filters);
 
-        // Add proper sorting
-        $sortField = request('sort_field', 'created_at');
-        $sortDirection = request('sort_direction', 'desc');
-
-        // Fetch label options for the filter
-        $labelOptions = TaskLabel::all()->map(function ($label) {
-            return ['value' => $label->id, 'label' => $label->name];
-        });
-
-        // Ensure we're loading the necessary relations
+        // Apply eager loading
         $activeTasks = $query->with(['project', 'labels', 'assignedUser'])
-            ->orderBy($sortField, $sortDirection)
             ->paginate(request('per_page', 10))
             ->withQueryString();
+
+        // Fetch ALL labels from the database, not just the ones related to active tasks
+        $labelOptions = TaskLabel::orderBy('name')->get()->map(function ($label) {
+            return [
+                'value' => (string)$label->id,
+                'label' => $label->name
+            ];
+        });
 
         return Inertia::render('Dashboard', [
             'totalPendingTasks' => $totalPendingTasks,

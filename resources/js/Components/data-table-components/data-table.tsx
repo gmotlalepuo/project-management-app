@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   ColumnDef as BaseColumnDef,
   ColumnFiltersState,
+  OnChangeFn,
   SortingState,
   VisibilityState,
   flexRender,
@@ -61,7 +62,7 @@ export function DataTable<TData, TValue>({
   columns,
   entity,
   filterableColumns,
-  queryParams,
+  queryParams = {},
   routeName,
   entityId,
 }: DataTableProps<TData, TValue>) {
@@ -76,7 +77,12 @@ export function DataTable<TData, TValue>({
     }, {} as VisibilityState),
   );
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: queryParams.sort_field || "id",
+      desc: queryParams.sort_direction === "desc",
+    },
+  ]);
   const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
   const [isLoading, setIsLoading] = React.useState(false); // Add loading state
 
@@ -95,6 +101,34 @@ export function DataTable<TData, TValue>({
     }
   }, [queryParams.sort_field, queryParams.sort_direction]);
 
+  const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    // Handle both function updater and direct value
+    const updatedSorting =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(sorting)
+        : updaterOrValue;
+
+    setSorting(updatedSorting);
+
+    if (updatedSorting.length > 0) {
+      const { id, desc } = updatedSorting[0];
+      const updatedParams = {
+        ...queryParams,
+        sort_field: id,
+        sort_direction: desc ? "desc" : "asc",
+        page: 1, // Reset to first page when sorting changes
+      };
+
+      setIsLoading(true);
+      router.get(route(routeName, { id: entityId }), updatedParams, {
+        preserveState: true,
+        preserveScroll: true,
+        onFinish: () => setIsLoading(false),
+        onError: () => setIsLoading(false),
+      });
+    }
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -110,7 +144,7 @@ export function DataTable<TData, TValue>({
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
@@ -169,44 +203,6 @@ export function DataTable<TData, TValue>({
     });
   };
 
-  // Simplified sort handler with fixed logic
-  const sortChanged = (columnId: string) => {
-    const column = table.getColumn(columnId);
-    if (!column || !column.getCanSort()) return;
-
-    setIsLoading(true);
-
-    // Always toggle between asc/desc for the same column
-    // Start with asc for a new column
-    const newDirection =
-      columnId === queryParams.sort_field
-        ? queryParams.sort_direction === "asc"
-          ? "desc"
-          : "asc"
-        : "asc";
-
-    const updatedParams: QueryParams = {
-      ...queryParams,
-      page: 1, // Reset to first page on sort change
-      sort_field: columnId,
-      sort_direction: newDirection,
-    };
-
-    // Preserve the tab parameter if it exists
-    if (queryParams.tab) {
-      updatedParams.tab = queryParams.tab;
-    }
-
-    router.visit(route(routeName, { id: entityId }), {
-      data: updatedParams,
-      preserveState: true,
-      preserveScroll: true,
-      onFinish: () => setIsLoading(false),
-      onError: () => setIsLoading(false),
-      replace: true, // Use replace to avoid breaking browser history
-    });
-  };
-
   // Move filter handler here from toolbar
   const handleFilter = (name: string, value: string | string[]) => {
     const updatedParams: QueryParams = {
@@ -256,7 +252,6 @@ export function DataTable<TData, TValue>({
                     className="cursor-pointer px-4 py-2 dark:text-gray-300"
                     key={header.id}
                     colSpan={header.colSpan}
-                    onClick={() => sortChanged(header.column.id)}
                   >
                     {header.isPlaceholder
                       ? null

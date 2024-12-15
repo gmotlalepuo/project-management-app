@@ -113,13 +113,10 @@ class ProjectController extends Controller {
             return ['value' => $label->id, 'label' => $label->name];
         });
 
+        // Ensure sorting parameters are explicitly set
         $filters = request()->all();
-
-        // Ensure consistent sorting behavior
         $filters['sort_field'] = request('sort_field', 'created_at');
-        $filters['sort_direction'] = in_array(request('sort_direction'), ['asc', 'desc'])
-            ? request('sort_direction')
-            : 'desc';
+        $filters['sort_direction'] = request('sort_direction'); // No default
         $filters['per_page'] = (int) request('per_page', 10);
         $filters['page'] = (int) request('page', 1);
 

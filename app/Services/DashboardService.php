@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use App\Models\Task;
-use Carbon\Carbon;
+use App\Traits\FilterableTrait;
+use App\Traits\SortableTrait;
 
-class DashboardService {
-  public function getActiveTasks($user, $filters) {
-    // Start with tasks from projects where user is a member
-    $query = Task::whereHas('project', function ($query) use ($user) {
+class DashboardService extends BaseService {
+  use FilterableTrait, SortableTrait;
+
+  public function getActiveTasks($user, array $filters) {
+    $query = Task::query();
+
+    // Base query
+    $query->whereHas('project', function ($query) use ($user) {
       $query->where('created_by', $user->id)
         ->orWhereHas('acceptedUsers', function ($q) use ($user) {
           $q->where('user_id', $user->id)
@@ -20,43 +25,22 @@ class DashboardService {
 
     // Apply filters
     if (isset($filters['name'])) {
-      $query->where('name', 'like', '%' . $filters['name'] . '%');
+      $this->applyNameFilter($query, $filters['name']);
     }
-
-    if (isset($filters['project_name'])) {
-      $query->whereHas('project', function ($query) use ($filters) {
-        $query->where('name', 'like', '%' . $filters['project_name'] . '%');
-      });
+    if (isset($filters['priority'])) {
+      $this->applyPriorityFilter($query, $filters['priority']);
     }
-
     if (isset($filters['status'])) {
-      $statuses = $filters['status'];
-      if (is_array($statuses)) {
-        $query->whereIn('status', $statuses);
-      } else {
-        $query->where('status', $statuses);
-      }
+      $this->applyStatusFilter($query, $filters['status']);
     }
-
-    if (isset($filters['due_date'])) {
-      $dueDateRange = $filters['due_date'];
-      $startDate = Carbon::parse($dueDateRange[0])->startOfDay();
-      $endDate = Carbon::parse($dueDateRange[1])->endOfDay();
-      $query->whereBetween('due_date', [$startDate, $endDate]);
-    }
-
     if (isset($filters['label_ids'])) {
-      $labelIds = $filters['label_ids'];
-      if (is_array($labelIds)) {
-        $query->whereHas("labels", function ($query) use ($labelIds) {
-          $query->whereIn("id", $labelIds);
-        });
-      } else {
-        $query->whereHas("labels", function ($query) use ($labelIds) {
-          $query->where("id", $labelIds);
-        });
-      }
+      $this->applyLabelFilter($query, $filters['label_ids']);
     }
+
+    // Handle sorting
+    $basicFilters = $this->getBasicFilters($filters);
+
+    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
 
     return $query;
   }
