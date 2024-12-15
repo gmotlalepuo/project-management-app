@@ -17,6 +17,7 @@ class TaskResource extends JsonResource {
     public function toArray(Request $request): array {
         return [
             'id' => $this->id,
+            'task_number' => $this->task_number,
             'name' => $this->name,
             'description' => $this->description,
             'created_at' => Carbon::parse($this->created_at)

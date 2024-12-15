@@ -3,6 +3,7 @@ import { PaginationLinks, PaginationMeta } from "./utils";
 
 export type Task = {
   id: number;
+  task_number: number; // Add this new field
   name: string;
   description: string;
   created_at: string;

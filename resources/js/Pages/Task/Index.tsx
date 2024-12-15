@@ -55,8 +55,9 @@ export default function Index({
   const columns = useMemo<ColumnDef<Task, any>[]>(
     () => [
       {
-        accessorKey: "id",
-        header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+        accessorKey: "task_number",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="#" />,
+        cell: ({ row }) => `#${row.original.task_number}`,
       },
       {
         accessorKey: "project.name",

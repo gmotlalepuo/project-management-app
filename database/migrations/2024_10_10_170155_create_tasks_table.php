@@ -11,6 +11,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedInteger('task_number');
             $table->string('name');
             $table->longText('description')->nullable();
             $table->string('image_path')->nullable();
@@ -22,6 +23,9 @@ return new class extends Migration {
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->timestamps();
+
+            // Add a unique constraint for project_id and task_number combination
+            $table->unique(['project_id', 'task_number']);
         });
     }
 

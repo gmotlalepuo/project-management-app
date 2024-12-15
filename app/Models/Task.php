@@ -21,11 +21,26 @@ class Task extends Model {
         'assigned_user_id',
         'created_by',
         'updated_by',
+        'task_number',
     ];
 
     protected $casts = [
         'assigned_user_id' => 'integer', // Add this to properly handle null values
     ];
+
+    protected static function boot() {
+        parent::boot();
+
+        static::creating(function ($task) {
+            // Get the last task number for this project
+            $lastTask = static::where('project_id', $task->project_id)
+                ->orderBy('task_number', 'desc')
+                ->first();
+
+            // Set the task number as the next number for this project
+            $task->task_number = $lastTask ? $lastTask->task_number + 1 : 1;
+        });
+    }
 
     public function project() {
         return $this->belongsTo(Project::class);
