@@ -36,10 +36,7 @@ class TaskService extends BaseService {
       $this->applyLabelFilter($query, $filters['label_ids']);
     }
 
-    $basicFilters = $this->getBasicFilters($filters);
-    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
-
-    return $query->paginate($basicFilters['per_page'], ['*'], 'page', $basicFilters['page']);
+    return $this->paginateAndSort($query, $filters, 'tasks');
   }
 
   public function storeTask($data) {
@@ -102,15 +99,6 @@ class TaskService extends BaseService {
         $query->visibleToUser($user->id);
       });
 
-    // Basic pagination and sorting
-    $perPage = $filters['per_page'] ?? 10;
-    $page = $filters['page'] ?? 1;
-    $sortField = $filters['sort_field'] ?? 'created_at';
-    $sortDirection = $filters['sort_direction'] ?? 'desc';
-
-    // Simple sorting
-    $query->orderBy($sortField, $sortDirection);
-
-    return $query->paginate($perPage, ['*'], 'page', $page);
+    return $this->paginateAndSort($query, $filters, 'tasks');
   }
 }

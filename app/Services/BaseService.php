@@ -37,4 +37,21 @@ abstract class BaseService {
 
     return $query;
   }
+
+  protected function paginateAndSort($query, array $filters, string $table) {
+    $basicFilters = $this->getBasicFilters($filters);
+
+    if (str_contains($basicFilters['sort_field'], '.')) {
+      // Handle relation sorting
+      [$relation, $field] = explode('.', $basicFilters['sort_field']);
+      $query->join($relation, "$table.{$relation}_id", '=', "$relation.id")
+        ->select("$table.*")
+        ->orderBy("$relation.$field", $basicFilters['sort_direction']);
+    } else {
+      // Normal column sorting
+      $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], $table);
+    }
+
+    return $query->paginate($basicFilters['per_page'], ['*'], 'page', $basicFilters['page']);
+  }
 }

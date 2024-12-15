@@ -17,7 +17,16 @@ class ProjectService extends BaseService {
   use FilterableTrait, SortableTrait;
 
   public function getProjects($user, array $filters) {
-    $query = Project::visibleToUser($user->id);
+    $query = Project::visibleToUser($user->id)
+      ->with(['tasks' => function ($query) {
+        $query->latest()->limit(5)->with('labels');
+      }])
+      ->withCount([
+        'tasks as total_tasks',
+        'tasks as completed_tasks' => function ($query) {
+          $query->where('status', 'completed');
+        }
+      ]);
 
     // Apply filters using trait methods
     if (isset($filters['name'])) {
@@ -30,10 +39,7 @@ class ProjectService extends BaseService {
       $this->applyDateRangeFilter($query, $filters['created_at'], 'created_at');
     }
 
-    $basicFilters = $this->getBasicFilters($filters);
-    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'projects');
-
-    return $query;
+    return $this->paginateAndSort($query, $filters, 'projects');
   }
 
   public function storeProject($data) {
@@ -94,10 +100,7 @@ class ProjectService extends BaseService {
       $this->applyLabelFilter($query, $filters['label_ids']);
     }
 
-    $basicFilters = $this->getBasicFilters($filters);
-    $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
-
-    return $query->paginate($basicFilters['per_page'], ['*'], 'page', $basicFilters['page']);
+    return $this->paginateAndSort($query, $filters, 'tasks');
   }
 
   public function handleInvitation(Project $project, string $email) {
@@ -156,14 +159,7 @@ class ProjectService extends BaseService {
       $this->applyNameFilter($query, $filters['name']);
     }
 
-    // For pivot table relations, we need to properly handle sorting
-    $sortField = $basicFilters['sort_field'] === 'created_at'
-      ? 'project_user.created_at'
-      : 'projects.' . $basicFilters['sort_field'];
-
-    return $query->orderBy($sortField, $basicFilters['sort_direction'])
-      ->paginate($basicFilters['per_page'])
-      ->withQueryString();
+    return $this->paginateAndSort($query, $filters, 'projects');
   }
 
   public function updateInvitationStatus(Project $project, User $user, string $status) {

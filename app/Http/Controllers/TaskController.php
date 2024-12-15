@@ -29,14 +29,6 @@ class TaskController extends Controller {
     public function index() {
         $user = Auth::user();
         $filters = request()->all();
-
-        // Ensure sorting parameters are set correctly
-        $filters['sort_field'] = request('sort_field', 'created_at');
-        $filters['sort_direction'] = request('sort_direction'); // No default
-        $filters['per_page'] = (int) request('per_page', 10);
-        $filters['page'] = (int) request('page', 1);
-
-        // Get tasks with sorting and pagination
         $tasks = $this->taskService->getTasks($user, $filters);
 
         // Fetch label options for the filter
@@ -247,16 +239,7 @@ class TaskController extends Controller {
 
     public function myTasks() {
         $user = Auth::user();
-        $filters = request()->all();
-
-        // Ensure sorting parameters are set correctly
-        $filters['sort_field'] = request('sort_field', 'created_at');
-        $filters['sort_direction'] = request('sort_direction'); // No default
-        $filters['per_page'] = (int) request('per_page', 10);
-        $filters['page'] = (int) request('page', 1);
-
-        // Get tasks with sorting and pagination
-        $tasks = $this->taskService->getMyTasks($user, $filters);
+        $tasks = $this->taskService->getMyTasks($user, request()->all());
 
         return Inertia::render('Task/Index', [
             'tasks' => TaskResource::collection($tasks),

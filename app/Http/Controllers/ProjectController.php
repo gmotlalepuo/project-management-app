@@ -28,22 +28,9 @@ class ProjectController extends Controller {
     public function index() {
         $user = Auth::user();
         $filters = request()->all();
-        $query = $this->projectService->getProjects($user, $filters);
 
-        $sortField = request("sort_field", "created_at");
-        $sortDirection = request("sort_direction", "desc");
-        $perPage = request("per_page", 10);
-        $page = request("page", 1);
-
-        $projects = $query->with(['tasks' => function ($query) {
-            $query->latest()->limit(5)->with('labels');
-        }])
-            ->withCount(['tasks as total_tasks', 'tasks as completed_tasks' => function ($query) {
-                $query->where('status', 'completed');
-            }])
-            ->orderBy($sortField, $sortDirection)
-            ->paginate($perPage, ['*'], 'page', $page)
-            ->withQueryString();
+        // Let the service handle all the query building including eager loading
+        $projects = $this->projectService->getProjects($user, $filters);
 
         return Inertia::render('Project/Index', [
             'projects' => ProjectResource::collection($projects)->additional([
