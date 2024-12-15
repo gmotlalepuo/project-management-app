@@ -36,6 +36,9 @@ class DashboardService extends BaseService {
     if (isset($filters['label_ids'])) {
       $this->applyLabelFilter($query, $filters['label_ids']);
     }
+    if (isset($filters['due_date'])) {
+      $this->applyDateRangeFilter($query, $filters['due_date'], 'due_date');
+    }
 
     // Handle sorting
     $basicFilters = $this->getBasicFilters($filters);

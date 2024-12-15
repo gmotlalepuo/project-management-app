@@ -29,7 +29,8 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   options: FilterOption[];
   onSelect: (selectedValues: string[]) => void; // New prop to handle selection change
   initialSelectedValues: string[]; // Prop to handle initial selected values
-  disabled?: boolean; // Add disabled prop
+  disabled?: boolean;
+  isReset?: boolean;
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
@@ -38,12 +39,19 @@ export function DataTableFacetedFilter<TData, TValue>({
   options,
   onSelect,
   initialSelectedValues = [],
-  disabled = false, // Add default value
+  disabled = false,
+  isReset = false,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const [selectedValues, setSelectedValues] = React.useState(
     new Set(initialSelectedValues),
   );
   const facets = column?.getFacetedUniqueValues();
+
+  React.useEffect(() => {
+    if (isReset) {
+      setSelectedValues(new Set());
+    }
+  }, [isReset]);
 
   const handleSelect = (value: string) => {
     const newSelectedValues = new Set(selectedValues);

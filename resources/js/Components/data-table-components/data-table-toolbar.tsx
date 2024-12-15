@@ -31,7 +31,13 @@ export function DataTableToolbar<TData>({
   onFilter,
   onReset,
 }: DataTableToolbarProps<TData>) {
-  const isFiltered = Object.keys(queryParams).length > 0;
+  // Create an array of params that should not trigger the reset button
+  const excludedParams = ["page", "per_page", "tab"];
+
+  // Check if there are any filter parameters (excluding pagination and sorting)
+  const isFiltered = Object.keys(queryParams).some(
+    (param) => !excludedParams.includes(param),
+  );
 
   const [dateRanges, setDateRanges] = useState<{
     [key: string]: { from: Date; to: Date };
@@ -52,6 +58,7 @@ export function DataTableToolbar<TData>({
 
   const [showAllFilters, setShowAllFilters] = useState(false); // State to control filter visibility
   const [isMobile, setIsMobile] = useState(false); // State to track if the screen is below "md"
+  const [isReset, setIsReset] = useState(false);
 
   useEffect(() => {
     // Handler to detect screen width changes and set mobile state
@@ -97,6 +104,13 @@ export function DataTableToolbar<TData>({
       [accessorKey]: { from, to },
     }));
     updateQuery(accessorKey, [from.toISOString(), to.toISOString()]); // Apply date range query
+  };
+
+  const handleReset = () => {
+    setIsReset(true);
+    onReset();
+    // Reset the flag after a short delay
+    setTimeout(() => setIsReset(false), 100);
   };
 
   const visibleFilters =
@@ -150,6 +164,7 @@ export function DataTableToolbar<TData>({
                   }}
                   initialSelectedValues={queryParams[column.accessorKey] || []}
                   disabled={isLoading}
+                  isReset={isReset}
                 />
               );
             }
@@ -162,7 +177,7 @@ export function DataTableToolbar<TData>({
                   onDateSelect={(dateRange) =>
                     handleDateSelect(column.accessorKey, dateRange)
                   }
-                  className="h-8 w-[250px]"
+                  className="h-8"
                   variant="outline"
                 />
               );
@@ -173,7 +188,7 @@ export function DataTableToolbar<TData>({
           {isFiltered && (
             <Button
               variant="ghost"
-              onClick={onReset}
+              onClick={handleReset}
               disabled={isLoading}
               className="h-8 px-2 lg:px-3"
             >
