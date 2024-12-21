@@ -21,7 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Info } from "lucide-react";
 import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Props = {
   projects: PaginatedProject;
@@ -31,6 +31,7 @@ type Props = {
   };
   currentUserId: number;
   selectedProjectId?: number;
+  fromProjectPage?: boolean;
 };
 
 export default function Create({
@@ -39,6 +40,7 @@ export default function Create({
   labels,
   currentUserId,
   selectedProjectId,
+  fromProjectPage,
 }: Props) {
   const [canAssignOthers, setCanAssignOthers] = useState(true);
   const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
@@ -51,7 +53,7 @@ export default function Create({
     due_date: "",
     priority: "",
     assigned_user_id: canAssignOthers ? "" : currentUserId.toString(),
-    project_id: "",
+    project_id: selectedProjectId?.toString() || "",
     label_ids: [] as number[],
   });
 
@@ -144,11 +146,24 @@ export default function Create({
     fetchProjectUsers(projectId);
   };
 
+  // Initialize project selection and fetch related data if coming from project page
+  useEffect(() => {
+    if (selectedProjectId) {
+      handleProjectChange(selectedProjectId.toString());
+    }
+  }, [selectedProjectId]);
+
+  // Disable project selection if coming from project page
+  const isProjectSelectionDisabled = fromProjectPage;
+
   return (
     <AuthenticatedLayout
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-          Create New Task
+          Create New Task{" "}
+          {selectedProjectId
+            ? `for ${projects.data.find((p) => p.id === selectedProjectId)?.name}`
+            : ""}
         </h2>
       }
     >
@@ -167,6 +182,7 @@ export default function Create({
                 <Select
                   onValueChange={handleProjectChange}
                   defaultValue={selectedProjectId?.toString()}
+                  disabled={isProjectSelectionDisabled}
                   required
                 >
                   <SelectTrigger className="w-full">

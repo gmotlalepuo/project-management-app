@@ -30,7 +30,7 @@ type TaskWithPermissions = {
   };
 };
 
-const truncateText = (text: string, maxLength: number = 8) => {
+const truncateText = (text: string, maxLength: number = 7) => {
   return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
 };
 
@@ -72,7 +72,7 @@ export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
           <SidebarMenuItem key={`${item.name}-${index}`}>
             <SidebarMenuButton asChild>
               <Link href={item.url}>
-                {item.labels.slice(0, 2).map((label) => (
+                {item.labels.slice(0, 1).map((label) => (
                   <Badge
                     key={label.id}
                     variant={label.variant}

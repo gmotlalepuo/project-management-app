@@ -113,10 +113,16 @@ export function DataTableToolbar<TData>({
     setTimeout(() => setIsReset(false), 100);
   };
 
+  const activeFilterableColumns = filterableColumns.filter(
+    (col) => !col.excludeFromTable,
+  );
+
+  const shouldShowAllFiltersButton = isMobile || activeFilterableColumns.length > 4;
+
   const visibleFilters =
     showAllFilters || isMobile
-      ? filterableColumns.filter((col) => !col.excludeFromTable) // Add filter here
-      : filterableColumns.filter((col) => !col.excludeFromTable).slice(0, 4); // Add filter here
+      ? activeFilterableColumns
+      : activeFilterableColumns.slice(0, 4);
 
   return (
     <div className="space-y-4">
@@ -205,14 +211,18 @@ export function DataTableToolbar<TData>({
               Delete ({table.getFilteredSelectedRowModel().rows.length})
             </Button>
           ) : null}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowAllFilters(!showAllFilters)}
-            className={`h-8 w-full ${isMobile && "mt-2"}`}
-          >
-            {showAllFilters ? "Hide Filters" : "Show All Filters"}
-          </Button>
+
+          {shouldShowAllFiltersButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAllFilters(!showAllFilters)}
+              className={`h-8 w-full ${isMobile && "mt-2"}`}
+            >
+              {showAllFilters ? "Hide Filters" : "Show All Filters"}
+            </Button>
+          )}
+
           <DataTableViewOptions table={table} />
         </div>
       </div>

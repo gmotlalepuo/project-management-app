@@ -178,12 +178,17 @@ export function ActiveTasksTable({
   ];
 
   return (
-    <DataTable
-      columns={columns}
-      entity={activeTasks}
-      filterableColumns={filterableColumns}
-      queryParams={queryParams}
-      routeName="dashboard"
-    />
+    <>
+      <h4 className="mb-3 text-sm text-muted-foreground">
+        This table displays the active tasks assigned to you.
+      </h4>
+      <DataTable
+        columns={columns}
+        entity={activeTasks}
+        filterableColumns={filterableColumns}
+        queryParams={queryParams}
+        routeName="dashboard"
+      />
+    </>
   );
 }

@@ -241,7 +241,7 @@ export default function Index({
               </h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("task.create")}>
-                  <Button className="w-full sm:w-auto">
+                  <Button className="w-full shadow sm:w-auto">
                     <CirclePlus className="h-5 w-5" />
                     <span>Create Task</span>
                   </Button>

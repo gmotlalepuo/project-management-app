@@ -1,4 +1,32 @@
+import { Clock, PlayCircle, CheckCircle2, LucideIcon } from "lucide-react";
+
 // Project constants
+export type StatusType = "pending" | "in_progress" | "completed";
+
+type StatusConfig = {
+  icon: LucideIcon;
+  color: string;
+  text: string;
+};
+
+export const STATUS_CONFIG: Record<StatusType, StatusConfig> = {
+  pending: {
+    icon: Clock,
+    color: "text-yellow-500",
+    text: "Pending",
+  },
+  in_progress: {
+    icon: PlayCircle,
+    color: "text-blue-500",
+    text: "In Progress",
+  },
+  completed: {
+    icon: CheckCircle2,
+    color: "text-green-500",
+    text: "Completed",
+  },
+} as const;
+
 export const PROJECT_STATUS_BADGE_MAP: Record<
   "pending" | "in_progress" | "completed",
   "warning" | "info" | "success"

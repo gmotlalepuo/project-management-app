@@ -176,7 +176,10 @@ export default function ProjectTasks({
           All Project Tasks
         </h2>
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <Link href={route("task.create")}>
+          <Link
+            href={route("task.create", { project_id: projectId })}
+            className="inline-flex items-center gap-2"
+          >
             <Button className="w-full sm:w-auto">
               <CirclePlus className="h-5 w-5" />
               <span>Create Task</span>

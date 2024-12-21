@@ -12,6 +12,14 @@ import { Eye, Pencil, Trash2, UserPlus, UserMinus, LogOut } from "lucide-react";
 import { usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { LucideIcon } from "lucide-react";
+
+interface CustomAction {
+  icon: LucideIcon;
+  label: string;
+  onClick: (row: Row<any>) => void;
+  showSeparator?: boolean;
+}
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -24,6 +32,7 @@ interface DataTableRowActionsProps<TData> {
   canEdit?: boolean;
   isProjectTable?: boolean;
   isCreator?: boolean;
+  customActions?: CustomAction[];
 }
 
 export function DataTableRowActions<TData>({
@@ -37,6 +46,7 @@ export function DataTableRowActions<TData>({
   canEdit = true,
   isProjectTable = false,
   isCreator = false,
+  customActions = [],
 }: DataTableRowActionsProps<TData>) {
   const { auth } = usePage<PageProps>().props;
   const task = row.original as any;
@@ -98,6 +108,7 @@ export function DataTableRowActions<TData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px]">
+          {/* Standard Actions */}
           {onView && (
             <DropdownMenuItem onClick={() => onView(row)}>
               <Eye className="h-4 w-4" />
@@ -129,6 +140,17 @@ export function DataTableRowActions<TData>({
               )}
             </>
           )}
+
+          {/* Custom Actions */}
+          {customActions.map((action, index) => (
+            <div key={index}>
+              <DropdownMenuItem onClick={() => action.onClick(row)}>
+                {action.icon && <action.icon className="h-4 w-4" />}
+                <span>{action.label}</span>
+              </DropdownMenuItem>
+              {action.showSeparator && <DropdownMenuSeparator />}
+            </div>
+          ))}
 
           {isProjectTable && !isCreator && onLeave && (
             <>

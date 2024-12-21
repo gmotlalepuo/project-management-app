@@ -52,6 +52,10 @@ class TaskController extends Controller {
      */
     public function create() {
         $user = Auth::user();
+        $projectId = request('project_id');
+        $selectedProject = $projectId ? Project::findOrFail($projectId) : null;
+
+        // Get accessible projects for the user
         $projects = Project::query()
             ->whereHas('invitedUsers', function ($query) use ($user) {
                 $query->where('user_id', $user->id)
@@ -61,24 +65,18 @@ class TaskController extends Controller {
             ->orderBy('name', 'asc')
             ->get();
 
-        // Get the project ID from the request
-        $projectId = request('project_id');
-        $project = $projectId ? Project::find($projectId) : null;
-
         // Should they be restricted to self-assignment?
-        $canAssignOthers = !$project || !$project->isProjectMember($user);
+        $canAssignOthers = !$selectedProject || !$selectedProject->isProjectMember($user);
 
         // Fetch initial users if project is selected
-        $users = collect();
-        if ($projectId) {
-            $users = $this->getProjectUsers($project);
-        }
+        $users = $selectedProject ? $this->getProjectUsers($selectedProject) : collect();
 
-        // Fetch labels
-        $labels = TaskLabel::whereNull('project_id')
-            ->orWhere('project_id', $projectId)
-            ->orderBy('name', 'asc')
-            ->get();
+        // Fetch both generic labels and project-specific labels if a project is selected
+        $labelsQuery = TaskLabel::whereNull('project_id');
+        if ($selectedProject) {
+            $labelsQuery->orWhere('project_id', $selectedProject->id);
+        }
+        $labels = $labelsQuery->orderBy('name', 'asc')->get();
 
         return Inertia::render('Task/Create', [
             'projects' => ProjectResource::collection($projects),
@@ -86,7 +84,8 @@ class TaskController extends Controller {
             'labels' => TaskLabelResource::collection($labels),
             'canAssignOthers' => $canAssignOthers,
             'currentUserId' => $user->id,
-            'selectedProjectId' => $projectId, // Add this to help frontend validation
+            'selectedProjectId' => $selectedProject?->id,
+            'fromProjectPage' => (bool)$projectId,
         ]);
     }
 

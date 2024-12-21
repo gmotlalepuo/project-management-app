@@ -25,11 +25,11 @@ const chartConfig = {
   pending: { label: "Pending", color: "hsl(var(--warning))" },
 } satisfies ChartConfig;
 
-interface ProjectSidebarProps {
+interface ProjectStatsProps {
   projects: Project[];
 }
 
-export default function ProjectSidebar({ projects }: ProjectSidebarProps) {
+export default function ProjectStats({ projects }: ProjectStatsProps) {
   const prepareChartData = (projects: Project[]) => {
     const statusCounts = {
       completed: projects.filter((p) => p.status === "completed").length,

@@ -59,6 +59,9 @@ export default function Dashboard({
   const hasActiveTasks = allTasks.length > 0;
   const shouldShowTabs = hasStats || hasActiveTasks;
 
+  // Determine default tab based on available data
+  const defaultTab = hasActiveTasks ? "tasks" : "stats";
+
   return (
     <AuthenticatedLayout
       header={
@@ -82,19 +85,19 @@ export default function Dashboard({
               </h4>
               <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("project.create")}>
-                  <Button className="w-full sm:w-auto">
+                  <Button className="w-full shadow sm:w-auto">
                     <CirclePlus className="mr-2 h-5 w-5" />
                     <span>Create Project</span>
                   </Button>
                 </Link>
                 <Link href={route("task.create")}>
-                  <Button className="w-full sm:w-auto">
+                  <Button className="w-full shadow sm:w-auto">
                     <CheckSquare className="mr-2 h-5 w-5" />
                     <span>Create Task</span>
                   </Button>
                 </Link>
                 <Link href={route("project.invitations")}>
-                  <Button variant="secondary" className="w-full sm:w-auto">
+                  <Button variant="secondary" className="w-full shadow sm:w-auto">
                     <UsersRound className="mr-2 h-5 w-5" />
                     <span>Invitations</span>
                   </Button>
@@ -136,8 +139,13 @@ export default function Dashboard({
           {shouldShowTabs && (
             <Card>
               <CardContent className="pt-6">
-                <Tabs defaultValue="tasks" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
+                <Tabs defaultValue={defaultTab} className="w-full">
+                  <TabsList
+                    className="grid w-full"
+                    style={{
+                      gridTemplateColumns: `repeat(${hasActiveTasks && hasStats ? 2 : 1}, 1fr)`,
+                    }}
+                  >
                     {hasActiveTasks && (
                       <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
                     )}

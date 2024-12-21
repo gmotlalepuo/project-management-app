@@ -19,7 +19,7 @@ import { DataTable } from "@/Components/data-table-components/data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { PageProps } from "@/types";
 import ProjectCards from "./Partials/ProjectCards";
-import ProjectSidebar from "./Partials/ProjectSidebar";
+import ProjectStats from "./Partials/ProjectStats";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 
 type IndexProps = {
@@ -177,13 +177,13 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
               </h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("project.create")}>
-                  <Button className="w-full shadow-md sm:w-auto">
+                  <Button className="w-full shadow sm:w-auto">
                     <CirclePlus className="h-5 w-5" />
                     <span>Create Project</span>
                   </Button>
                 </Link>
                 <Link href={route("project.invitations")}>
-                  <Button variant="secondary" className="w-full shadow-md sm:w-auto">
+                  <Button variant="secondary" className="w-full shadow sm:w-auto">
                     <UsersRound className="h-5 w-5" />
                     <span>Invitations</span>
                   </Button>
@@ -208,7 +208,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
                     permissions={projects.permissions}
                     userId={user.id}
                   />
-                  <ProjectSidebar projects={allProjects} />
+                  <ProjectStats projects={allProjects} />
                 </div>
               </TabsContent>
 
