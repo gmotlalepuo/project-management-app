@@ -54,6 +54,7 @@ class ProjectResource extends JsonResource {
             // Include total and completed tasks count for the entire project
             'total_tasks' => $totalTasks,
             'completed_tasks' => $completedTasks,
+            'taskLabels' => TaskLabelResource::collection($this->whenLoaded('taskLabels')),
         ];
     }
 }

@@ -35,3 +35,9 @@ export type PaginatedTask = {
   links: PaginationLinks;
   meta: PaginationMeta;
 };
+
+export type PaginatedLabel = {
+  data: Label[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
+};

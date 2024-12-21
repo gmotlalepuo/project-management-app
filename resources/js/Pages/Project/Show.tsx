@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import ProjectInfo from "./Partials/ProjectInfo";
@@ -51,9 +51,19 @@ export default function Show({
   return (
     <AuthenticatedLayout
       header={
-        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-          {`Project "${project.name}"`}
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+            {`Project "${project.name}"`}
+          </h2>
+          {permissions.canManageTasks && (
+            <Link
+              href={route("project.labels.index", project.id)}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+            >
+              Manage Labels
+            </Link>
+          )}
+        </div>
       }
     >
       <Head title={`Project "${project.name}"`} />

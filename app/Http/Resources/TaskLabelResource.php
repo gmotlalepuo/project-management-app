@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class TaskLabelResource extends JsonResource {
-    public static $wrap = false;
+    public static $wrap = null;
     /**
      * Transform the resource into an array.
      *
@@ -16,7 +16,7 @@ class TaskLabelResource extends JsonResource {
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'project_id' => $this->project_id ?? null,
+            'project_id' => $this->project_id,
             'variant' => $this->variant,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

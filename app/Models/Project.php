@@ -50,6 +50,10 @@ class Project extends Model {
             ->withTimestamps();
     }
 
+    public function taskLabels() {
+        return $this->hasMany(TaskLabel::class);
+    }
+
     // Scopes
     public function scopeVisibleToUser($query, $userId) {
         return $query->whereHas('invitedUsers', function ($query) use ($userId) {

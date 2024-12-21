@@ -2,103 +2,69 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
+use App\Models\TaskLabel;
+use App\Services\TaskLabelService;
+use App\Http\Resources\TaskLabelResource;
 use App\Http\Requests\TaskLabel\StoreTaskLabelRequest;
 use App\Http\Requests\TaskLabel\UpdateTaskLabelRequest;
-use App\Http\Resources\TaskLabelResource;
-use App\Models\TaskLabel;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class TaskLabelController extends Controller {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request) {
-        $projectId = $request->input('project_id');
-        $labels = TaskLabel::where(function ($query) use ($projectId) {
-            $query->whereNull('project_id') // Fetch generic labels
-                ->orWhere('project_id', $projectId); // Fetch labels specific to the project
-        })->get();
+    protected $taskLabelService;
 
-        return Inertia::render('TaskLabels/Index', [
+    public function __construct(TaskLabelService $taskLabelService) {
+        $this->taskLabelService = $taskLabelService;
+    }
+
+    public function index(Project $project) {
+        $labels = $this->taskLabelService->getProjectLabels($project);
+
+        return inertia('TaskLabels/Index', [
+            'project' => $project->only('id', 'name'),
             'labels' => TaskLabelResource::collection($labels),
             'success' => session('success'),
         ]);
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create() {
-        return Inertia::render('TaskLabels/Create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreTaskLabelRequest $request) {
-        $data = $request->validated();
-
-        TaskLabel::create($data);
-
-        return to_route('task_labels.index')->with('success', 'Task created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(TaskLabel $taskLabel) {
-        return Inertia::render('TaskLabels/Show', [
-            'label' => new TaskLabelResource($taskLabel),
+    public function create(Project $project) {
+        return inertia('TaskLabels/Create', [
+            'project' => $project->only('id', 'name'),
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(TaskLabel $taskLabel) {
-        return Inertia::render('TaskLabels/Edit', [
-            'label' => new TaskLabelResource($taskLabel),
+    public function edit(Project $project, TaskLabel $label) {
+        return inertia('TaskLabels/Edit', [
+            'project' => $project->only('id', 'name'),
+            'label' => new TaskLabelResource($label),
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateTaskLabelRequest $request, TaskLabel $taskLabel) {
+    public function store(StoreTaskLabelRequest $request, Project $project) {
         $data = $request->validated();
+        $data['project_id'] = $project->id;
 
-        $taskLabel->update($data);
+        $label = $this->taskLabelService->storeLabel($data);
 
-        return to_route('task_labels.index')->with('success', 'Task updated successfully.');
+        return to_route('project.labels.index', $project)->with('success', "Label '{$label->name}' created successfully.");
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(TaskLabel $taskLabel) {
-        $name = $taskLabel->name;
+    public function update(UpdateTaskLabelRequest $request, Project $project, TaskLabel $label) {
+        $label = $this->taskLabelService->updateLabel($label, $request->validated());
 
-        $taskLabel->delete();
-
-        return to_route('task_labels.index')->with('success', "Task label '$name' deleted successfully.");
+        return to_route('project.labels.index', $project)
+            ->with('success', "Label '{$label->name}' updated successfully.");
     }
 
-    /**
-     * Search for task labels.
-     */
-    public function search(Request $request) {
-        $query = $request->input('query');
-        $projectId = $request->input('project_id');
+    public function destroy(Project $project, TaskLabel $label) {
+        $name = $label->name;
+        $this->taskLabelService->deleteLabel($label);
 
-        $labels = TaskLabel::where(function ($q) use ($query, $projectId) {
-            $q->where('name', 'like', '%' . $query . '%')
-                ->where(function ($q) use ($projectId) {
-                    $q->whereNull('project_id')
-                        ->orWhere('project_id', $projectId);
-                });
-        })->get();
+        return to_route('project.labels.index', $project)
+            ->with('success', "Label '{$name}' deleted successfully.");
+    }
+
+    public function search(Project $project) {
+        $labels = $this->taskLabelService->getProjectLabels($project);
 
         return response()->json(TaskLabelResource::collection($labels));
     }

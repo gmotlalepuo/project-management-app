@@ -3,6 +3,7 @@
 namespace App\Http\Requests\TaskLabel;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTaskLabelRequest extends FormRequest {
     /**
@@ -19,7 +20,14 @@ class UpdateTaskLabelRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:task_labels,name'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('task_labels')
+                    ->where('project_id', $this->project->id)
+                    ->ignore($this->label->id)
+            ],
             'variant' => ['required', 'string', 'in:red,green,blue,yellow,amber,indigo,purple,pink,teal,cyan,gray'],
             'project_id' => ['nullable', 'exists:projects,id'],
         ];

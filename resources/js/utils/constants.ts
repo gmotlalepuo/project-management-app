@@ -46,18 +46,21 @@ export const TASK_PRIORITY_TEXT_MAP = {
 };
 
 // Task Label Badge variant colors
-export type TaskLabelBadgeVariant =
-  | "red"
-  | "green"
-  | "blue"
-  | "yellow"
-  | "amber"
-  | "indigo"
-  | "purple"
-  | "pink"
-  | "teal"
-  | "cyan"
-  | "gray";
+export const TASK_LABEL_BADGE_VARIANTS = {
+  red: "red",
+  green: "green",
+  blue: "blue",
+  yellow: "yellow",
+  amber: "amber",
+  indigo: "indigo",
+  purple: "purple",
+  pink: "pink",
+  teal: "teal",
+  cyan: "cyan",
+  gray: "gray",
+} as const;
+
+export type TaskLabelBadgeVariant = keyof typeof TASK_LABEL_BADGE_VARIANTS;
 
 export const TASK_LABEL_BADGE_VARIANT_MAP: Record<TaskLabelBadgeVariant, string> = {
   red: "red",
