@@ -55,14 +55,6 @@ export default function Show({
           <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
             {`Project "${project.name}"`}
           </h2>
-          {permissions.canManageTasks && (
-            <Link
-              href={route("project.labels.index", project.id)}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
-            >
-              Manage Labels
-            </Link>
-          )}
         </div>
       }
     >

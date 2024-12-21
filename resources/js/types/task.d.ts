@@ -28,6 +28,9 @@ export type Label = {
   project_id: number;
   name: string;
   variant: TaskLabelBadgeVariant;
+  is_default: boolean;
+  created_by: User | null;
+  updated_by: User | null;
 };
 
 export type PaginatedTask = {

@@ -14,6 +14,8 @@ return new class extends Migration {
             $table->string('name');
             $table->string('variant');
             $table->foreignId('project_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->foreignId('updated_by')->nullable()->constrained('users');
             $table->timestamps();
         });
 

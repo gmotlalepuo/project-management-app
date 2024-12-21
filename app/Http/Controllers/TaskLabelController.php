@@ -17,12 +17,15 @@ class TaskLabelController extends Controller {
     }
 
     public function index(Project $project) {
-        $labels = $this->taskLabelService->getProjectLabels($project);
+        $filters = request()->all();
+
+        $labels = $this->taskLabelService->getProjectLabels($project, $filters);
 
         return inertia('TaskLabels/Index', [
             'project' => $project->only('id', 'name'),
             'labels' => TaskLabelResource::collection($labels),
             'success' => session('success'),
+            'queryParams' => $filters,
         ]);
     }
 
@@ -33,6 +36,10 @@ class TaskLabelController extends Controller {
     }
 
     public function edit(Project $project, TaskLabel $label) {
+        if (is_null($label->project_id)) {
+            abort(403, 'Cannot edit default labels');
+        }
+
         return inertia('TaskLabels/Edit', [
             'project' => $project->only('id', 'name'),
             'label' => new TaskLabelResource($label),
@@ -49,16 +56,22 @@ class TaskLabelController extends Controller {
     }
 
     public function update(UpdateTaskLabelRequest $request, Project $project, TaskLabel $label) {
-        $label = $this->taskLabelService->updateLabel($label, $request->validated());
+        if (is_null($label->project_id)) {
+            abort(403, 'Cannot edit default labels');
+        }
 
+        $label = $this->taskLabelService->updateLabel($label, $request->validated());
         return to_route('project.labels.index', $project)
             ->with('success', "Label '{$label->name}' updated successfully.");
     }
 
     public function destroy(Project $project, TaskLabel $label) {
+        if (is_null($label->project_id)) {
+            abort(403, 'Cannot delete default labels');
+        }
+
         $name = $label->name;
         $this->taskLabelService->deleteLabel($label);
-
         return to_route('project.labels.index', $project)
             ->with('success', "Label '{$name}' deleted successfully.");
     }

@@ -80,17 +80,17 @@ Route::middleware('auth')->group(function () {
 
         // Project label routes - modify these lines
         Route::get('/projects/{project}/labels', [TaskLabelController::class, 'index'])
-            ->name('project.labels.index');
+            ->name('project.labels.index')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::get('/projects/{project}/labels/create', [TaskLabelController::class, 'create'])
-            ->name('project.labels.create');
+            ->name('project.labels.create')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::post('/projects/{project}/labels', [TaskLabelController::class, 'store'])
-            ->name('project.labels.store');
+            ->name('project.labels.store')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::get('/projects/{project}/labels/{label}/edit', [TaskLabelController::class, 'edit'])
-            ->name('project.labels.edit');
+            ->name('project.labels.edit')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::put('/projects/{project}/labels/{label}', [TaskLabelController::class, 'update'])
-            ->name('project.labels.update');
+            ->name('project.labels.update')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::delete('/projects/{project}/labels/{label}', [TaskLabelController::class, 'destroy'])
-            ->name('project.labels.destroy');
+            ->name('project.labels.destroy')->middleware('permission:' . PermissionsEnum::ManageProjects->value);;
     });
 });
 

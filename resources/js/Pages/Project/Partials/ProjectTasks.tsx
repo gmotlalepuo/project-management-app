@@ -13,7 +13,7 @@ import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn, QueryParams } from "@/types/utils";
 import { Link, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Tag } from "lucide-react";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 
 type Props = {
@@ -36,6 +36,11 @@ export default function ProjectTasks({
   queryParams = queryParams || {};
 
   const columns: ColumnDef<Task, any>[] = [
+    {
+      accessorKey: "id",
+      defaultHidden: true,
+      hideFromViewOptions: true,
+    },
     {
       accessorKey: "task_number",
       header: ({ column }) => <DataTableColumnHeader column={column} title="#" />,
@@ -177,6 +182,14 @@ export default function ProjectTasks({
               <span>Create Task</span>
             </Button>
           </Link>
+          {permissions.canManageTasks && (
+            <Link href={route("project.labels.index", projectId)}>
+              <Button variant="secondary" className="w-full sm:w-auto">
+                <Tag className="h-5 w-5" />
+                <span>Manage Task Labels</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
 

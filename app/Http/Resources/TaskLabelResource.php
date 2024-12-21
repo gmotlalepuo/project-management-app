@@ -20,6 +20,9 @@ class TaskLabelResource extends JsonResource {
             'variant' => $this->variant,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'created_by' => new UserResource($this->whenLoaded('createdBy')),
+            'updated_by' => new UserResource($this->whenLoaded('updatedBy')),
+            'is_default' => is_null($this->project_id),
         ];
     }
 }

@@ -11,6 +11,10 @@ trait FilterableTrait {
     $query->where($column, 'like', "%{$name}%");
   }
 
+  protected function applyVariantFilter($query, string $variant): void {
+    $query->where('variant', $variant);
+  }
+
   protected function applyStatusFilter($query, $statuses, string $column = 'status'): void {
     if (is_array($statuses)) {
       if ($query instanceof Relation) {

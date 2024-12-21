@@ -15,6 +15,8 @@ type Props = {
 };
 
 export default function Index({ project, labels, success, queryParams }: Props) {
+  queryParams = queryParams || {};
+
   const { toast } = useToast();
 
   useEffect(() => {
