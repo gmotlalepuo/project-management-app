@@ -147,7 +147,7 @@ export default function ProjectStats({ projects }: ProjectStatsProps) {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-2xl">
               <Trophy className="h-5 w-5 text-primary" />
-              <span>Recently Completed</span>
+              <span>Completed Projects</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -164,6 +164,7 @@ export default function ProjectStats({ projects }: ProjectStatsProps) {
                     <Link
                       href={route("project.show", project.id)}
                       className="line-through decoration-muted-foreground/50 decoration-1 hover:text-primary"
+                      title={project.name}
                     >
                       {project.name}
                     </Link>

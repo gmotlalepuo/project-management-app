@@ -1,6 +1,15 @@
-import { Eye, LogOut, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  Eye,
+  LogOut,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Plus,
+  UsersRound,
+} from "lucide-react";
 import { Link, router } from "@inertiajs/react";
 import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { STATUS_CONFIG, type StatusType } from "@/utils/constants";
 
 import {
   DropdownMenu,
@@ -18,14 +27,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/Components/ui/sidebar";
-import { Badge } from "../ui/badge";
-import {
-  PROJECT_STATUS_BADGE_MAP,
-  PROJECT_STATUS_TEXT_MAP,
-} from "@/utils/constants";
 
 type ProjectWithPermissions = {
-  status: keyof typeof PROJECT_STATUS_BADGE_MAP;
+  status: StatusType;
   name: string;
   url: string;
   permissions: {
@@ -68,75 +72,97 @@ export function NavProjects({ projects }: { projects: ProjectWithPermissions[] }
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Recent Projects</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item, index) => (
-          <SidebarMenuItem key={`${item.name}-${index}`}>
-            <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <Badge
-                  className="text-nowrap"
-                  size="small"
-                  variant={PROJECT_STATUS_BADGE_MAP[item.status]}
-                >
-                  {PROJECT_STATUS_TEXT_MAP[item.status]}
-                </Badge>
-                <span>{item.name}</span>
-              </Link>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem onSelect={() => router.get(item.url)}>
-                  <Eye className="h-4 w-4" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
+        {projects.map((item, index) => {
+          const StatusIcon = STATUS_CONFIG[item.status].icon;
+          const projectId = item.url.split("/").pop()!;
 
-                {item.permissions.canEdit && (
+          return (
+            <SidebarMenuItem key={`${item.name}-${index}`} title={item.name}>
+              <SidebarMenuButton asChild>
+                <Link href={item.url} className="flex items-center gap-2">
+                  <span className="shrink-0" title={STATUS_CONFIG[item.status].text}>
+                    <StatusIcon
+                      className={`h-4 w-4 ${STATUS_CONFIG[item.status].color}`}
+                    />
+                  </span>
+                  <span className="truncate">{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuAction showOnHover>
+                    <MoreHorizontal />
+                    <span className="sr-only">More</span>
+                  </SidebarMenuAction>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-48 rounded-lg"
+                  side={isMobile ? "bottom" : "right"}
+                  align={isMobile ? "end" : "start"}
+                >
+                  <DropdownMenuItem onSelect={() => router.get(item.url)}>
+                    <Eye className="h-4 w-4" />
+                    <span>View Project</span>
+                  </DropdownMenuItem>
+
+                  {item.permissions.canEdit && (
+                    <DropdownMenuItem
+                      onSelect={() => router.get(route("project.edit", projectId))}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span>Edit Project</span>
+                    </DropdownMenuItem>
+                  )}
+
                   <DropdownMenuItem
                     onSelect={() =>
-                      router.get(route("project.edit", item.url.split("/").pop()))
+                      router.get(route("task.create", { project_id: projectId }))
                     }
                   >
-                    <Pencil className="h-4 w-4" />
-                    <span>Edit Project</span>
+                    <Plus className="h-4 w-4" />
+                    <span>Create Task</span>
                   </DropdownMenuItem>
-                )}
 
-                {item.permissions.isCreator ? (
-                  <>
-                    <DropdownMenuSeparator />
+                  {item.permissions.canEdit && (
+                    <DropdownMenuItem
+                      onSelect={() =>
+                        router.get(
+                          route("project.show", {
+                            project: projectId,
+                            tab: "invite",
+                          }),
+                        )
+                      }
+                    >
+                      <UsersRound className="h-4 w-4" />
+                      <span>Invite User</span>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuSeparator />
+
+                  {item.permissions.isCreator ? (
                     <DropdownMenuItem
                       className="text-red-500"
-                      onSelect={() => handleDeleteClick(item.url.split("/").pop()!)}
+                      onSelect={() => handleDeleteClick(projectId)}
                     >
                       <Trash2 className="h-4 w-4" />
                       <span>Delete Project</span>
                     </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuSeparator />
+                  ) : (
                     <DropdownMenuItem
                       className="text-red-500"
-                      onSelect={() => handleLeaveClick(item.url.split("/").pop()!)}
+                      onSelect={() => handleLeaveClick(projectId)}
                     >
                       <LogOut className="h-4 w-4" />
                       <span>Leave Project</span>
                     </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          );
+        })}
         <SidebarMenuItem>
           <SidebarMenuButton asChild>
             <Link href={route("project.index")}>

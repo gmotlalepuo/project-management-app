@@ -36,6 +36,7 @@ export default function ProjectCards({
                 <Link
                   href={route("project.show", project.id)}
                   className="truncate text-lg font-semibold"
+                  title={project.name}
                 >
                   {project.name}
                 </Link>

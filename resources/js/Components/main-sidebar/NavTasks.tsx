@@ -19,6 +19,7 @@ import {
   useSidebar,
 } from "@/Components/ui/sidebar";
 import { Label } from "@/types/task";
+import { truncateText } from "@/utils/helpers";
 
 type TaskWithPermissions = {
   id: number;
@@ -28,10 +29,6 @@ type TaskWithPermissions = {
   permissions: {
     canDelete: boolean;
   };
-};
-
-const truncateText = (text: string, maxLength: number = 7) => {
-  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
 };
 
 export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
@@ -69,16 +66,11 @@ export function NavTasks({ tasks }: { tasks: TaskWithPermissions[] }) {
       <SidebarGroupLabel>Recent Tasks</SidebarGroupLabel>
       <SidebarMenu>
         {tasks.map((item, index) => (
-          <SidebarMenuItem key={`${item.name}-${index}`}>
+          <SidebarMenuItem key={`${item.name}-${index}`} title={item.name}>
             <SidebarMenuButton asChild>
               <Link href={item.url}>
                 {item.labels.slice(0, 1).map((label) => (
-                  <Badge
-                    key={label.id}
-                    variant={label.variant}
-                    size="small"
-                    className="mr-1"
-                  >
+                  <Badge key={label.id} variant={label.variant} size="small">
                     {truncateText(label.name)}
                   </Badge>
                 ))}

@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { CirclePlus } from "lucide-react";
+import { useTruncate } from "@/hooks/use-truncate";
 
 type IndexProps = {
   tasks: PaginatedTask;
@@ -79,21 +80,27 @@ export default function Index({
       {
         accessorKey: "name",
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="Name" />
+          <DataTableColumnHeader column={column} title="Task Name" />
         ),
         cell: ({ row }) => (
-          <>
-            <Link href={route("task.show", row.original.id)}>
-              {row.original.labels?.map((label) => (
-                <Badge key={label.id} variant={label.variant} className="mr-1.5">
-                  {label.name}
-                </Badge>
-              ))}
-              {row.original.name}
-            </Link>
-          </>
+          <Link
+            className="group flex flex-col items-start gap-1.5 md:flex-row md:items-center md:justify-between"
+            href={route("task.show", row.original.id)}
+          >
+            <span>{row.original.name}</span>
+            <div className="flex items-center gap-2">
+              {row.original.labels?.slice(0, 2).map((label) => {
+                const truncatedName = useTruncate(label.name);
+                return (
+                  <Badge key={label.id} variant={label.variant}>
+                    {truncatedName}
+                  </Badge>
+                );
+              })}
+            </div>
+          </Link>
         ),
-        minWidth: 170,
+        minWidth: 200,
       },
       {
         accessorKey: "priority",
