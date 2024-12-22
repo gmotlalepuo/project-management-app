@@ -31,16 +31,12 @@ class TaskController extends Controller {
         $filters = request()->all();
         $tasks = $this->taskService->getTasks($user, $filters);
 
-        // Fetch label options for the filter
-        $labelOptions = TaskLabel::all()->map(function ($label) {
-            return ['value' => $label->id, 'label' => $label->name];
-        });
-
         return Inertia::render('Task/Index', [
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
-            'labelOptions' => $labelOptions,
+            'labelOptions' => $this->taskService->getLabelOptions(),
+            'projectOptions' => $this->taskService->getProjectOptions($user),
             'permissions' => [
                 'canManageTasks' => $tasks->first()?->project->canManageTask($user),
             ],

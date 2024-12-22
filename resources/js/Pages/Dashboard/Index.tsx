@@ -22,6 +22,7 @@ type Props = {
   success: string | null;
   queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
+  projectOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
@@ -41,6 +42,7 @@ export default function Dashboard({
   permissions,
   success,
   allTasks,
+  projectOptions,
 }: Props) {
   const { toast } = useToast();
 
@@ -159,6 +161,7 @@ export default function Dashboard({
                         queryParams={queryParams}
                         labelOptions={labelOptions}
                         permissions={permissions}
+                        projectOptions={projectOptions}
                       />
                     </TabsContent>
                   )}

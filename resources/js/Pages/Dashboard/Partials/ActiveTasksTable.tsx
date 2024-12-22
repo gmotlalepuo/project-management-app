@@ -19,6 +19,7 @@ type ActiveTasksTableProps = {
   activeTasks: PaginatedTask;
   queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
+  projectOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
@@ -29,6 +30,7 @@ export function ActiveTasksTable({
   queryParams,
   labelOptions,
   permissions,
+  projectOptions,
 }: ActiveTasksTableProps) {
   queryParams = queryParams || {};
 
@@ -149,9 +151,10 @@ export function ActiveTasksTable({
 
   const filterableColumns: FilterableColumn[] = [
     {
-      accessorKey: "project.name",
+      accessorKey: "project_id",
       title: "Project",
-      filterType: "text",
+      filterType: "select",
+      options: projectOptions,
     },
     {
       accessorKey: "name",

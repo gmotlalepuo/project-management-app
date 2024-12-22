@@ -9,6 +9,12 @@ use App\Traits\SortableTrait;
 class DashboardService extends BaseService {
   use FilterableTrait, SortableTrait;
 
+  protected $taskService;
+
+  public function __construct(TaskService $taskService) {
+    $this->taskService = $taskService;
+  }
+
   public function getActiveTasks($user, array $filters) {
     $query = Task::query();
 
@@ -24,6 +30,9 @@ class DashboardService extends BaseService {
       ->where('assigned_user_id', $user->id);
 
     // Apply filters
+    if (isset($filters['project_id'])) {
+      $query->where('project_id', $filters['project_id']);
+    }
     if (isset($filters['name'])) {
       $this->applyNameFilter($query, $filters['name']);
     }
@@ -46,5 +55,12 @@ class DashboardService extends BaseService {
     $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
 
     return $query;
+  }
+
+  public function getOptions($user) {
+    return [
+      'projectOptions' => $this->taskService->getProjectOptions($user),
+      'labelOptions' => $this->taskService->getLabelOptions(),
+    ];
   }
 }

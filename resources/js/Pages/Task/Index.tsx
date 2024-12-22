@@ -25,6 +25,7 @@ type IndexProps = {
   success: string | null;
   queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
+  projectOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
@@ -37,6 +38,7 @@ export default function Index({
   success,
   labelOptions,
   permissions,
+  projectOptions,
 }: IndexProps) {
   queryParams = queryParams || {};
 
@@ -179,9 +181,10 @@ export default function Index({
 
   const filterableColumns: FilterableColumn[] = [
     {
-      accessorKey: "project_name",
+      accessorKey: "project_id", // Changed from project_name
       title: "Project",
-      filterType: "text",
+      filterType: "select", // Changed to select
+      options: projectOptions,
     },
     {
       accessorKey: "name",

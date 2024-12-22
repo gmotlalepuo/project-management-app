@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
-use App\Models\TaskLabel;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -50,7 +49,6 @@ class DashboardController extends Controller {
             ->where('assigned_user_id', $user->id)
             ->count();
 
-
         // Get active tasks with proper relations
         $query = $this->dashboardService->getActiveTasks($user, $filters);
 
@@ -59,13 +57,7 @@ class DashboardController extends Controller {
             ->paginate(request('per_page', 10))
             ->withQueryString();
 
-        // Fetch ALL labels from the database, not just the ones related to active tasks
-        $labelOptions = TaskLabel::orderBy('name')->get()->map(function ($label) {
-            return [
-                'value' => (string)$label->id,
-                'label' => $label->name
-            ];
-        });
+        $options = $this->dashboardService->getOptions($user);
 
         return Inertia::render('Dashboard/Index', [
             'totalPendingTasks' => $totalPendingTasks,
@@ -77,7 +69,8 @@ class DashboardController extends Controller {
             'activeTasks' => TaskResource::collection($activeTasks),
             'queryParams' => $filters ?: null,
             'success' => session('success'),
-            'labelOptions' => $labelOptions,
+            'labelOptions' => $options['labelOptions'],
+            'projectOptions' => $options['projectOptions'],
             'permissions' => [
                 'canManageTasks' => $activeTasks->first()?->project->canManageTask($user),
             ],

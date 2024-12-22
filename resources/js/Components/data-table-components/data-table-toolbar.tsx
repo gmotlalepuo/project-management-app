@@ -6,7 +6,7 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { DataTableViewOptions } from "./data-table-view-options";
 import { TrashIcon } from "lucide-react";
 import { CalendarDatePicker } from "../ui/calendar-datetime-picker";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { router } from "@inertiajs/react";
 import { FilterableColumn, QueryParams } from "@/types/utils";
 
@@ -60,6 +60,12 @@ export function DataTableToolbar<TData>({
   const [isMobile, setIsMobile] = useState(false); // State to track if the screen is below "md"
   const [isReset, setIsReset] = useState(false);
 
+  // Create a ref to store references to all text inputs
+  const textInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
+  // Store previous values to compare against
+  const previousValues = useRef<{ [key: string]: string }>({});
+
   useEffect(() => {
     // Handler to detect screen width changes and set mobile state
     const handleResize = () => {
@@ -72,6 +78,19 @@ export function DataTableToolbar<TData>({
     return () => {
       window.removeEventListener("resize", handleResize); // Cleanup on component unmount
     };
+  }, []);
+
+  // Initialize previous values from queryParams
+  useEffect(() => {
+    previousValues.current = Object.keys(queryParams).reduce(
+      (acc, key) => {
+        if (typeof queryParams[key] === "string") {
+          acc[key] = queryParams[key] as string;
+        }
+        return acc;
+      },
+      {} as { [key: string]: string },
+    );
   }, []);
 
   const updateQuery = (name: string, value: string | string[]) => {
@@ -106,7 +125,27 @@ export function DataTableToolbar<TData>({
     updateQuery(accessorKey, [from.toISOString(), to.toISOString()]); // Apply date range query
   };
 
+  const handleTextInputChange = (accessorKey: string, value: string) => {
+    // Check if the value is the same as the previous one
+    if (previousValues.current[accessorKey] === value) {
+      return;
+    }
+
+    // Update previous value
+    previousValues.current[accessorKey] = value;
+
+    // Only trigger filter if value has changed
+    onFilter(accessorKey, value);
+  };
+
   const handleReset = () => {
+    // Clear all text input values
+    Object.values(textInputRefs.current).forEach((input) => {
+      if (input) {
+        input.value = "";
+      }
+    });
+
     setIsReset(true);
     onReset();
     // Reset the flag after a short delay
@@ -139,15 +178,18 @@ export function DataTableToolbar<TData>({
                   placeholder={`Filter by ${column.title}`}
                   defaultValue={queryParams[column.accessorKey] || ""}
                   disabled={isLoading}
+                  ref={(el) => {
+                    textInputRefs.current[column.accessorKey] = el;
+                  }}
                   onBlur={(event) => {
-                    onFilter(
+                    handleTextInputChange(
                       column.accessorKey,
                       (event.target as HTMLInputElement).value,
                     );
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
-                      onFilter(
+                      handleTextInputChange(
                         column.accessorKey,
                         (event.target as HTMLInputElement).value,
                       );

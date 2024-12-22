@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\RolesEnum;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -54,7 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail {
      */
     public function projectInvitations() {
         return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
-            ->withPivot('status')
+            ->withPivot('status', 'role')
             ->withTimestamps();
     }
 
@@ -62,6 +63,14 @@ class User extends Authenticatable implements MustVerifyEmail {
     public function acceptedProjects() {
         return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id')
             ->wherePivot('status', 'accepted')
+            ->withTimestamps();
+    }
+
+    public function projects() {
+        return $this->belongsToMany(Project::class, 'project_user')
+            ->where('project_user.status', 'accepted')
+            ->whereIn('project_user.role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value])
+            ->withPivot('role')
             ->withTimestamps();
     }
 }

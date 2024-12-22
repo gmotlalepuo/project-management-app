@@ -159,19 +159,20 @@ export function DataTable<TData, TValue>({
 
   // Fix event handlers for loading state
   React.useEffect(() => {
-    let startHandler = (event: any) => {
+    const startHandler = (event: any) => {
       const url = new URL(event.detail.visit.url, window.location.origin);
       const hasTableParams =
         url.searchParams.has("page") ||
+        url.searchParams.has("per_page") ||
         url.searchParams.has("sort_field") ||
         url.searchParams.has("sort_direction");
 
-      if (hasTableParams && !event.detail.visit.preserveScroll) {
+      if (hasTableParams) {
         setIsLoading(true);
       }
     };
 
-    let finishHandler = () => {
+    const finishHandler = () => {
       setIsLoading(false);
     };
 

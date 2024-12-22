@@ -14,6 +14,7 @@ import {
 } from "@/Components/ui/select";
 import { router } from "@inertiajs/react";
 import { PaginationData, QueryParams } from "@/types/utils";
+import { Loader2 } from "lucide-react";
 
 interface DataTablePaginationProps {
   paginationData: PaginationData;
@@ -108,14 +109,20 @@ export function DataTablePagination({
   return (
     <div className="flex flex-col items-center justify-between space-y-4 px-2 lg:flex-row lg:space-y-0">
       <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-x-6 sm:space-y-0">
-        <div className="text-sm text-muted-foreground">
-          {meta.from} - {meta.to} of {meta.total} row(s)
+        <div className="flex items-center space-x-2">
+          <div className="text-sm text-muted-foreground">
+            {meta.from} - {meta.to} of {meta.total} row(s)
+          </div>
+          {isLoading && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select
             value={`${meta.per_page}`}
             onValueChange={(value) => handlePageSizeChange(Number(value))}
+            disabled={isLoading}
           >
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={`${meta.per_page}`} />
@@ -138,7 +145,7 @@ export function DataTablePagination({
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 disabled:opacity-50"
             onClick={() => handlePageChange(links.first)}
             disabled={meta.current_page === 1 || isLoading}
           >
@@ -147,7 +154,7 @@ export function DataTablePagination({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 disabled:opacity-50"
             onClick={() => handlePageChange(links.prev)}
             disabled={!links.prev || isLoading}
           >
@@ -156,7 +163,7 @@ export function DataTablePagination({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 disabled:opacity-50"
             onClick={() => handlePageChange(links.next)}
             disabled={!links.next || isLoading}
           >
@@ -165,7 +172,7 @@ export function DataTablePagination({
           </Button>
           <Button
             variant="outline"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 disabled:opacity-50"
             onClick={() => handlePageChange(links.last)}
             disabled={meta.current_page === meta.last_page || isLoading}
           >

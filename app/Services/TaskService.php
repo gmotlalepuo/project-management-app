@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Project;
 use Carbon\Carbon;
 use App\Models\Task;
+use App\Models\TaskLabel;
 use Illuminate\Support\Str;
 use App\Traits\FilterableTrait;
 use App\Traits\SortableTrait;
@@ -26,8 +28,8 @@ class TaskService extends BaseService {
     if (isset($filters['priority'])) {
       $this->applyPriorityFilter($query, $filters['priority']);
     }
-    if (isset($filters['project_name'])) {
-      $this->applyRelationFilter($query, 'project', 'name', $filters['project_name']);
+    if (isset($filters['project_id'])) {
+      $query->where('project_id', $filters['project_id']);
     }
     if (isset($filters['due_date'])) {
       $this->applyDateRangeFilter($query, $filters['due_date'], 'due_date');
@@ -100,5 +102,33 @@ class TaskService extends BaseService {
       });
 
     return $this->paginateAndSort($query, $filters, 'tasks');
+  }
+
+  public function getProjectOptions($user) {
+    return $user->projects()
+      ->orderBy('name')
+      ->get()
+      ->map(fn($project) => [
+        'value' => (string)$project->id,
+        'label' => $project->name
+      ]);
+  }
+
+  public function getLabelOptions(?Project $project = null) {
+    $query = TaskLabel::query();
+
+    if ($project) {
+      $query->where(function ($q) use ($project) {
+        $q->whereNull('project_id')
+          ->orWhere('project_id', $project->id);
+      });
+    }
+
+    return $query->orderBy('name')
+      ->get()
+      ->map(fn($label) => [
+        'value' => (string)$label->id,
+        'label' => $label->name
+      ]);
   }
 }
