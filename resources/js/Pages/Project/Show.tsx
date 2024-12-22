@@ -8,6 +8,7 @@ import ProjectTasks from "./Partials/ProjectTasks";
 import { Project } from "@/types/project";
 import { PaginatedTask } from "@/types/task";
 import { QueryParams } from "@/types/utils";
+import { toast } from "@/hooks/use-toast";
 
 type Props = {
   project: Project;
@@ -43,6 +44,16 @@ export default function Show({
     url.searchParams.set("tab", activeTab);
     window.history.pushState({}, "", url);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (success) {
+      toast({
+        title: "Success",
+        variant: "success",
+        description: success,
+      });
+    }
+  }, [success]);
 
   const handleInviteClick = () => {
     setActiveTab("invite");

@@ -202,4 +202,77 @@ class ProjectService extends BaseService {
 
     return ['success' => true, 'message' => 'Selected members have been removed from the project.'];
   }
+
+  public function updateUserRole(Project $project, int $userId, string $role) {
+    $user = Auth::user();
+    $targetUser = User::findOrFail($userId);
+
+    // Get target user's current role
+    $targetUserCurrentRole = $project->acceptedUsers()
+      ->where('user_id', $targetUser->id)
+      ->first()
+      ->pivot
+      ->role;
+
+    // Check if user is trying to modify their own role
+    if ($targetUser->id === $user->id) {
+      return [
+        'success' => false,
+        'message' => 'You cannot modify your own role.'
+      ];
+    }
+
+    // Check if the user being updated is not the project creator
+    if ($targetUser->id === $project->created_by) {
+      return [
+        'success' => false,
+        'message' => 'Cannot change role of the project creator.'
+      ];
+    }
+
+    // Get the current user's role in the project
+    $userRole = $project->acceptedUsers()
+      ->where('user_id', $user->id)
+      ->first()
+      ->pivot
+      ->role;
+
+    // Check if user has permission to manage roles (is creator or project manager)
+    $isCreator = $user->id === $project->created_by;
+    $isProjectManager = $userRole === RolesEnum::ProjectManager->value;
+
+    if (!$isCreator && !$isProjectManager) {
+      return [
+        'success' => false,
+        'message' => 'You do not have permission to manage user roles.'
+      ];
+    }
+
+    // Only project creator can demote project managers
+    if (
+      $role === RolesEnum::ProjectMember->value &&
+      $targetUserCurrentRole === RolesEnum::ProjectManager->value &&
+      !$isCreator
+    ) {
+      return [
+        'success' => false,
+        'message' => 'Only the project creator can demote project managers.'
+      ];
+    }
+
+    // Update the role
+    $project->invitedUsers()->updateExistingPivot($userId, [
+      'role' => $role,
+      'updated_at' => now()
+    ]);
+
+    // Generate appropriate success message
+    $actionType = $role === RolesEnum::ProjectManager->value ? 'promoted to' : 'changed to';
+    $roleName = $role === RolesEnum::ProjectManager->value ? 'Project Manager' : 'Project Member';
+
+    return [
+      'success' => true,
+      'message' => "{$targetUser->name} has been {$actionType} {$roleName}."
+    ];
+  }
 }

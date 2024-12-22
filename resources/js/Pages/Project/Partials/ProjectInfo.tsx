@@ -10,7 +10,15 @@ import {
   ROLE_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
-import { CircleX, LogOut, Pencil, UsersRound, UserMinus, Tag } from "lucide-react";
+import {
+  CircleX,
+  LogOut,
+  Pencil,
+  UsersRound,
+  UserMinus,
+  Tag,
+  UserCog,
+} from "lucide-react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
@@ -32,6 +40,13 @@ import {
   DialogTrigger,
 } from "@/Components/ui/dialog";
 import { Checkbox } from "@/Components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/ui/select";
 
 type Props = {
   project: Project;
@@ -47,6 +62,18 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [isKickDialogOpen, setKickDialogOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [isManageUsersDialogOpen, setManageUsersDialogOpen] = useState(false);
+  const [roleChangeConfirmation, setRoleChangeConfirmation] = useState<{
+    isOpen: boolean;
+    userId: number | null;
+    newRole: string | null;
+    userName: string;
+  }>({
+    isOpen: false,
+    userId: null,
+    newRole: null,
+    userName: "",
+  });
 
   const kickableUsers = project.acceptedUsers?.filter(
     (user) =>
@@ -80,6 +107,39 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
         },
       },
     );
+  };
+
+  const handleRoleChange = (userId: number, newRole: string, userName: string) => {
+    setRoleChangeConfirmation({
+      isOpen: true,
+      userId,
+      newRole,
+      userName,
+    });
+  };
+
+  const executeRoleChange = () => {
+    if (roleChangeConfirmation.userId && roleChangeConfirmation.newRole) {
+      router.put(
+        route("project.update-user-role", { project: project.id }),
+        {
+          user_id: roleChangeConfirmation.userId,
+          role: roleChangeConfirmation.newRole,
+        },
+        {
+          preserveScroll: true,
+          onSuccess: () => {
+            setManageUsersDialogOpen(false);
+            setRoleChangeConfirmation({
+              isOpen: false,
+              userId: null,
+              newRole: null,
+              userName: "",
+            });
+          },
+        },
+      );
+    }
   };
 
   return (
@@ -290,6 +350,84 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                   </DialogContent>
                 </Dialog>
               )}
+              {/* Manage Users Button - Only show if permitted */}
+              <Dialog
+                open={isManageUsersDialogOpen}
+                onOpenChange={setManageUsersDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full md:w-auto">
+                    <UserCog className="h-5 w-5" />
+                    Manage Users
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>Manage User Roles</DialogTitle>
+                    <DialogDescription>
+                      Project managers can promote members to project managers. Only
+                      the project creator can demote project managers to members.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    {project.acceptedUsers
+                      ?.filter(
+                        (user) =>
+                          // Filter out project creator and current user
+                          user.id !== project.createdBy.id &&
+                          user.id !== authUser.id,
+                      )
+                      .map((user) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center justify-between space-x-2 rounded-lg border p-3"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Avatar>
+                              <AvatarImage
+                                src={user.profile_picture}
+                                alt={user.name}
+                              />
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{user.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
+                          <Select
+                            value={user.pivot?.role}
+                            onValueChange={(value) =>
+                              handleRoleChange(user.id, value, user.name)
+                            }
+                            disabled={
+                              // Disable if:
+                              // 1. No permission to manage users
+                              // 2. Trying to demote a project manager while not being the creator
+                              !permissions.canInviteUsers ||
+                              (user.pivot?.role === "project_manager" &&
+                                project.createdBy.id !== authUser.id)
+                            }
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="project_manager">
+                                Project Manager
+                              </SelectItem>
+                              <SelectItem value="project_member">
+                                Project Member
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
         </CardContent>
@@ -357,6 +495,56 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
               }}
             >
               {project.createdBy.id === authUser.id ? "Delete" : "Leave"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Add Role Change Confirmation Dialog */}
+      <AlertDialog
+        open={roleChangeConfirmation.isOpen}
+        onOpenChange={(isOpen) =>
+          setRoleChangeConfirmation((prev) => ({ ...prev, isOpen }))
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to change {roleChangeConfirmation.userName}'s role
+            to{" "}
+            {roleChangeConfirmation.newRole === "project_manager"
+              ? "Project Manager"
+              : "Project Member"}
+            ?
+            {roleChangeConfirmation.newRole === "project_manager" && (
+              <div className="mt-2 rounded-lg border border-yellow-500 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-400/30 dark:bg-yellow-900/30 dark:text-yellow-200">
+                <span>
+                  <strong>Warning:</strong> Project Managers can:
+                </span>
+                <ul className="ml-4 list-disc">
+                  <li>Manage tasks and labels</li>
+                  <li>Invite new members</li>
+                  <li>Promote other members to Project Managers</li>
+                  <li>Access sensitive project settings</li>
+                </ul>
+              </div>
+            )}
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() =>
+                setRoleChangeConfirmation({
+                  isOpen: false,
+                  userId: null,
+                  newRole: null,
+                  userName: "",
+                })
+              }
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={executeRoleChange}>
+              Confirm Change
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

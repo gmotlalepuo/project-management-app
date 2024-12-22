@@ -66,6 +66,10 @@ Route::middleware('auth')->group(function () {
             ->name('project.kick-members')
             ->middleware('permission:' . PermissionsEnum::ManageProjects->value);
 
+        // Add this inside the Project and Task routes group
+        Route::put('/project/{project}/update-user-role', [ProjectController::class, 'updateUserRole'])
+            ->name('project.update-user-role');
+
         // Task routes - available to project members
         Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
         Route::resource('task', TaskController::class);

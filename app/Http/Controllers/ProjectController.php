@@ -245,4 +245,26 @@ class ProjectController extends Controller {
 
         return back()->with('success', $result['message']);
     }
+
+    public function updateUserRole(Request $request, Project $project) {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|in:' . implode(',', [
+                RolesEnum::ProjectManager->value,
+                RolesEnum::ProjectMember->value,
+            ]),
+        ]);
+
+        $result = $this->projectService->updateUserRole(
+            $project,
+            $request->user_id,
+            $request->role
+        );
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message']);
+    }
 }
