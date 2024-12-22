@@ -10,7 +10,7 @@ import {
   ROLE_TEXT_MAP,
 } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
-import { CircleX, LogOut, Pencil, UsersRound, UserMinus } from "lucide-react";
+import { CircleX, LogOut, Pencil, UsersRound, UserMinus, Tag } from "lucide-react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
 import {
@@ -303,12 +303,20 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
         <CardContent>
           <div className="flex flex-col gap-3 sm:flex-row">
             {permissions.canEditProject && (
-              <Link href={route("project.edit", project.id)}>
-                <Button className="w-full" variant="outline">
-                  <Pencil className="h-5 w-5" />
-                  <span>Edit Project</span>
-                </Button>
-              </Link>
+              <>
+                <Link href={route("project.edit", project.id)}>
+                  <Button className="w-full" variant="outline">
+                    <Pencil className="h-5 w-5" />
+                    <span>Edit Project</span>
+                  </Button>
+                </Link>
+                <Link href={route("project.labels.index", project.id)}>
+                  <Button className="w-full" variant="outline">
+                    <Tag className="h-5 w-5" />
+                    <span>Manage Task Labels</span>
+                  </Button>
+                </Link>
+              </>
             )}
 
             <Button variant="destructive" onClick={() => setDialogOpen(true)}>

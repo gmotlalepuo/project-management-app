@@ -4,10 +4,8 @@ import { DataTableColumnHeader } from "@/Components/data-table-components/data-t
 import { Badge } from "@/Components/ui/badge";
 import { ColumnDef } from "@/Components/data-table-components/data-table";
 import { FilterableColumn } from "@/types/utils";
-import { Button } from "@/Components/ui/button";
-import { CirclePlus } from "lucide-react";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
-import { Link, router } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { TASK_LABEL_BADGE_VARIANTS } from "@/utils/constants";
 
 type Props = {
@@ -109,21 +107,6 @@ export default function LabelList({ labels, projectId, queryParams }: Props) {
 
   return (
     <div className="rounded-lg bg-card p-4 shadow-sm sm:p-6">
-      <header className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-          Project Labels
-        </h2>
-        <Link
-          href={route("project.labels.create", projectId)}
-          className="inline-flex items-center gap-2"
-        >
-          <Button>
-            <CirclePlus className="h-5 w-5" />
-            <span>Create Label</span>
-          </Button>
-        </Link>
-      </header>
-
       <DataTable
         columns={columns}
         entity={labels}
