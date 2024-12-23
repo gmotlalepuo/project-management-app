@@ -190,19 +190,35 @@ export function DataTable<TData, TValue>({
   const handleTableOperation = (params: QueryParams) => {
     setIsLoading(true);
 
-    // Get all current URL parameters
-    const currentUrl = new URL(window.location.href);
-    const existingParams = Object.fromEntries(currentUrl.searchParams.entries());
-
-    // Merge existing params with new params, ensuring tab is preserved
-    const updatedParams = { ...existingParams, ...params };
-
-    // Remove null or undefined values
-    Object.keys(updatedParams).forEach(
-      (key) => updatedParams[key] === undefined && delete updatedParams[key],
+    // If this is a reset operation (params only contains tab and/or page)
+    const isReset = Object.keys(params).every((key) =>
+      ["tab", "page"].includes(key),
     );
 
-    router.get(route(routeName, { id: entityId }), updatedParams, {
+    if (isReset) {
+      // For reset, only keep specified params and remove everything else
+      router.get(route(routeName, { id: entityId }), params, {
+        preserveState: true,
+        preserveScroll: true,
+        onFinish: () => setIsLoading(false),
+        onError: () => setIsLoading(false),
+      });
+      return;
+    }
+
+    // For non-reset operations, handle normally
+    const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          acc[key] = value;
+        }
+      } else if (value !== null && value !== undefined && value !== "") {
+        acc[key] = value;
+      }
+      return acc;
+    }, {} as QueryParams);
+
+    router.get(route(routeName, { id: entityId }), cleanParams, {
       preserveState: true,
       preserveScroll: true,
       onFinish: () => setIsLoading(false),
@@ -226,10 +242,14 @@ export function DataTable<TData, TValue>({
     handleTableOperation(updatedParams);
   };
 
-  // Handle reset
+  // Handle reset with debugging
   const handleReset = () => {
-    const resetParams = queryParams.tab ? { tab: queryParams.tab } : {};
-    handleTableOperation(resetParams);
+    // Only preserve tab if it exists, and always reset to page 1
+    const preservedParams = {
+      ...(queryParams.tab ? { tab: queryParams.tab } : {}),
+      page: 1,
+    };
+    handleTableOperation(preservedParams);
   };
 
   return (

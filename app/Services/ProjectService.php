@@ -86,18 +86,21 @@ class ProjectService extends BaseService {
   public function getProjectWithTasks(Project $project, array $filters) {
     $query = $project->tasks()->with(['labels', 'project', 'assignedUser']);
 
-    // Apply filters using trait methods
+    // Apply filters using trait methods with explicit column names
     if (isset($filters['name'])) {
-      $this->applyNameFilter($query, $filters['name']);
+      $this->applyNameFilter($query, $filters['name'], 'tasks.name');
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status']);
+      $this->applyStatusFilter($query, $filters['status'], 'tasks.status');
     }
     if (isset($filters['priority'])) {
       $this->applyPriorityFilter($query, $filters['priority']);
     }
     if (isset($filters['label_ids'])) {
       $this->applyLabelFilter($query, $filters['label_ids']);
+    }
+    if (isset($filters['due_date'])) {
+      $this->applyDateRangeFilter($query, $filters['due_date'], 'tasks.due_date');
     }
 
     return $this->paginateAndSort($query, $filters, 'tasks');

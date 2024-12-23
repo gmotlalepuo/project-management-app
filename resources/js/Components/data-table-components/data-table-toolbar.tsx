@@ -148,7 +148,7 @@ export function DataTableToolbar<TData>({
 
     setIsReset(true);
     onReset();
-    // Reset the flag after a short delay
+    setShowAllFilters(false);
     setTimeout(() => setIsReset(false), 100);
   };
 

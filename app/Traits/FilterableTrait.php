@@ -17,17 +17,9 @@ trait FilterableTrait {
 
   protected function applyStatusFilter($query, $statuses, string $column = 'status'): void {
     if (is_array($statuses)) {
-      if ($query instanceof Relation) {
-        $query->wherePivotIn($column, $statuses);
-      } else {
-        $query->whereIn($column, $statuses);
-      }
+      $query->whereIn($column, $statuses);
     } else {
-      if ($query instanceof Relation) {
-        $query->wherePivot($column, $statuses);
-      } else {
-        $query->where($column, $statuses);
-      }
+      $query->where($column, $statuses);
     }
   }
 
