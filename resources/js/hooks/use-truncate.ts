@@ -11,8 +11,6 @@ export function useTruncate(text: string, forceMaxLength?: number) {
   const [truncatedText, setTruncatedText] = useState(text);
 
   const calculateMaxLength = useCallback((width: number): number => {
-    if (width < BREAKPOINTS.sm) return 20; // Mobile
-    if (width < BREAKPOINTS.md) return 15; // Small tablets
     if (width < BREAKPOINTS.lg) return 10; // Tablets
     return 7; // Desktop
   }, []);

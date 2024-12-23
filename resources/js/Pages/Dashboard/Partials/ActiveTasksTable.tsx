@@ -42,6 +42,11 @@ export function ActiveTasksTable({
         hideFromViewOptions: true,
       },
       {
+        accessorKey: "project_id",
+        defaultHidden: true,
+        hideFromViewOptions: true,
+      },
+      {
         accessorKey: "task_number",
         header: ({ column }) => <DataTableColumnHeader column={column} title="#" />,
         cell: ({ row }) => `#${row.original.task_number}`,

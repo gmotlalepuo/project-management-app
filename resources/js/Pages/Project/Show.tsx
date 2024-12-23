@@ -40,10 +40,37 @@ export default function Show({
   const [activeTab, setActiveTab] = useState(initialActiveTab);
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", activeTab);
-    window.history.pushState({}, "", url);
-  }, [activeTab]);
+    // Only update URL if the tab is different from the initial tab
+    if (activeTab !== initialActiveTab) {
+      const url = new URL(window.location.href);
+      const currentTab = url.searchParams.get("tab");
+
+      // Only update if the current URL tab is different
+      if (currentTab !== activeTab) {
+        url.searchParams.set("tab", activeTab);
+        window.history.pushState({ tab: activeTab }, "", url);
+      }
+    }
+  }, [activeTab, initialActiveTab]);
+
+  // Add history state handler
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const url = new URL(window.location.href);
+      const tab = url.searchParams.get("tab") || "tasks";
+      setActiveTab(tab);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Replace the simple state setter with one that checks current state
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      setActiveTab(newTab);
+    }
+  };
 
   useEffect(() => {
     if (success) {
@@ -73,7 +100,7 @@ export default function Show({
 
       <div className="space-y-12 py-8">
         <div className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid auto-cols-[minmax(0,_2fr)] grid-flow-col shadow-sm">
               <TabsTrigger value="tasks">Project Tasks</TabsTrigger>
               <TabsTrigger value="info">Project Info</TabsTrigger>

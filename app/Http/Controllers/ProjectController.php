@@ -89,10 +89,14 @@ class ProjectController extends Controller {
             abort(403, 'You are not authorized to view this project.');
         }
 
-        // Check if user is trying to access invite tab while being a project member
-        $requestedTab = request()->query('tab', 'tasks');
-        if ($requestedTab === 'invite' && $project->isProjectMember($user)) {
-            abort(403, 'Project members cannot access the invite section.');
+        // Get the requested tab, but don't force a default
+        $requestedTab = request()->query('tab');
+
+        // Only validate tab if one was provided
+        if ($requestedTab) {
+            if ($requestedTab === 'invite' && $project->isProjectMember($user)) {
+                abort(403, 'Project members cannot access the invite section.');
+            }
         }
 
         // Fetch label options for the filter
@@ -115,7 +119,7 @@ class ProjectController extends Controller {
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
             'error' => session('error'),
-            'activeTab' => request()->query('tab', 'tasks'),
+            'activeTab' => $requestedTab ?: 'tasks',
             'labelOptions' => $labelOptions,
             'permissions' => [
                 'canInviteUsers' => $project->canInviteUsers($user),

@@ -267,7 +267,7 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
             ))}
 
           {permissions.canInviteUsers && (
-            <div className="flex w-full gap-3">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
               {/* Invite Users Button - Only show if permitted */}
               <Button
                 variant="outline"
@@ -380,7 +380,7 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                       .map((user) => (
                         <div
                           key={user.id}
-                          className="flex items-center justify-between space-x-2 rounded-lg border p-3"
+                          className="flex flex-col justify-between gap-2 space-x-2 rounded-lg border p-3 sm:flex-row sm:items-center"
                         >
                           <div className="flex items-center space-x-2">
                             <Avatar>
