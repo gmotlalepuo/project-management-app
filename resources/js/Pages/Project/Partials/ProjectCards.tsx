@@ -21,13 +21,26 @@ export default function ProjectCards({
   userId,
 }: ProjectCardsProps) {
   const calculateTaskProgress = (totalTasks: number, completedTasks: number) => {
-    return totalTasks ? (completedTasks / totalTasks) * 100 : 0;
+    // Ensure we have valid numbers and use optional chaining
+    const total = Number(totalTasks ?? 0);
+    const completed = Number(completedTasks ?? 0);
+
+    if (total === 0) return 0;
+    const percentage = (completed / total) * 100;
+    return Math.round(percentage * 10) / 10;
   };
 
   return (
-    <div className="grid flex-1 gap-6 sm:grid-cols-2">
+    <div
+      className={`grid flex-1 gap-6 ${projects.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1"}`}
+    >
       {projects.slice(0, 6).map((project) => {
         const StatusIcon = STATUS_CONFIG[project.status as StatusType].icon;
+
+        const tasksProgress = calculateTaskProgress(
+          project.total_tasks,
+          project.completed_tasks,
+        );
 
         return (
           <div key={project.id} className="min-w-0 rounded-lg bg-card p-5 shadow">
@@ -145,19 +158,12 @@ export default function ProjectCards({
             </ul>
 
             <div className="mt-3">
-              <Progress
-                value={calculateTaskProgress(
-                  project.total_tasks,
-                  project.completed_tasks,
-                )}
-                className="h-2"
-              />
+              <Progress value={tasksProgress} className="h-2" />
               <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                {calculateTaskProgress(
-                  project.total_tasks,
-                  project.completed_tasks,
-                ).toFixed(0)}
-                % Complete
+                {tasksProgress}% Complete
+                <span className="ml-1">
+                  ({project.completed_tasks ?? 0}/{project.total_tasks ?? 0} tasks)
+                </span>
               </p>
             </div>
           </div>

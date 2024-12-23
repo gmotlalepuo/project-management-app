@@ -73,15 +73,21 @@ class HandleInertiaRequests extends Middleware {
                     ];
                 });
 
-            // Fetch all projects and tasks related to the user
+            // Update the allProjects query to include task counts
             $allProjects = Project::where('created_by', $user->id)
                 ->orWhereHas('acceptedUsers', function ($query) use ($user) {
                     $query->where('user_id', $user->id);
                 })
-                ->orderBy('updated_at', 'desc')
+                ->withCount([
+                    'tasks as total_tasks',
+                    'tasks as completed_tasks' => function ($query) {
+                        $query->where('status', 'completed');
+                    }
+                ])
                 ->with(['tasks' => function ($query) {
-                    $query->with('labels');
+                    $query->with('labels')->orderBy('updated_at', 'desc');
                 }])
+                ->orderBy('updated_at', 'desc')
                 ->get();
 
             $allTasks = Task::where('assigned_user_id', $user->id)

@@ -83,6 +83,12 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
           project.createdBy.id === authUser.id)),
   );
 
+  const manageableUsers = project.acceptedUsers?.filter(
+    (user) =>
+      // Filter out project creator and current user
+      user.id !== project.createdBy.id && user.id !== authUser.id,
+  );
+
   const handleLeaveProject = () => {
     router.post(route("project.leave", { project: project.id }), {
       preserveScroll: true,
@@ -351,83 +357,88 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                 </Dialog>
               )}
               {/* Manage Users Button - Only show if permitted */}
-              <Dialog
-                open={isManageUsersDialogOpen}
-                onOpenChange={setManageUsersDialogOpen}
-              >
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="w-full md:w-auto">
-                    <UserCog className="h-5 w-5" />
-                    Manage Users
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle>Manage User Roles</DialogTitle>
-                    <DialogDescription>
-                      Project managers can promote members to project managers. Only
-                      the project creator can demote project managers to members.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    {project.acceptedUsers
-                      ?.filter(
-                        (user) =>
-                          // Filter out project creator and current user
-                          user.id !== project.createdBy.id &&
-                          user.id !== authUser.id,
-                      )
-                      .map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex flex-col justify-between gap-2 space-x-2 rounded-lg border p-3 sm:flex-row sm:items-center"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <Avatar>
-                              <AvatarImage
-                                src={user.profile_picture}
-                                alt={user.name}
-                              />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {user.email}
-                              </p>
-                            </div>
-                          </div>
-                          <Select
-                            value={user.pivot?.role}
-                            onValueChange={(value) =>
-                              handleRoleChange(user.id, value, user.name)
-                            }
-                            disabled={
-                              // Disable if:
-                              // 1. No permission to manage users
-                              // 2. Trying to demote a project manager while not being the creator
-                              !permissions.canInviteUsers ||
-                              (user.pivot?.role === "project_manager" &&
-                                project.createdBy.id !== authUser.id)
-                            }
+              {manageableUsers && manageableUsers.length > 0 && (
+                <Dialog
+                  open={isManageUsersDialogOpen}
+                  onOpenChange={setManageUsersDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-auto">
+                      <UserCog className="h-5 w-5" />
+                      Manage Users
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[80vh]">
+                    <DialogHeader>
+                      <DialogTitle>Manage User Roles</DialogTitle>
+                      <DialogDescription>
+                        Project managers can promote members to project managers.
+                        Only the project creator can demote project managers to
+                        members.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      {project.acceptedUsers
+                        ?.filter(
+                          (user) =>
+                            // Filter out project creator and current user
+                            user.id !== project.createdBy.id &&
+                            user.id !== authUser.id,
+                        )
+                        .map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex flex-col justify-between gap-2 space-x-2 rounded-lg border p-3 sm:flex-row sm:items-center"
                           >
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="project_manager">
-                                Project Manager
-                              </SelectItem>
-                              <SelectItem value="project_member">
-                                Project Member
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ))}
-                  </div>
-                </DialogContent>
-              </Dialog>
+                            <div className="flex items-center space-x-2">
+                              <Avatar>
+                                <AvatarImage
+                                  src={user.profile_picture}
+                                  alt={user.name}
+                                />
+                                <AvatarFallback>
+                                  {user.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{user.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                            <Select
+                              value={user.pivot?.role}
+                              onValueChange={(value) =>
+                                handleRoleChange(user.id, value, user.name)
+                              }
+                              disabled={
+                                // Disable if:
+                                // 1. No permission to manage users
+                                // 2. Trying to demote a project manager while not being the creator
+                                !permissions.canInviteUsers ||
+                                (user.pivot?.role === "project_manager" &&
+                                  project.createdBy.id !== authUser.id)
+                              }
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="project_manager">
+                                  Project Manager
+                                </SelectItem>
+                                <SelectItem value="project_member">
+                                  Project Member
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           )}
         </CardContent>
@@ -510,12 +521,14 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
         <AlertDialogContent>
           <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to change {roleChangeConfirmation.userName}'s role
-            to{" "}
-            {roleChangeConfirmation.newRole === "project_manager"
-              ? "Project Manager"
-              : "Project Member"}
-            ?
+            <span>
+              Are you sure you want to change {roleChangeConfirmation.userName}'s
+              role to{" "}
+              {roleChangeConfirmation.newRole === "project_manager"
+                ? "Project Manager"
+                : "Project Member"}
+              ?
+            </span>
             {roleChangeConfirmation.newRole === "project_manager" && (
               <div className="mt-2 rounded-lg border border-yellow-500 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-400/30 dark:bg-yellow-900/30 dark:text-yellow-200">
                 <span>

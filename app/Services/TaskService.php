@@ -97,9 +97,30 @@ class TaskService extends BaseService {
 
   public function getMyTasks($user, $filters) {
     $query = Task::where('assigned_user_id', $user->id)
+      ->with(['labels', 'project', 'assignedUser'])
       ->whereHas('project', function ($query) use ($user) {
         $query->visibleToUser($user->id);
       });
+
+    // Apply filters
+    if (isset($filters['name'])) {
+      $this->applyNameFilter($query, $filters['name']);
+    }
+    if (isset($filters['status'])) {
+      $this->applyStatusFilter($query, $filters['status']);
+    }
+    if (isset($filters['priority'])) {
+      $this->applyPriorityFilter($query, $filters['priority']);
+    }
+    if (isset($filters['project_id'])) {
+      $query->where('project_id', $filters['project_id']);
+    }
+    if (isset($filters['due_date'])) {
+      $this->applyDateRangeFilter($query, $filters['due_date'], 'due_date');
+    }
+    if (isset($filters['label_ids'])) {
+      $this->applyLabelFilter($query, $filters['label_ids']);
+    }
 
     return $this->paginateAndSort($query, $filters, 'tasks');
   }

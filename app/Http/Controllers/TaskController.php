@@ -240,6 +240,8 @@ class TaskController extends Controller {
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
+            'labelOptions' => $this->taskService->getLabelOptions(),
+            'projectOptions' => $this->taskService->getProjectOptions($user),
             'permissions' => [
                 'canManageTasks' => $tasks->first()?->project->canManageTask($user),
             ],

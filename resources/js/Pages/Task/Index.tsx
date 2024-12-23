@@ -1,5 +1,5 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { PaginatedTask, Task } from "@/types/task";
 import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
@@ -43,6 +43,18 @@ export default function Index({
   queryParams = queryParams || {};
 
   const { toast } = useToast();
+  const { url } = usePage();
+  const isMyTasksPage = url.endsWith("/tasks/my-tasks");
+
+  const pageContent = {
+    title: isMyTasksPage ? "My Tasks" : "Tasks",
+    cardTitle: isMyTasksPage
+      ? "Personal Task Management"
+      : "Manage Your Tasks Effectively",
+    description: isMyTasksPage
+      ? "View and manage tasks assigned specifically to you across all your projects. Keep track of your personal workload and progress."
+      : "Organize your tasks, set priorities, and track progress. Use the tools provided to create, view, and update your tasks efficiently.",
+  };
 
   useEffect(() => {
     if (success) {
@@ -59,6 +71,11 @@ export default function Index({
     () => [
       {
         accessorKey: "id",
+        defaultHidden: true,
+        hideFromViewOptions: true,
+      },
+      {
+        accessorKey: "project_id",
         defaultHidden: true,
         hideFromViewOptions: true,
       },
@@ -181,9 +198,9 @@ export default function Index({
 
   const filterableColumns: FilterableColumn[] = [
     {
-      accessorKey: "project_id", // Changed from project_name
+      accessorKey: "project_id",
       title: "Project",
-      filterType: "select", // Changed to select
+      filterType: "select",
       options: projectOptions,
     },
     {
@@ -232,23 +249,20 @@ export default function Index({
       header={
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            Tasks
+            {pageContent.title}
           </h2>
         </div>
       }
     >
-      <Head title="Tasks" />
+      <Head title={pageContent.title} />
       <div className="py-8">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
-              <CardTitle>Manage Your Tasks Effectively</CardTitle>
+              <CardTitle>{pageContent.cardTitle}</CardTitle>
             </CardHeader>
             <CardContent>
-              <h4>
-                Organize your tasks, set priorities, and track progress. Use the
-                tools provided to create, view, and update your tasks efficiently.
-              </h4>
+              <h4>{pageContent.description}</h4>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center">
                 <Link href={route("task.create")}>
                   <Button className="w-full shadow sm:w-auto">
