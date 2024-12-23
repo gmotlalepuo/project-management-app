@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
 import ProjectInfo from "./Partials/ProjectInfo";
@@ -39,21 +39,22 @@ export default function Show({
 
   const [activeTab, setActiveTab] = useState(initialActiveTab);
 
-  useEffect(() => {
-    // Only update URL if the tab is different from the initial tab
-    if (activeTab !== initialActiveTab) {
-      const url = new URL(window.location.href);
-      const currentTab = url.searchParams.get("tab");
+  // Update the URL without making a server request
+  const updateUrlWithoutRefresh = (newTab: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", newTab);
+    window.history.pushState({ tab: newTab }, "", url.toString());
+  };
 
-      // Only update if the current URL tab is different
-      if (currentTab !== activeTab) {
-        url.searchParams.set("tab", activeTab);
-        window.history.pushState({ tab: activeTab }, "", url);
-      }
+  // Replace the existing handleTabChange
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      setActiveTab(newTab);
+      updateUrlWithoutRefresh(newTab);
     }
-  }, [activeTab, initialActiveTab]);
+  };
 
-  // Add history state handler
+  // Update useEffect for popstate event
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const url = new URL(window.location.href);
@@ -65,13 +66,6 @@ export default function Show({
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Replace the simple state setter with one that checks current state
-  const handleTabChange = (newTab: string) => {
-    if (newTab !== activeTab) {
-      setActiveTab(newTab);
-    }
-  };
-
   useEffect(() => {
     if (success) {
       toast({
@@ -82,8 +76,9 @@ export default function Show({
     }
   }, [success]);
 
+  // Update handleInviteClick
   const handleInviteClick = () => {
-    setActiveTab("invite");
+    handleTabChange("invite");
   };
 
   return (

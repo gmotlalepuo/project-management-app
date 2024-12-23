@@ -190,13 +190,19 @@ export function DataTable<TData, TValue>({
   const handleTableOperation = (params: QueryParams) => {
     setIsLoading(true);
 
-    // Preserve the tab parameter if it exists
-    const tab = queryParams.tab;
-    if (tab) {
-      params.tab = tab;
-    }
+    // Get all current URL parameters
+    const currentUrl = new URL(window.location.href);
+    const existingParams = Object.fromEntries(currentUrl.searchParams.entries());
 
-    router.get(route(routeName, { id: entityId }), params, {
+    // Merge existing params with new params, ensuring tab is preserved
+    const updatedParams = { ...existingParams, ...params };
+
+    // Remove null or undefined values
+    Object.keys(updatedParams).forEach(
+      (key) => updatedParams[key] === undefined && delete updatedParams[key],
+    );
+
+    router.get(route(routeName, { id: entityId }), updatedParams, {
       preserveState: true,
       preserveScroll: true,
       onFinish: () => setIsLoading(false),

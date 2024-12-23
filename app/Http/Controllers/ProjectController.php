@@ -29,6 +29,9 @@ class ProjectController extends Controller {
         $user = Auth::user();
         $filters = request()->all();
 
+        // Get the requested tab, but don't force a default
+        $requestedTab = request()->query('tab');
+
         // Let the service handle all the query building including eager loading
         $projects = $this->projectService->getProjects($user, $filters);
 
@@ -43,7 +46,7 @@ class ProjectController extends Controller {
             ]),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
-            'activeTab' => request()->query('tab', 'overview'),
+            'activeTab' => $requestedTab ?: 'overview',
         ]);
     }
 

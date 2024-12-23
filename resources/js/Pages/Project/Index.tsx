@@ -69,11 +69,32 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
 
   const [activeTab, setActiveTab] = useState(initialActiveTab);
 
-  useEffect(() => {
+  // Update the URL without making a server request
+  const updateUrlWithoutRefresh = (newTab: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.set("tab", activeTab);
-    window.history.pushState({}, "", url);
-  }, [activeTab]);
+    url.searchParams.set("tab", newTab);
+    window.history.pushState({ tab: newTab }, "", url.toString());
+  };
+
+  // Replace the existing handleTabChange
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      setActiveTab(newTab);
+      updateUrlWithoutRefresh(newTab);
+    }
+  };
+
+  // Update useEffect for popstate event
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const url = new URL(window.location.href);
+      const tab = url.searchParams.get("tab") || "overview";
+      setActiveTab(tab);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // Define the table columns for the Project data
   const columns: ColumnDef<Project>[] = [
@@ -195,7 +216,11 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
 
         {allProjects.length > 0 ? (
           <section className="px-3 sm:px-6 lg:px-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={handleTabChange}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 shadow-sm">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="list">List View</TabsTrigger>

@@ -46,12 +46,18 @@ export function DataTablePagination({
   const handlePageChange = (link: string | null) => {
     const page = extractPageNumber(link);
     if (page) {
-      const updatedParams = { ...queryParams, page };
+      // Get all current URL parameters
+      const currentUrl = new URL(window.location.href);
+      const existingParams = Object.fromEntries(currentUrl.searchParams.entries());
+
+      // Merge existing params with new params
+      const updatedParams = { ...existingParams, ...queryParams, page };
+
       if (entityId) {
         (updatedParams as { [key: string]: any }).entityId = entityId;
       }
 
-      // Prefetch the next and previous pages
+      // Prefetch next and previous pages
       const nextPage = parseInt(page) + 1;
       const prevPage = parseInt(page) - 1;
 
@@ -93,12 +99,21 @@ export function DataTablePagination({
 
   // Function to handle rows per page change
   const handlePageSizeChange = (pageSize: number) => {
-    const updatedParams: { [key: string]: any } = {
+    // Get all current URL parameters
+    const currentUrl = new URL(window.location.href);
+    const existingParams = Object.fromEntries(currentUrl.searchParams.entries());
+
+    // Merge existing params with new params
+    const updatedParams = {
+      ...existingParams,
       ...queryParams,
       per_page: pageSize,
       page: 1,
     };
-    if (entityId) updatedParams.entityId = entityId; // Include entityId if provided
+
+    if (entityId) {
+      (updatedParams as { [key: string]: any }).entityId = entityId;
+    }
 
     router.get(route(routeName, { id: entityId }), updatedParams, {
       preserveState: true,
