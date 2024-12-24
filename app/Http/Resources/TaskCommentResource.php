@@ -23,7 +23,10 @@ class TaskCommentResource extends JsonResource {
       'created_at' => $this->created_at->toISOString(),
       'updated_at' => $this->updated_at->toISOString(),
       'user' => new UserResource($this->user),
-      'replies' => self::collection($this->whenLoaded('replies')),
+      'parent_id' => $this->parent_id,
+      'replies' => $this->whenLoaded('replies', function () {
+        return self::collection($this->replies->sortBy('created_at'));
+      }),
       'can' => [
         'edit' => $user->can('update', $this->resource),
         'delete' => $user->can('delete', $this->resource),

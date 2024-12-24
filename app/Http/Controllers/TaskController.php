@@ -16,8 +16,11 @@ use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskCommentResource;
 use App\Http\Resources\TaskLabelResource;
 use App\Models\TaskLabel;
+use App\Traits\LoadsCommentsTrait;
 
 class TaskController extends Controller {
+    use LoadsCommentsTrait;
+
     protected $taskService;
 
     public function __construct(TaskService $taskService) {
@@ -154,19 +157,7 @@ class TaskController extends Controller {
      * Display the specified resource.
      */
     public function show(Task $task) {
-        $task->load([
-            'comments' => function ($query) {
-                $query->whereNull('deleted_at')
-                    ->whereNull('parent_id')
-                    ->orderBy('created_at', 'desc');
-            },
-            'comments.user',
-            'comments.replies' => function ($query) {
-                $query->whereNull('deleted_at')
-                    ->orderBy('created_at', 'asc');
-            },
-            'comments.replies.user'
-        ]);
+        $task->load($this->getCommentsLoadingOptions());
 
         return Inertia::render('Task/Show', [
             'task' => new TaskResource($task),

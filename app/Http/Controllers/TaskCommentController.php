@@ -7,9 +7,10 @@ use App\Models\TaskComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\LoadsCommentsTrait;
 
 class TaskCommentController extends Controller {
-  use AuthorizesRequests;
+  use AuthorizesRequests, LoadsCommentsTrait;
 
   public function store(Request $request, Task $task) {
     // Check if user can comment on tasks
@@ -28,15 +29,7 @@ class TaskCommentController extends Controller {
       'parent_id' => $validated['parent_id'] ?? null,
     ]);
 
-    // Refresh task with all necessary relationships
-    $task->refresh()->load([
-      'comments' => function ($query) {
-        $query->whereNull('parent_id'); // Only load parent comments
-      },
-      'comments.user',
-      'comments.replies.user',
-      'comments.replies.replies' // Load nested replies
-    ]);
+    $task->load($this->getCommentsLoadingOptions());
 
     return redirect()->route('task.show', $task->id);
   }
@@ -53,15 +46,7 @@ class TaskCommentController extends Controller {
       'is_edited' => true
     ]);
 
-    // Refresh task with all necessary relationships
-    $task->refresh()->load([
-      'comments' => function ($query) {
-        $query->whereNull('parent_id'); // Only load parent comments
-      },
-      'comments.user',
-      'comments.replies.user',
-      'comments.replies.replies' // Load nested replies
-    ]);
+    $task->load($this->getCommentsLoadingOptions());
 
     return redirect()->route('task.show', $task->id);
   }
@@ -72,19 +57,7 @@ class TaskCommentController extends Controller {
     // Soft delete the comment and its replies
     $comment->delete(); // This will trigger the cascade soft delete
 
-    $task->refresh()->load([
-      'comments' => function ($query) {
-        $query->whereNull('deleted_at')  // Only load non-deleted comments
-          ->whereNull('parent_id')
-          ->orderBy('created_at', 'desc');
-      },
-      'comments.user',
-      'comments.replies' => function ($query) {
-        $query->whereNull('deleted_at')  // Only load non-deleted replies
-          ->orderBy('created_at', 'asc');
-      },
-      'comments.replies.user'
-    ]);
+    $task->load($this->getCommentsLoadingOptions());
 
     return back()->with('success', 'Comment deleted successfully.');
   }

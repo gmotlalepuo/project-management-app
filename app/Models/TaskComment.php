@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class TaskComment extends Model {
   use SoftDeletes;
@@ -51,6 +53,29 @@ class TaskComment extends Model {
   }
 
   public function replies(): HasMany {
-    return $this->hasMany(TaskComment::class, 'parent_id');
+    return $this->hasMany(TaskComment::class, 'parent_id')
+      ->whereNull('deleted_at')
+      ->with(['user', 'replies'])
+      ->orderBy('created_at', 'asc');
+  }
+
+  protected function canDelete(): bool {
+    if (!Auth::user()) {
+      return false;
+    }
+
+    return Gate::allows('delete', $this);
+  }
+
+  protected function appends(): array {
+    return ['can'];
+  }
+
+  public function getCanAttribute(): array {
+    return [
+      'edit' => Auth::user()?->id === $this->user_id,
+      'delete' => $this->canDelete(),
+      'reply' => Auth::check()
+    ];
   }
 }

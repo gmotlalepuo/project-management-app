@@ -6,6 +6,7 @@ type CommentListProps = {
   onDelete: (id: number) => void;
   onEdit: (id: number, content: string) => void;
   onReply: (content: string, parentId: number) => void;
+  level?: number;
 };
 
 export function CommentList({
@@ -13,13 +14,14 @@ export function CommentList({
   onDelete,
   onEdit,
   onReply,
+  level = 0,
 }: CommentListProps) {
   if (!comments || !Array.isArray(comments)) {
     return null;
   }
 
   return (
-    <div className="mt-6 space-y-6">
+    <div className={`mt-6 space-y-6 ${level > 0 ? "ml-12" : ""}`}>
       {comments
         .filter((comment) => comment && comment.id)
         .map((comment) => (
@@ -29,6 +31,7 @@ export function CommentList({
             onDelete={onDelete}
             onEdit={onEdit}
             onReply={onReply}
+            level={level}
           />
         ))}
     </div>

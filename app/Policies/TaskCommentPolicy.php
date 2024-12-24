@@ -2,8 +2,9 @@
 
 namespace App\Policies;
 
-use App\Models\User;
+use App\Enum\RolesEnum;
 use App\Models\TaskComment;
+use App\Models\User;
 
 class TaskCommentPolicy {
   public function create(User $user): bool {
@@ -11,21 +12,20 @@ class TaskCommentPolicy {
   }
 
   public function update(User $user, TaskComment $comment): bool {
-    // Users can only edit their own comments
     return $user->id === $comment->user_id;
   }
 
   public function delete(User $user, TaskComment $comment): bool {
-    // Project managers can delete any comment
-    if ($user->hasPermissionTo('manage_comments')) {
-      return true;
-    }
+    // Get the project associated with the comment's task
+    $project = $comment->task->project;
 
-    // Users can delete their own comments
-    if ($user->hasPermissionTo('delete_comments')) {
-      return $user->id === $comment->user_id;
-    }
+    // Check if user is a project manager for this project
+    $isProjectManager = $project->acceptedUsers()
+      ->where('user_id', $user->id)
+      ->where('project_user.role', RolesEnum::ProjectManager->value)
+      ->exists();
 
-    return false;
+    // Allow if user is project manager or if it's their own comment
+    return $isProjectManager || $user->id === $comment->user_id;
   }
 }

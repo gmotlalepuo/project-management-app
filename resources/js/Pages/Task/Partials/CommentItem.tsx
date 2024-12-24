@@ -21,6 +21,7 @@ type CommentItemProps = {
   onDelete: (id: number) => void;
   onEdit: (id: number, content: string) => void;
   onReply: (content: string, parentId: number) => void;
+  level?: number;
 };
 
 export function CommentItem({
@@ -28,6 +29,7 @@ export function CommentItem({
   onDelete,
   onEdit,
   onReply,
+  level = 0,
 }: CommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
@@ -119,19 +121,17 @@ export function CommentItem({
       )}
 
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-12 space-y-4">
-          {comment.replies.map(
-            (reply) =>
-              reply && (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  onDelete={onDelete}
-                  onEdit={onEdit}
-                  onReply={onReply}
-                />
-              ),
-          )}
+        <div className="ml-12">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              onReply={onReply}
+              level={level + 1}
+            />
+          ))}
         </div>
       )}
 
