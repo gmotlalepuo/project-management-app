@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model {
     /** @use HasFactory<\Database\Factories\TaskFactory> */
@@ -81,5 +82,13 @@ class Task extends Model {
 
     public function canBeUnassignedBy(User $user): bool {
         return $this->isAssignedTo($user);
+    }
+
+    public function comments(): HasMany {
+        return $this->hasMany(TaskComment::class)->whereNull('parent_id');
+    }
+
+    public function allComments(): HasMany {
+        return $this->hasMany(TaskComment::class);
     }
 }

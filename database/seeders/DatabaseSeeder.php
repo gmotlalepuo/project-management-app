@@ -36,7 +36,6 @@ class DatabaseSeeder extends Seeder {
         $adminRole = Role::create(['name' => RolesEnum::Admin->value]);
         $adminRole->givePermissionTo(Permission::all());
 
-        // Additionally assign the project manager role to give project management capabilities
         $projectManagerRole = Role::create(['name' => RolesEnum::ProjectManager->value]);
         $projectManagerRole->givePermissionTo([
             PermissionsEnum::ManageProjects->value,
@@ -53,6 +52,7 @@ class DatabaseSeeder extends Seeder {
             PermissionsEnum::ViewProjects->value,
             PermissionsEnum::ViewTasks->value,
             PermissionsEnum::CommentOnTasks->value,
+            PermissionsEnum::DeleteComments->value,
             PermissionsEnum::ManageTasks->value,
         ]);
 

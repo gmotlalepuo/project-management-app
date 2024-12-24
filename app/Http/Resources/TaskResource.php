@@ -15,6 +15,8 @@ class TaskResource extends JsonResource {
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array {
+        $user = $request->user();
+
         return [
             'id' => $this->id,
             'task_number' => $this->task_number,
@@ -40,6 +42,14 @@ class TaskResource extends JsonResource {
             'createdBy' => new UserResource($this->createdBy),
             'updatedBy' => new UserResource($this->updatedBy),
             'labels' => TaskLabelResource::collection($this->whenLoaded('labels')),
+            'comments' => TaskCommentResource::collection($this->comments),
+            'can' => [
+                'edit' => $this->project->canEditTask($user, $this->resource),
+                'delete' => $this->project->canDeleteTask($user),
+                'assign' => $this->canBeAssignedBy($user),
+                'unassign' => $this->canBeUnassignedBy($user),
+                'comment' => $user->can('comment_on_tasks'),
+            ],
         ];
     }
 }

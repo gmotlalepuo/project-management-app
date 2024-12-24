@@ -8,6 +8,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskLabelController;
 
 Route::redirect('/', '/dashboard');
@@ -94,7 +95,22 @@ Route::middleware('auth')->group(function () {
         Route::put('/projects/{project}/labels/{label}', [TaskLabelController::class, 'update'])
             ->name('project.labels.update')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
         Route::delete('/projects/{project}/labels/{label}', [TaskLabelController::class, 'destroy'])
-            ->name('project.labels.destroy')->middleware('permission:' . PermissionsEnum::ManageProjects->value);;
+            ->name('project.labels.destroy')->middleware('permission:' . PermissionsEnum::ManageProjects->value);
+
+        // Task Comment routes
+        Route::prefix('task/{task}/comments')->name('task.comments.')->middleware('auth')->group(function () {
+            Route::post('/', [TaskCommentController::class, 'store'])
+                ->name('store')
+                ->middleware('permission:' . PermissionsEnum::CommentOnTasks->value);
+
+            Route::put('/{comment}', [TaskCommentController::class, 'update'])
+                ->name('update');
+
+            Route::delete('/{comment}', [TaskCommentController::class, 'destroy'])
+                ->name('destroy');
+        });
+
+        Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('task.show');
     });
 });
 

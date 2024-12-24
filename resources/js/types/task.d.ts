@@ -3,10 +3,11 @@ import { PaginationLinks, PaginationMeta } from "./utils";
 
 export type Task = {
   id: number;
-  task_number: number; // Add this new field
+  task_number: number;
   name: string;
   description: string;
   created_at: string;
+  updated_at: string;
   due_date: string;
   status: "completed" | "pending" | "in_progress";
   priority: "low" | "medium" | "high";
@@ -20,6 +21,30 @@ export type Task = {
   labels: Label[];
   permissions: {
     canDelete: boolean;
+  };
+  comments: TaskComment[];
+  can: {
+    edit: boolean;
+    delete: boolean;
+    assign: boolean;
+    unassign: boolean;
+    comment: boolean;
+  };
+};
+
+export type TaskComment = {
+  id: number;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  is_edited: boolean;
+  user: User;
+  replies?: TaskComment[];
+  parent_id?: number | null;
+  can: {
+    edit: boolean;
+    delete: boolean;
+    reply: boolean;
   };
 };
 
