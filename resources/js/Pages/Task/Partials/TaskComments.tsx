@@ -106,7 +106,7 @@ export function TaskComments({ task }: TaskCommentsProps) {
   };
 
   return (
-    <Card className="p-4">
+    <Card className="space-y-6 p-4">
       <CommentForm onSubmit={handleCommentSubmit} />
       <CommentList
         comments={comments}

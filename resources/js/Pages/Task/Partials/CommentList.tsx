@@ -21,18 +21,28 @@ export function CommentList({
   }
 
   return (
-    <div className={`mt-6 space-y-6 ${level > 0 ? "ml-12" : ""}`}>
+    <div className={`space-y-4 ${level > 0 ? "ml-8 sm:ml-10" : ""}`}>
       {comments
         .filter((comment) => comment && comment.id)
         .map((comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            onDelete={onDelete}
-            onEdit={onEdit}
-            onReply={onReply}
-            level={level}
-          />
+          <div key={comment.id} className="relative">
+            <CommentItem
+              comment={comment}
+              onDelete={onDelete}
+              onEdit={onEdit}
+              onReply={onReply}
+              level={level}
+            />
+            {comment.replies && comment.replies.length > 0 && (
+              <CommentList
+                comments={comment.replies}
+                onDelete={onDelete}
+                onEdit={onEdit}
+                onReply={onReply}
+                level={level + 1}
+              />
+            )}
+          </div>
         ))}
     </div>
   );
