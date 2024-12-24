@@ -73,7 +73,13 @@ Route::middleware('auth')->group(function () {
 
         // Task routes - available to project members
         Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('task.myTasks');
-        Route::resource('task', TaskController::class);
+        Route::get('/task', [TaskController::class, 'index'])->name('task.index');
+        Route::get('/task/create', [TaskController::class, 'create'])->name('task.create');
+        Route::post('/task', [TaskController::class, 'store'])->name('task.store');
+        Route::get('/task/{task}', [TaskController::class, 'show'])->name('task.show');
+        Route::get('/task/{task}/edit', [TaskController::class, 'edit'])->name('task.edit');
+        Route::put('/task/{task}', [TaskController::class, 'update'])->name('task.update');
+        Route::delete('/task/{task}', [TaskController::class, 'destroy'])->name('task.destroy');
         Route::post('/task/{task}/assign-to-me', [TaskController::class, 'assignToMe'])->name('task.assignToMe');
         Route::post('/task/{task}/unassign', [TaskController::class, 'unassign'])->name('task.unassign');
 
@@ -109,8 +115,6 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{comment}', [TaskCommentController::class, 'destroy'])
                 ->name('destroy');
         });
-
-        Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('task.show');
     });
 });
 
