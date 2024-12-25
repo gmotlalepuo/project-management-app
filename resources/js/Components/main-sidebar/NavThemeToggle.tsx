@@ -13,7 +13,7 @@ import {
 } from "../ui/dropdown-menu";
 
 import { useTheme } from "@/Layouts/ThemeProvider";
-import { Moon, Sun } from "lucide-react";
+import { Laptop, Moon, Sun } from "lucide-react";
 
 export default function NavThemeToggle() {
   const { setTheme } = useTheme();
@@ -43,13 +43,16 @@ export default function NavThemeToggle() {
             align="end"
           >
             <DropdownMenuItem onClick={() => setTheme("light")}>
-              Light
+              <Sun className="h-4 w-4" />
+              <span>Light</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setTheme("dark")}>
-              Dark
+              <Moon className="h-4 w-4" />
+              <span>Dark</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setTheme("system")}>
-              System
+              <Laptop className="h-4 w-4" />
+              <span>System</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

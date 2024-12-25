@@ -157,7 +157,10 @@ class TaskController extends Controller {
      * Display the specified resource.
      */
     public function show(Task $task) {
-        $task->load($this->getCommentsLoadingOptions());
+        $task->load([
+            'labels',
+            ...$this->getCommentsLoadingOptions()
+        ]);
 
         return Inertia::render('Task/Show', [
             'task' => new TaskResource($task),

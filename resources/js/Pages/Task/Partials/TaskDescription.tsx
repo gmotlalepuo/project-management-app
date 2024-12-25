@@ -20,9 +20,9 @@ export function TaskDescription({ task }: TaskDescriptionProps) {
   return (
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="p-4">
+        <CardHeader className="p-4 sm:p-6">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">Description</CardTitle>
+            <CardTitle className="text-xl font-semibold">Description</CardTitle>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm">
                 <ChevronDown
@@ -35,7 +35,7 @@ export function TaskDescription({ task }: TaskDescriptionProps) {
           </div>
         </CardHeader>
         <CollapsibleContent>
-          <CardContent className="px-4 pb-4">
+          <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
             <div className="prose dark:prose-invert max-w-none">
               {task.description || (
                 <p className="text-muted-foreground">No description provided.</p>

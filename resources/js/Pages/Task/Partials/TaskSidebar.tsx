@@ -4,30 +4,45 @@ import { formatDate } from "@/utils/helpers";
 import { Task } from "@/types/task";
 import { Button } from "@/Components/ui/button";
 import { router } from "@inertiajs/react";
+import { useConfirmationDialog } from "@/hooks/useConfirmationDialog";
+import { UserPlus, UserMinus } from "lucide-react";
+import { Badge } from "@/Components/ui/badge";
 
 type TaskSidebarProps = {
   task: Task;
 };
 
 export function TaskSidebar({ task }: TaskSidebarProps) {
+  const { showConfirmation, ConfirmationDialog } = useConfirmationDialog();
+
   const handleAssign = () => {
-    router.post(route("task.assignToMe", task.id));
+    showConfirmation({
+      title: "Assign Task",
+      description: "Are you sure you want to assign this task to yourself?",
+      action: () => router.post(route("task.assignToMe", task.id)),
+      actionText: "Assign",
+    });
   };
 
   const handleUnassign = () => {
-    router.post(route("task.unassign", task.id));
+    showConfirmation({
+      title: "Unassign Task",
+      description: "Are you sure you want to unassign yourself from this task?",
+      action: () => router.post(route("task.unassign", task.id)),
+      actionText: "Unassign",
+    });
   };
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Task Details</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-xl">Task Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 divide-y px-4 pb-4 sm:px-6 sm:pb-6">
           {/* Assignee Section */}
           <div>
-            <h4 className="mb-2 text-sm font-medium">Assignee</h4>
+            <h4 className="mb-3 text-sm font-medium">Assignee</h4>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {task.assignedUser ? (
@@ -46,22 +61,48 @@ export function TaskSidebar({ task }: TaskSidebarProps) {
               </div>
               <div>
                 {task.can.assign && (
-                  <Button size="sm" variant="outline" onClick={handleAssign}>
-                    Assign to me
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAssign}
+                    className="flex items-center gap-2"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span>Assign to me</span>
                   </Button>
                 )}
                 {task.can.unassign && (
-                  <Button size="sm" variant="outline" onClick={handleUnassign}>
-                    Unassign
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleUnassign}
+                    className="flex items-center gap-2"
+                  >
+                    <UserMinus className="h-4 w-4" />
+                    <span>Unassign</span>
                   </Button>
                 )}
               </div>
             </div>
           </div>
 
+          {/* Labels Section */}
+          {task.labels && task.labels.length > 0 && (
+            <div>
+              <h4 className="my-3 text-sm font-medium">Labels</h4>
+              <div className="flex flex-wrap gap-2">
+                {task.labels.map((label) => (
+                  <Badge key={label.id} variant={label.variant} size="small">
+                    {label.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Due Date */}
           <div>
-            <h4 className="mb-1 text-sm font-medium">Due Date</h4>
+            <h4 className="my-3 text-sm font-medium">Due Date</h4>
             <p className="text-muted-foreground">
               {task.due_date ? formatDate(task.due_date) : "No due date set"}
             </p>
@@ -69,7 +110,7 @@ export function TaskSidebar({ task }: TaskSidebarProps) {
 
           {/* Created By */}
           <div>
-            <h4 className="mb-1 text-sm font-medium">Created By</h4>
+            <h4 className="my-3 text-sm font-medium">Created By</h4>
             <div className="flex items-center gap-2">
               <Avatar>
                 <AvatarImage src={task.createdBy.profile_picture} />
@@ -86,7 +127,7 @@ export function TaskSidebar({ task }: TaskSidebarProps) {
 
           {/* Last Updated */}
           <div>
-            <h4 className="mb-1 text-sm font-medium">Last Updated By</h4>
+            <h4 className="my-3 text-sm font-medium">Last Updated By</h4>
             <div className="flex items-center gap-2">
               <Avatar>
                 <AvatarImage src={task.updatedBy.profile_picture} />
@@ -102,6 +143,8 @@ export function TaskSidebar({ task }: TaskSidebarProps) {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmationDialog />
     </div>
   );
 }
