@@ -39,19 +39,37 @@ abstract class BaseService {
   }
 
   protected function paginateAndSort($query, array $filters, string $table) {
-    $basicFilters = $this->getBasicFilters($filters);
+    $perPage = (int)($filters['per_page'] ?? 10);
+    $page = (int)($filters['page'] ?? 1);
 
-    if (str_contains($basicFilters['sort_field'], '.')) {
-      // Handle relation sorting
-      [$relation, $field] = explode('.', $basicFilters['sort_field']);
-      $query->join($relation, "$table.{$relation}_id", '=', "$relation.id")
-        ->select("$table.*")
-        ->orderBy("$relation.$field", $basicFilters['sort_direction']);
-    } else {
-      // Normal column sorting
-      $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], $table);
+    // Apply sorting before pagination
+    if (isset($filters['sortField'])) {
+      // Clone the query to maintain the original query state
+      $sortQuery = clone $query;
+
+      if (str_contains($filters['sortField'], '.')) {
+        // Handle relation sorting
+        [$relation, $field] = explode('.', $filters['sortField']);
+        $sortQuery->join($relation, "$table.{$relation}_id", '=', "$relation.id")
+          ->orderBy("$relation.$field", $filters['sortDirection'] ?? 'desc')
+          ->select("$table.*");
+      } else {
+        // Regular column sorting
+        $sortQuery->orderBy(
+          "$table.{$filters['sortField']}",
+          $filters['sortDirection'] ?? 'desc'
+        );
+      }
+
+      return $sortQuery->paginate($perPage, ['*'], 'page', $page);
     }
 
-    return $query->paginate($basicFilters['per_page'], ['*'], 'page', $basicFilters['page']);
+    // Default sorting by updated_at
+    return $query->orderBy("$table.updated_at", 'desc')
+      ->paginate($perPage, ['*'], 'page', $page);
+  }
+
+  protected function paginateQuery($query, $perPage = 10) {
+    return $query->paginate($perPage)->withQueryString();
   }
 }

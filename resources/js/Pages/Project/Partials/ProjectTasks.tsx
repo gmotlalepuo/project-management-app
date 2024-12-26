@@ -1,4 +1,4 @@
-import { DataTable } from "@/Components/data-table-components/data-table";
+import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { Badge } from "@/Components/ui/badge";
 import { formatDate } from "@/utils/helpers";
@@ -8,7 +8,6 @@ import {
   PROJECT_STATUS_BADGE_MAP,
   PROJECT_STATUS_TEXT_MAP,
 } from "@/utils/constants";
-import { ColumnDef } from "@/Components/data-table-components/data-table";
 import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn, QueryParams } from "@/types/utils";
 import { Link, router } from "@inertiajs/react";
@@ -111,6 +110,14 @@ export default function ProjectTasks({
         <DataTableColumnHeader column={column} title="Assigned To" />
       ),
       cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last Updated" />
+      ),
+      cell: ({ row }) => formatDate(row.original.updated_at),
+      defaultHidden: true,
     },
     {
       id: "actions",

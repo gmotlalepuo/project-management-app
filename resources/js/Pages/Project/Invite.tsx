@@ -1,10 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router, usePage } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import { DataTable } from "@/Components/data-table-components/data-table";
+import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
-import { ColumnDef } from "@tanstack/react-table";
 import {
   INVITATION_STATUS_BADGE_MAP,
   INVITATION_STATUS_TEXT_MAP,
@@ -13,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PaginatedProject, Project } from "@/types/project";
 import { FilterableColumn } from "@/types/utils";
 import { useEffect } from "react";
+import { formatDate } from "@/utils/helpers";
 
 type PageProps = {
   invitations: PaginatedProject;
@@ -20,7 +20,7 @@ type PageProps = {
   queryParams: { [key: string]: any } | null;
 };
 
-const columns: ColumnDef<Project>[] = [
+const columns: ColumnDef<Project, any>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -31,9 +31,7 @@ const columns: ColumnDef<Project>[] = [
   {
     accessorFn: (row) => row.pivot?.status,
     id: "pivot.status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
       const status = row.original.pivot?.status;
       return (
@@ -52,6 +50,14 @@ const columns: ColumnDef<Project>[] = [
         </Badge>
       );
     },
+  },
+  {
+    accessorKey: "updated_at",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Last Updated" />
+    ),
+    cell: ({ row }) => formatDate(row.original.updated_at),
+    defaultHidden: true,
   },
   {
     id: "actions",
@@ -83,12 +89,10 @@ const filterableColumns: FilterableColumn[] = [
     accessorKey: "pivot.status",
     title: "Status",
     filterType: "select",
-    options: Object.entries(INVITATION_STATUS_TEXT_MAP).map(
-      ([value, label]) => ({
-        value,
-        label,
-      }),
-    ),
+    options: Object.entries(INVITATION_STATUS_TEXT_MAP).map(([value, label]) => ({
+      value,
+      label,
+    })),
   },
 ];
 
@@ -104,11 +108,7 @@ const handleReject = (projectId: number) => {
   });
 };
 
-export default function Invite({
-  invitations,
-  success,
-  queryParams,
-}: PageProps) {
+export default function Invite({ invitations, success, queryParams }: PageProps) {
   const { toast } = useToast();
 
   useEffect(() => {

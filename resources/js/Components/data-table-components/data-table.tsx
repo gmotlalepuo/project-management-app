@@ -79,8 +79,8 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([
     {
-      id: queryParams.sort_field || "id",
-      desc: queryParams.sort_direction === "desc",
+      id: queryParams.sortField || "updated_at",
+      desc: queryParams.sortDirection !== "asc",
     },
   ]);
   const [pageSize, setPageSize] = React.useState(queryParams.per_page || 10); // Use pageSize state
@@ -102,7 +102,6 @@ export function DataTable<TData, TValue>({
   }, [queryParams.sort_field, queryParams.sort_direction]);
 
   const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
-    // Handle both function updater and direct value
     const updatedSorting =
       typeof updaterOrValue === "function"
         ? updaterOrValue(sorting)
@@ -114,8 +113,8 @@ export function DataTable<TData, TValue>({
       const { id, desc } = updatedSorting[0];
       const updatedParams = {
         ...queryParams,
-        sort_field: id,
-        sort_direction: desc ? "desc" : "asc",
+        sortField: id,
+        sortDirection: desc ? "desc" : "asc",
         page: 1, // Reset to first page when sorting changes
       };
 
@@ -153,6 +152,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualSorting: true, // Add this line to enable server-side sorting
     manualPagination: true, // Important
     pageCount: meta.last_page, // Use last_page from meta data
   });

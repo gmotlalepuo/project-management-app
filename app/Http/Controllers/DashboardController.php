@@ -49,13 +49,9 @@ class DashboardController extends Controller {
             ->where('assigned_user_id', $user->id)
             ->count();
 
-        // Get active tasks with proper relations
+        // Get active tasks and apply sorting/pagination
         $query = $this->dashboardService->getActiveTasks($user, $filters);
-
-        // Apply eager loading
-        $activeTasks = $query->with(['project', 'labels', 'assignedUser'])
-            ->paginate(request('per_page', 10))
-            ->withQueryString();
+        $activeTasks = $this->dashboardService->paginateAndSort($query, $filters, 'tasks');
 
         $options = $this->dashboardService->getOptions($user);
 

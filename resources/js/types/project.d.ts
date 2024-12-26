@@ -6,6 +6,7 @@ export type Project = {
   name: string;
   description: string;
   created_at: string;
+  updated_at: string;
   due_date: string;
   status: "completed" | "pending" | "in_progress";
   image_path: string;

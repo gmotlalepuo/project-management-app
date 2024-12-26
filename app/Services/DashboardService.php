@@ -16,16 +16,15 @@ class DashboardService extends BaseService {
   }
 
   public function getActiveTasks($user, array $filters) {
-    $query = Task::query();
-
-    // Base query
-    $query->whereHas('project', function ($query) use ($user) {
-      $query->where('created_by', $user->id)
-        ->orWhereHas('acceptedUsers', function ($q) use ($user) {
-          $q->where('user_id', $user->id)
-            ->where('status', 'accepted');
-        });
-    })
+    $query = Task::query()
+      ->with(['labels', 'project', 'assignedUser'])
+      ->whereHas('project', function ($query) use ($user) {
+        $query->where('created_by', $user->id)
+          ->orWhereHas('acceptedUsers', function ($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->where('status', 'accepted');
+          });
+      })
       ->whereIn('status', ['pending', 'in_progress'])
       ->where('assigned_user_id', $user->id);
 
@@ -55,6 +54,10 @@ class DashboardService extends BaseService {
     $query = $this->applySorting($query, $basicFilters['sort_field'], $basicFilters['sort_direction'], 'tasks');
 
     return $query;
+  }
+
+  public function paginateAndSort($query, array $filters, string $table) {
+    return parent::paginateAndSort($query, $filters, $table);
   }
 
   public function getOptions($user) {

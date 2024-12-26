@@ -119,6 +119,14 @@ export function ActiveTasksTable({
           row.original.due_date ? formatDate(row.original.due_date) : "No date",
       },
       {
+        accessorKey: "updated_at",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Last Updated" />
+        ),
+        cell: ({ row }) => formatDate(row.original.updated_at),
+        defaultHidden: true,
+      },
+      {
         accessorKey: "label_ids",
         defaultHidden: true,
         hideFromViewOptions: true,

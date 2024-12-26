@@ -168,9 +168,9 @@ class HandleInertiaRequests extends Middleware {
             ])
             ->with([
                 'tasks' => function ($query) {
-                    $query->select('id', 'project_id', 'name', 'status')
+                    $query->select('id', 'project_id', 'name', 'status', 'updated_at')
                         ->with('labels:id,name,variant')
-                        ->orderBy('created_at', 'desc');
+                        ->orderByDesc('updated_at');
                 }
             ])
             ->orderBy('updated_at', 'desc')

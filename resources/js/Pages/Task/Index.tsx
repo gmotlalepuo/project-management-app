@@ -161,6 +161,14 @@ export default function Index({
         cell: ({ row }) => row.original.assignedUser?.name ?? "Unassigned",
       },
       {
+        accessorKey: "updated_at",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="Last Updated" />
+        ),
+        cell: ({ row }) => formatDate(row.original.updated_at),
+        defaultHidden: true,
+      },
+      {
         id: "actions",
         cell: ({ row }) => (
           <DataTableRowActions

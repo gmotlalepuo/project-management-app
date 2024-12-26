@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { formatDate } from "@/utils/helpers";
 import { CirclePlus, UsersRound, FolderPlus } from "lucide-react";
-import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import {
   PROJECT_STATUS_BADGE_MAP,
@@ -15,7 +14,7 @@ import {
 } from "@/utils/constants";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import { FilterableColumn } from "@/types/utils";
-import { DataTable } from "@/Components/data-table-components/data-table";
+import { DataTable, ColumnDef } from "@/Components/data-table-components/data-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { PageProps } from "@/types";
 import ProjectCards from "./Partials/ProjectCards";
@@ -97,7 +96,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
   }, []);
 
   // Define the table columns for the Project data
-  const columns: ColumnDef<Project>[] = [
+  const columns: ColumnDef<Project, any>[] = [
     {
       accessorKey: "id",
       header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
@@ -141,6 +140,14 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
       accessorKey: "createdBy.name",
       header: () => "Created By",
       cell: ({ row }) => row.original.createdBy.name,
+    },
+    {
+      accessorKey: "updated_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Last Updated" />
+      ),
+      cell: ({ row }) => formatDate(row.original.updated_at),
+      defaultHidden: true,
     },
     {
       id: "actions",
