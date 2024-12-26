@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use HTMLPurifier;
 use App\Models\Task;
 use App\Models\TaskComment;
 use Illuminate\Http\Request;
+use App\Traits\LoadsCommentsTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Traits\LoadsCommentsTrait;
 
 class TaskCommentController extends Controller {
   use AuthorizesRequests, LoadsCommentsTrait;
@@ -23,8 +24,12 @@ class TaskCommentController extends Controller {
       'parent_id' => 'nullable|exists:task_comments,id'
     ]);
 
+    // Use global config
+    $purifier = new HTMLPurifier();
+    $sanitizedContent = $purifier->purify($validated['content']);
+
     $comment = $task->comments()->create([
-      'content' => $validated['content'],
+      'content' => $sanitizedContent,
       'user_id' => Auth::id(),
       'parent_id' => $validated['parent_id'] ?? null,
     ]);
@@ -41,8 +46,12 @@ class TaskCommentController extends Controller {
       'content' => 'required|string'
     ]);
 
+    // Use global config
+    $purifier = new HTMLPurifier();
+    $sanitizedContent = $purifier->purify($validated['content']);
+
     $comment->update([
-      'content' => $validated['content'],
+      'content' => $sanitizedContent,
       'is_edited' => true
     ]);
 

@@ -15,6 +15,7 @@
     "laravel/sanctum": "^4.0",
     "laravel/socialite": "^5.16",
     "laravel/tinker": "^2.9",
+    "mews/purifier": "^3.4",
     "spatie/laravel-permission": "^6.10",
     "tightenco/ziggy": "^2.0"
   },

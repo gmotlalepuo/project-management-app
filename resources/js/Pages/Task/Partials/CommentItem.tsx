@@ -74,7 +74,10 @@ export function CommentItem({
               onCancel={() => setIsEditing(false)}
             />
           ) : (
-            <div>{comment.content}</div>
+            <div
+              className="break-words text-sm"
+              dangerouslySetInnerHTML={{ __html: comment.content }}
+            />
           )}
 
           <div className="flex flex-col items-start gap-1 text-xs sm:flex-row sm:items-center sm:gap-2">

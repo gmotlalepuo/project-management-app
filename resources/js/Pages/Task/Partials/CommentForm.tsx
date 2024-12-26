@@ -1,5 +1,5 @@
 import { Button } from "@/Components/ui/button";
-import { Textarea } from "@/Components/ui/textarea";
+import RichTextEditor from "@/Components/RichTextEditor";
 import { useState } from "react";
 
 type CommentFormProps = {
@@ -23,19 +23,19 @@ export function CommentForm({
     e.preventDefault();
     if (content.trim()) {
       onSubmit(content);
+      // Reset content after successful submission
       setContent("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Textarea
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
+      <RichTextEditor
         value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Leave a comment..."
-        required
+        onChange={(value) => setContent(value)}
+        placeholder="Write a comment..."
       />
-      <div className="flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2">
         <Button type="submit" disabled={!content.trim()}>
           {submitLabel}
         </Button>
