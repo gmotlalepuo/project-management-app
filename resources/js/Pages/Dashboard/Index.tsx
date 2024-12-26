@@ -78,7 +78,7 @@ export default function Dashboard({
         <div className="mx-auto max-w-7xl space-y-6 px-3 sm:px-6 lg:px-8">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">Welcome to Teamsync</CardTitle>
+              <CardTitle className="text-2xl">Welcome to TeamSync!</CardTitle>
             </CardHeader>
             <CardContent>
               <h4 className="mb-4">

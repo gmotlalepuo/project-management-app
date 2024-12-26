@@ -164,7 +164,8 @@ class TaskController extends Controller {
 
         return Inertia::render('Task/Show', [
             'task' => new TaskResource($task),
-            'comments' => TaskCommentResource::collection($task->comments)
+            'comments' => TaskCommentResource::collection($task->comments),
+            'success' => session('success'),
         ]);
     }
 

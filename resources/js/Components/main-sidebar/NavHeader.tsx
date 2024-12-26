@@ -19,7 +19,7 @@ export function NavHeader() {
               <ApplicationLogo className="size-5 fill-white" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Teamsync</span>
+              <span className="truncate font-semibold">TeamSync</span>
               <span className="truncate text-xs">Dashboard</span>
             </div>
           </SidebarMenuButton>
