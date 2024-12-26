@@ -29,6 +29,7 @@ export const ScrollToTop = () => {
           onClick={goToTop}
           className="fixed bottom-4 right-4 opacity-90 shadow-md"
           size="icon"
+          title="Scroll to top"
         >
           <ArrowUpToLine className="h-4 w-4" />
         </Button>

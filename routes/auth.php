@@ -18,8 +18,8 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 Route::get('/', function () {
     return Auth::check()
         ? redirect()->route('dashboard')
-        : Inertia::render('Welcome');
-})->name('welcome');
+        : Inertia::render('Home');
+})->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])

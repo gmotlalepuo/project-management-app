@@ -13,6 +13,8 @@ import {
   CardTitle,
 } from "@/Components/ui/card";
 import { LogIn } from "lucide-react";
+import { FaGithub, FaGoogle } from "react-icons/fa";
+import { Separator } from "@/Components/ui/separator";
 
 export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -28,6 +30,16 @@ export default function Register() {
     post(route("register"), {
       onFinish: () => reset("password", "password_confirmation"),
     });
+  };
+
+  const handleSocialLogin = async (provider: string) => {
+    try {
+      const response = await fetch(route("socialite.redirect", { provider }));
+      const data = await response.json();
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Error during social login:", error);
+    }
   };
 
   return (
@@ -90,16 +102,42 @@ export default function Register() {
               <InputError message={errors.password_confirmation} className="mt-2" />
             </div>
 
-            <div className="flex items-center justify-end space-x-4">
+            <div className="space-y-3">
+              <Button type="submit" className="flex w-full" disabled={processing}>
+                <LogIn />
+                <span>Sign up</span>
+              </Button>
               <Link
                 href={route("login")}
-                className="text-sm text-muted-foreground underline"
+                className="inline-block text-sm text-muted-foreground underline"
               >
                 Already registered?
               </Link>
-              <Button type="submit" disabled={processing}>
-                <LogIn />
-                <span>Sign up</span>
+
+              <div className="flex items-center gap-4">
+                <Separator className="flex-1" />
+                <span className="text-sm uppercase tracking-widest text-muted-foreground">
+                  or
+                </span>
+                <Separator className="flex-1" />
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                type="button"
+                onClick={() => handleSocialLogin("google")}
+              >
+                <FaGoogle />
+                <span>Sign in with Google</span>
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full"
+                onClick={() => handleSocialLogin("github")}
+              >
+                <FaGithub />
+                <span>Sign in with Github</span>
               </Button>
             </div>
           </form>

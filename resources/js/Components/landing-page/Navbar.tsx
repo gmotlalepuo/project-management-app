@@ -42,9 +42,9 @@ export const Navbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b-[1px] bg-white dark:border-b-slate-700 dark:bg-background">
+    <header className="sticky top-0 z-40 w-full border-b-[1px] bg-background shadow-sm dark:border-b-zinc-700 dark:bg-background dark:shadow-none">
       <NavigationMenu className="mx-auto">
-        <NavigationMenuList className="container flex h-14 w-screen items-center justify-between px-4">
+        <NavigationMenuList className="container flex h-14 w-screen max-w-7xl items-center justify-between px-4">
           <NavigationMenuItem className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               <ApplicationLogo variant="circular" className="h-8 w-8" />
@@ -69,7 +69,7 @@ export const Navbar = () => {
                     Project Manager
                   </SheetTitle>
                 </SheetHeader>
-                <nav className="mt-4 flex flex-col items-center gap-2">
+                <nav className="mt-8 flex flex-col items-center gap-3">
                   {routeList.map(({ href, label }) => (
                     <a
                       key={label}

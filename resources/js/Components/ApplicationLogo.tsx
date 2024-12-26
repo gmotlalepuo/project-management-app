@@ -40,9 +40,9 @@ const CircularLogo = (props: SVGAttributes<SVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
       <path
         fill="#7c3aed"
-        fill-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M48 23.977C48 37.248 37.248 48 23.978 48 10.752 48 0 37.248 0 23.977 0 10.752 10.752 0 23.978 0 37.248 0 48 10.752 48 23.977z"
-        clip-rule="evenodd"
       ></path>
       <path
         fill="#f4f4f4"

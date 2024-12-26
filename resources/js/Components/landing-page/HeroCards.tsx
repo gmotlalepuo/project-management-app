@@ -12,9 +12,9 @@ import { GitHubLogoIcon } from "@radix-ui/react-icons";
 export const HeroCards = () => {
   return (
     <div className="grid w-full gap-4 md:grid-cols-2 md:grid-rows-[auto_auto] md:gap-6 lg:gap-8">
-      {/* Left/Top Column */}
-      <div className="mb-8 space-y-6 md:mb-0 lg:space-y-8">
-        {/* Task Management Card */}
+      {/* First Column */}
+      <div className="space-y-6 lg:space-y-8">
+        {/* Task Management Card - Always First */}
         <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
           <CardHeader className="flex items-start gap-4">
             <div className="rounded-full bg-primary/10 p-3">
@@ -30,7 +30,25 @@ export const HeroCards = () => {
           </CardHeader>
         </Card>
 
-        {/* Features List Card */}
+        {/* Collaboration Card - Second on mobile, Last on desktop */}
+        <div className="block md:hidden">
+          <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
+            <CardHeader className="flex items-start gap-4">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Users2 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Team Collaboration</CardTitle>
+                <CardDescription className="mt-2">
+                  Connect with your team members and manage projects together in
+                  real-time
+                </CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Features List Card - Third on mobile, Second on desktop */}
         <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
           <CardHeader>
             <div className="space-y-4">
@@ -55,10 +73,10 @@ export const HeroCards = () => {
         </Card>
       </div>
 
-      {/* Right/Bottom Column */}
-      <div className="space-y-6 md:pt-8 lg:space-y-8">
-        {/* Team Member Card */}
-        <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
+      {/* Second Column */}
+      <div className="space-y-6 pt-8 lg:space-y-8">
+        {/* Team Member Card - Fourth on mobile, Second on desktop */}
+        <Card className="order-last w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10 md:order-first">
           <CardHeader className="mt-8 flex items-center justify-center pb-2">
             <img
               src="https://i.pravatar.cc/150?img=58"
@@ -92,21 +110,23 @@ export const HeroCards = () => {
           </CardContent>
         </Card>
 
-        {/* Collaboration Card */}
-        <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
-          <CardHeader className="flex items-start gap-4">
-            <div className="rounded-full bg-primary/10 p-3">
-              <Users2 className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <CardTitle>Team Collaboration</CardTitle>
-              <CardDescription className="mt-2">
-                Connect with your team members and manage projects together in
-                real-time
-              </CardDescription>
-            </div>
-          </CardHeader>
-        </Card>
+        {/* Collaboration Card - Hidden on mobile, shown here on desktop */}
+        <div className="hidden md:block">
+          <Card className="w-full shadow-black/10 drop-shadow-xl dark:shadow-white/10">
+            <CardHeader className="flex items-start gap-4">
+              <div className="rounded-full bg-primary/10 p-3">
+                <Users2 className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Team Collaboration</CardTitle>
+                <CardDescription className="mt-2">
+                  Connect with your team members and manage projects together in
+                  real-time
+                </CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
 
       {/* Background effect */}

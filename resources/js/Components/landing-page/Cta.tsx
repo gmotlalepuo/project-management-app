@@ -1,3 +1,4 @@
+import { Link } from "@inertiajs/react";
 import { Button } from "../ui/button";
 
 export const Cta = () => {
@@ -6,24 +7,31 @@ export const Cta = () => {
       <div className="container mx-auto max-w-7xl place-items-center px-4 lg:grid lg:grid-cols-2">
         <div className="lg:col-start-1">
           <h2 className="text-3xl font-bold md:text-4xl">
-            All Your
+            Start Managing Your
             <span className="bg-gradient-to-b from-primary/60 to-primary bg-clip-text text-transparent">
               {" "}
-              Ideas & Concepts{" "}
+              Projects Better{" "}
             </span>
-            In One Interface
+            Today
           </h2>
           <p className="mb-8 mt-4 text-xl text-muted-foreground lg:mb-0">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque, beatae.
-            Ipsa tempore ipsum iste quibusdam illum ducimus eos. Quasi, sed!
+            Join hundreds of teams who use TeamSync to streamline their project
+            workflows, enhance collaboration, and deliver results faster. Get started
+            for free!
           </p>
         </div>
 
-        <div className="space-y-4 lg:col-start-2">
-          <Button className="w-full md:mr-4 md:w-auto">Request a Demo</Button>
-          <Button variant="outline" className="w-full md:w-auto">
-            View all features
-          </Button>
+        <div className="flex w-full flex-col gap-4 lg:col-start-2 lg:flex-row lg:items-center lg:justify-center">
+          <Link href={route("register")}>
+            <Button size="lg" className="w-full md:w-auto">
+              Get Started
+            </Button>
+          </Link>
+          <a href="#features">
+            <Button variant="outline" size="lg" className="w-full md:w-auto">
+              Explore Features
+            </Button>
+          </a>
         </div>
       </div>
     </section>

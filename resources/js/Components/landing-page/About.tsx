@@ -1,29 +1,41 @@
+import { ClipboardList } from "lucide-react";
 import { Statistics } from "./Statistics";
 
 export const About = () => {
   return (
-    <section id="about" className="container mx-auto max-w-7xl px-4 py-16 sm:py-24">
-      <div className="rounded-lg border bg-muted/50 py-12">
-        <div className="flex flex-col-reverse gap-8 px-6 md:flex-row md:gap-12">
-          <img src="" alt="" className="w-[300px] rounded-lg object-contain" />
-          <div className="bg-green-0 flex flex-col justify-between">
-            <div className="pb-6">
+    <section id="about" className="container mx-auto max-w-7xl px-4 py-24 sm:py-32">
+      <div className="rounded-lg border bg-muted/50 px-6 py-12">
+        <div className="flex flex-col gap-8 md:flex-row md:gap-12">
+          {/* Icon Column */}
+          <div className="flex items-center justify-center md:w-1/4">
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-primary/10 blur-xl" />
+              <div className="relative rounded-full bg-muted p-8">
+                <ClipboardList className="h-16 w-16 text-primary lg:h-24 lg:w-24" />
+              </div>
+            </div>
+          </div>
+
+          {/* Content Column */}
+          <div className="flex flex-1 flex-col justify-between">
+            <div className="space-y-4">
               <h2 className="text-3xl font-bold md:text-4xl">
+                Streamline Your{" "}
                 <span className="bg-gradient-to-b from-primary/60 to-primary bg-clip-text text-transparent">
-                  About{" "}
+                  Project Management
                 </span>
-                Company
               </h2>
-              <p className="mt-4 text-xl text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-                ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet,
-                consectetur adipiscing elit.
+              <p className="text-lg text-muted-foreground md:text-xl">
+                TeamSync brings together everything your team needs - from task
+                tracking to real-time collaboration. Our intuitive platform helps
+                teams stay organized, focused, and productive with features like
+                customizable labels, task discussions, and project tracking.
               </p>
             </div>
 
-            <Statistics />
+            <div className="mt-12">
+              <Statistics />
+            </div>
           </div>
         </div>
       </div>

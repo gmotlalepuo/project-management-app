@@ -13,34 +13,40 @@ interface FAQProps {
 
 const FAQList: FAQProps[] = [
   {
-    question: "Is this template free?",
-    answer: "Yes. It is a free ChadcnUI template.",
-    value: "item-1",
-  },
-  {
-    question: "Lorem ipsum dolor sit amet consectetur adipisicing elit?",
+    question: "Is TeamSync free to use?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint labore quidem quam? Consectetur sapiente iste rerum reiciendis animi nihil nostrum sit quo, modi quod.",
-    value: "item-2",
+      "Yes! TeamSync is completely free to use with all features included. No credit card required, no hidden fees, and no usage limits.",
+    value: "pricing",
   },
   {
-    question:
-      "Lorem ipsum dolor sit amet  Consectetur natus dolores minus quibusdam?",
+    question: "How do project roles work in TeamSync?",
     answer:
-      "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Labore qui nostrum reiciendis veritatis necessitatibus maxime quis ipsa vitae cumque quo?",
-    value: "item-3",
+      "Each project has two roles: Project Managers and Project Members. Project Managers can invite members, manage tasks, and promote/demote other members. Project Members can create and manage their own tasks, participate in discussions, and use all collaboration features.",
+    value: "roles",
   },
   {
-    question: "Lorem ipsum dolor sit amet, consectetur adipisicing elit?",
-    answer: "Lorem ipsum dolor sit amet consectetur, adipisicing elit.",
-    value: "item-4",
-  },
-  {
-    question:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur natus?",
+    question: "Can I invite people to my projects?",
     answer:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sint labore quidem quam? Consectetur sapiente iste rerum reiciendis animi nihil nostrum sit quo, modi quod.",
-    value: "item-5",
+      "Yes! You can invite as many team members as you need to your projects. Simply enter their email address, and they'll receive an invitation to join your project. They can then create an account if they don't have one already.",
+    value: "invitations",
+  },
+  {
+    question: "How does task discussion work?",
+    answer:
+      "Every task has its own discussion section where team members can communicate, share updates, and provide feedback. This keeps all task-related communications organized and in one place, eliminating the need for separate chat tools or email threads.",
+    value: "discussions",
+  },
+  {
+    question: "How do I organize tasks in TeamSync?",
+    answer:
+      "TeamSync offers multiple ways to organize tasks: custom labels for categorization, priority settings, due dates, and assignees. You can filter and search tasks using any of these parameters to quickly find what you need.",
+    value: "organization",
+  },
+  {
+    question: "Can I use TeamSync for multiple projects?",
+    answer:
+      "Absolutely! You can create and manage multiple projects, each with its own team members, tasks, and discussions. There's no limit to the number of projects you can create.",
+    value: "multiple-projects",
   },
 ];
 
@@ -48,10 +54,11 @@ export const FAQ = () => {
   return (
     <section id="faq" className="container mx-auto max-w-7xl px-4 py-16 sm:py-24">
       <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-        Frequently Asked{" "}
+        Common{" "}
         <span className="bg-gradient-to-b from-primary/60 to-primary bg-clip-text text-transparent">
           Questions
-        </span>
+        </span>{" "}
+        About TeamSync
       </h2>
 
       <Accordion type="single" collapsible className="AccordionRoot w-full">
@@ -68,7 +75,8 @@ export const FAQ = () => {
         Still have questions?{" "}
         <a
           rel="noreferrer noopener"
-          href="#"
+          href="mailto:contact@teamsync.vip"
+          title="Contact us"
           className="border-primary text-primary transition-all hover:border-b-2"
         >
           Contact us
