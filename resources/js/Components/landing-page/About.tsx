@@ -10,7 +10,7 @@ export const About = () => {
           <div className="flex items-center justify-center md:w-1/4">
             <div className="relative">
               <div className="absolute -inset-4 rounded-full bg-primary/10 blur-xl" />
-              <div className="relative rounded-full bg-muted p-8">
+              <div className="relative rounded-full bg-primary/10 p-8">
                 <ClipboardList className="h-16 w-16 text-primary lg:h-24 lg:w-24" />
               </div>
             </div>

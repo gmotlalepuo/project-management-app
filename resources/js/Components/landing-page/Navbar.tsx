@@ -66,7 +66,7 @@ export const Navbar = () => {
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
                     <ApplicationLogo variant="circular" className="h-8 w-8" />
-                    Project Manager
+                    <span className="font-bold">TeamSync</span>
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col items-center gap-3">
