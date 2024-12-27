@@ -98,7 +98,7 @@ export const HeroCards = () => {
                 <GitHubLogoIcon className="h-5 w-5" />
               </a>
             </CardTitle>
-            <CardDescription className="font-normal text-primary">
+            <CardDescription className="dark:text-primary-light font-normal text-primary">
               Web Developer
             </CardDescription>
           </CardHeader>

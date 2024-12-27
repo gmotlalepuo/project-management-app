@@ -1,6 +1,7 @@
 import { Button } from "../ui/button";
 import { Link } from "@inertiajs/react";
 import { HeroCards } from "./HeroCards";
+import { ArrowDown } from "lucide-react";
 
 export const Hero = () => {
   return (
@@ -27,11 +28,12 @@ export const Hero = () => {
                 Get Started
               </Button>
             </Link>
-            <Link href={route("login")}>
+            <a href="#features">
               <Button variant="outline" size="lg" className="w-full md:w-auto">
-                Sign In
+                <span>Learn more</span>
+                <ArrowDown className="h-5 w-5" />
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
 

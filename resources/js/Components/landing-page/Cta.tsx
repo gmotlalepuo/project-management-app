@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { Button } from "../ui/button";
+import { ArrowUp } from "lucide-react";
 
 export const Cta = () => {
   return (
@@ -29,7 +30,8 @@ export const Cta = () => {
           </Link>
           <a href="#features">
             <Button variant="outline" size="lg" className="w-full md:w-auto">
-              Explore Features
+              <span>Learn more</span>
+              <ArrowUp className="h-5 w-5" />
             </Button>
           </a>
         </div>

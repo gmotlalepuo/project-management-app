@@ -118,7 +118,7 @@ export const Footer = () => {
         <p>
           &copy; {new Date().getFullYear()} TeamSync. Created by{" "}
           <a
-            className="text-primary hover:underline"
+            className="dark:text-primary-light text-primary hover:underline"
             target="_blank"
             rel="noreferrer noopener"
             title="Stefan Gogov"

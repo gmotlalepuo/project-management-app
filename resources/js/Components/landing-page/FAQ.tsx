@@ -77,7 +77,7 @@ export const FAQ = () => {
           rel="noreferrer noopener"
           href="mailto:contact@teamsync.vip"
           title="Contact us"
-          className="border-primary text-primary transition-all hover:border-b-2"
+          className="dark:text-primary-light dark:border-primary-light border-primary text-primary transition-all hover:border-b-2"
         >
           Contact us
         </a>
