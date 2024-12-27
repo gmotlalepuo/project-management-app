@@ -39,7 +39,7 @@ export default function AuthFlowLayout({ children }: PropsWithChildren) {
         </Link>
       </div>
 
-      <div className="mt-6 w-full overflow-hidden px-4 sm:max-w-md">{children}</div>
+      <div className="w-full overflow-hidden px-4 py-6 sm:max-w-md">{children}</div>
     </div>
   );
 }

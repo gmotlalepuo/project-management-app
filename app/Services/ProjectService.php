@@ -12,6 +12,7 @@ use App\Traits\SortableTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Events\ProjectInvitationRequestReceived;
+use App\Notifications\ProjectInvitationNotification;
 
 class ProjectService extends BaseService {
   use FilterableTrait, SortableTrait;
@@ -126,6 +127,9 @@ class ProjectService extends BaseService {
         'updated_at' => now(),
       ]);
 
+      // Send notification
+      $user->notify(new ProjectInvitationNotification($project));
+
       broadcast(new ProjectInvitationRequestReceived($project, $user));
       return ['success' => true, 'message' => 'User re-invited successfully.'];
     }
@@ -138,6 +142,9 @@ class ProjectService extends BaseService {
         'created_at' => now(),
         'updated_at' => now()
       ]);
+
+      // Send notification
+      $user->notify(new ProjectInvitationNotification($project));
 
       broadcast(new ProjectInvitationRequestReceived($project, $user));
       return ['success' => true, 'message' => 'User invited successfully.'];

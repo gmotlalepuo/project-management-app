@@ -91,10 +91,6 @@ export function NavUser({
                   <span>Account</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

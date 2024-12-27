@@ -5,6 +5,14 @@ import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
 import InputError from "@/Components/InputError";
 import { FormEventHandler } from "react";
+import { KeyRound } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/Components/ui/card";
 
 export default function ResetPassword({
   token,
@@ -32,46 +40,50 @@ export default function ResetPassword({
     <AuthFlowLayout>
       <Head title="Reset Password" />
 
-      <form
-        onSubmit={submit}
-        className="space-y-6 rounded-lg bg-white p-4 shadow dark:bg-card sm:p-8"
-      >
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" value={data.email} disabled required />
-          <InputError message={errors.email} className="mt-2" />
-        </div>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardDescription>Create a new password for your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={submit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={data.email} disabled required />
+              <InputError message={errors.email} className="mt-2" />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={data.password}
-            onChange={(e) => setData("password", e.target.value)}
-            required
-          />
-          <InputError message={errors.password} className="mt-2" />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={data.password}
+                onChange={(e) => setData("password", e.target.value)}
+                required
+              />
+              <InputError message={errors.password} className="mt-2" />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password_confirmation">Confirm Password</Label>
-          <Input
-            id="password_confirmation"
-            type="password"
-            value={data.password_confirmation}
-            onChange={(e) => setData("password_confirmation", e.target.value)}
-            required
-          />
-          <InputError message={errors.password_confirmation} className="mt-2" />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="password_confirmation">Confirm Password</Label>
+              <Input
+                id="password_confirmation"
+                type="password"
+                value={data.password_confirmation}
+                onChange={(e) => setData("password_confirmation", e.target.value)}
+                required
+              />
+              <InputError message={errors.password_confirmation} className="mt-2" />
+            </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={processing}>
-            Reset Password
-          </Button>
-        </div>
-      </form>
+            <Button type="submit" className="w-full" disabled={processing}>
+              <KeyRound className="h-4 w-4" />
+              Reset Password
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </AuthFlowLayout>
   );
 }

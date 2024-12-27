@@ -3,6 +3,15 @@ import AuthFlowLayout from "@/Layouts/AuthFlowLayout";
 import { Button } from "@/Components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { FormEventHandler } from "react";
+import { Mail, LogOut } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/Components/ui/card";
 
 export default function VerifyEmail({ status }: { status?: string }) {
   const { post, processing } = useForm({});
@@ -15,6 +24,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
       onSuccess: () => {
         toast({
           title: "Verification email sent",
+          variant: "success",
           description: "A new verification link has been sent to your email.",
           duration: 5000,
         });
@@ -26,37 +36,44 @@ export default function VerifyEmail({ status }: { status?: string }) {
     <AuthFlowLayout>
       <Head title="Email Verification" />
 
-      <main className="rounded-lg bg-white p-4 shadow dark:bg-card sm:p-8">
-        <div className="mb-4 text-sm">
-          Thanks for signing up! Before getting started, could you verify your
-          email address by clicking on the link we just emailed to you? If you
-          didn't receive the email, we will gladly send you another.
-        </div>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-2xl">Verify Email</CardTitle>
+          <CardDescription>
+            Thanks for signing up! Please verify your email address to continue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            We've sent a verification link to your email address. If you haven't
+            received the email, click below to request a new one.
+          </p>
 
-        {status === "verification-link-sent" && (
-          <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">
-            A new verification link has been sent to the email address you
-            provided during registration.
-          </div>
-        )}
+          {status === "verification-link-sent" && (
+            <p className="text-sm font-medium text-green-600 dark:text-green-400">
+              A new verification link has been sent to your email address.
+            </p>
+          )}
 
-        <form onSubmit={submit}>
-          <div className="mt-4 flex items-center justify-between">
-            <Button type="submit" disabled={processing}>
+          <form onSubmit={submit}>
+            <Button type="submit" className="w-full" disabled={processing}>
+              <Mail className="h-4 w-4" />
               Resend Verification Email
             </Button>
-
-            <Link
-              href={route("logout")}
-              method="post"
-              as="button"
-              className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-            >
-              Log Out
-            </Link>
-          </div>
-        </form>
-      </main>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-end border-t pt-4">
+          <Link
+            href={route("logout")}
+            method="post"
+            as="button"
+            className="flex items-center text-sm text-muted-foreground underline hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Log Out
+          </Link>
+        </CardFooter>
+      </Card>
     </AuthFlowLayout>
   );
 }
