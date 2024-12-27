@@ -28,7 +28,7 @@ export default function AuthFlowLayout({ children }: PropsWithChildren) {
   }, [errorMessages, toast]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-secondary pt-6 sm:justify-center sm:pt-0">
+    <div className="flex min-h-screen flex-col items-center bg-secondary pt-6 sm:justify-center">
       <div>
         <Link href="/" className="flex items-center justify-center gap-3">
           <ApplicationLogo variant="circular" className="h-16 w-16" />
