@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use Exception;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -13,10 +14,25 @@ use Laravel\Socialite\Facades\Socialite;
 class SocialiteController extends Controller {
     public function redirect($provider) {
         try {
-            $url = Socialite::driver($provider)->stateless()->redirect()->getTargetUrl();
+            $driver = Socialite::driver($provider)->stateless();
+
+            // Force consent screen for different providers
+            switch ($provider) {
+                case 'google':
+                    $driver->with(['prompt' => 'select_account']);
+                    break;
+                case 'github':
+                    // Clear GitHub OAuth state to force re-authentication
+                    session()->forget('github_state');
+                    $driver->with(['allow_signup' => false]);
+                    break;
+                    // Add cases for other providers if needed
+            }
+
+            $url = $driver->redirect()->getTargetUrl();
             return response()->json(['url' => $url]);
         } catch (Exception $e) {
-            \Log::error('Social login redirect error:', [
+            Log::error('Social login redirect error:', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -68,7 +84,7 @@ class SocialiteController extends Controller {
 
             return redirect()->intended(route('dashboard'));
         } catch (Exception $e) {
-            \Log::error('Social login callback error:', [
+            Log::error('Social login callback error:', [
                 'provider' => $provider,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
