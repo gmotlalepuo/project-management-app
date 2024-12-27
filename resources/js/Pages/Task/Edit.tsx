@@ -3,7 +3,6 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
 import { Input } from "@/Components/ui/input";
-import { Textarea } from "@/Components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -23,6 +22,7 @@ import { Info } from "lucide-react";
 import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
 import { useState } from "react";
+import RichTextEditor from "@/Components/RichTextEditor";
 
 type Props = {
   task: Task;
@@ -48,8 +48,10 @@ export default function Edit({
     status: task.status || "",
     due_date: task.due_date || "",
     priority: task.priority || "",
-    assigned_user_id: task.assigned_user_id || "",
-    project_id: task.project_id || "",
+    assigned_user_id: task.assigned_user_id
+      ? task.assigned_user_id.toString()
+      : "unassigned",
+    project_id: task.project_id?.toString() || "",
     label_ids: task.labels.map((label) => label.id),
     _method: "PUT",
   });
@@ -84,6 +86,20 @@ export default function Edit({
   };
 
   const { toast } = useToast();
+
+  const getAssignedUserDisplay = (assignedUserId: string, users: PaginatedUser) => {
+    if (!assignedUserId || assignedUserId === "unassigned") {
+      return "Unassigned";
+    }
+
+    const assignedUser = users?.data.find((u) => u.id.toString() === assignedUserId);
+
+    if (!assignedUser) {
+      return "Unassigned";
+    }
+
+    return `${assignedUser.name} (${assignedUser.email})`;
+  };
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -130,7 +146,9 @@ export default function Edit({
 
               {/* Project Selection */}
               <div className="space-y-2">
-                <Label htmlFor="task_project_id">Project</Label>
+                <Label htmlFor="task_project_id">
+                  Project <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   onValueChange={(value) => setData("project_id", value)}
                   defaultValue={data.project_id.toString()}
@@ -153,7 +171,10 @@ export default function Edit({
 
               {/* Task Image */}
               <div>
-                <Label htmlFor="task_image_path">Task Image</Label>
+                <Label htmlFor="task_image_path">
+                  Task Image{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <Input
                   id="task_image_path"
                   type="file"
@@ -170,7 +191,9 @@ export default function Edit({
 
               {/* Task Name */}
               <div className="space-y-2">
-                <Label htmlFor="task_name">Task Name</Label>
+                <Label htmlFor="task_name">
+                  Task Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="task_name"
                   type="text"
@@ -184,7 +207,10 @@ export default function Edit({
 
               {/* Task Labels */}
               <div className="space-y-2">
-                <Label htmlFor="task_labels">Task Labels</Label>
+                <Label htmlFor="task_labels">
+                  Task Labels{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 {labels.data.length > 0 ? (
                   <MultipleSelector
                     value={selectedLabels}
@@ -221,18 +247,23 @@ export default function Edit({
 
               {/* Task Description */}
               <div className="space-y-2">
-                <Label htmlFor="task_description">Task Description</Label>
-                <Textarea
-                  id="task_description"
+                <Label htmlFor="task_description">
+                  Task Description{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
+                <RichTextEditor
                   value={data.description}
-                  onChange={(e) => setData("description", e.target.value)}
+                  onChange={(content) => setData("description", content)}
                 />
                 <InputError message={errors.description} className="mt-2" />
               </div>
 
               {/* Task Deadline */}
               <div className="space-y-2">
-                <Label htmlFor="task_due_date">Task Deadline</Label>
+                <Label htmlFor="task_due_date">
+                  Task Deadline{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <DateTimePicker
                   className="w-full"
                   value={data.due_date ? new Date(data.due_date) : undefined}
@@ -245,7 +276,9 @@ export default function Edit({
 
               {/* Task Status */}
               <div className="space-y-2">
-                <Label htmlFor="task_status">Task Status</Label>
+                <Label htmlFor="task_status">
+                  Task Status <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   onValueChange={(value) =>
                     setData(
@@ -270,7 +303,9 @@ export default function Edit({
 
               {/* Task Priority */}
               <div className="space-y-2">
-                <Label htmlFor="task_priority">Task Priority</Label>
+                <Label htmlFor="task_priority">
+                  Task Priority <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   onValueChange={(value) =>
                     setData("priority", value as "low" | "medium" | "high")
@@ -292,24 +327,25 @@ export default function Edit({
 
               {/* Assigned User */}
               <div className="space-y-2">
-                <Label htmlFor="task_assigned_user">Assigned User</Label>
+                <Label htmlFor="task_assigned_user">
+                  Assigned User{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <Select
-                  onValueChange={(value) => setData("assigned_user_id", value)}
-                  defaultValue={data.assigned_user_id.toString()}
+                  onValueChange={(value) =>
+                    setData("assigned_user_id", value === "unassigned" ? "" : value)
+                  }
+                  value={data.assigned_user_id || "unassigned"}
                   disabled={!canChangeAssignee}
-                  required
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue
-                      placeholder={
-                        !canChangeAssignee && users.data.length > 0
-                          ? `${users.data[0].name} (${users.data[0].email})`
-                          : "Select User"
-                      }
-                    />
+                    <SelectValue>
+                      {getAssignedUserDisplay(data.assigned_user_id, users)}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {(users?.data || []).map((user) => (
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {users?.data.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.name} ({user.email})
                       </SelectItem>

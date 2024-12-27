@@ -11,6 +11,7 @@ use App\Traits\FilterableTrait;
 use App\Traits\SortableTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use HTMLPurifier;
 
 class TaskService extends BaseService {
   use FilterableTrait, SortableTrait;
@@ -46,6 +47,12 @@ class TaskService extends BaseService {
     $data['updated_by'] = Auth::id();
     $data['due_date'] = $this->formatDate($data['due_date'] ?? null);
 
+    // Sanitize HTML content
+    if (isset($data['description'])) {
+      $purifier = new HTMLPurifier();
+      $data['description'] = $purifier->purify($data['description']);
+    }
+
     if (isset($data['image'])) {
       $data['image_path'] = $this->handleImageUpload($data['image'], 'task');
     }
@@ -61,6 +68,12 @@ class TaskService extends BaseService {
 
   public function updateTask($task, $data) {
     $data['updated_by'] = Auth::id();
+
+    // Sanitize HTML content
+    if (isset($data['description'])) {
+      $purifier = new HTMLPurifier();
+      $data['description'] = $purifier->purify($data['description']);
+    }
 
     if (isset($data['due_date'])) {
       $data['due_date'] = Carbon::parse($data['due_date'])->setTimezone('UTC');

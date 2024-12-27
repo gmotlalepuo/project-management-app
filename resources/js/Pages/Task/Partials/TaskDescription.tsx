@@ -1,49 +1,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Task } from "@/types/task";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/Components/ui/collapsible";
-import { Button } from "@/Components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { cn } from "@/lib/utils";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/Components/ui/accordion";
 
 type TaskDescriptionProps = {
   task: Task;
 };
 
 export function TaskDescription({ task }: TaskDescriptionProps) {
-  const [isOpen, setIsOpen] = useState(true);
-
   return (
     <Card>
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold">Description</CardTitle>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <ChevronDown
-                  className={cn("h-4 w-4 transition-all", {
-                    "rotate-180": isOpen,
-                  })}
-                />
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-        </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
-            <div className="prose dark:prose-invert max-w-none">
-              {task.description || (
-                <p className="text-muted-foreground">No description provided.</p>
+      <Accordion type="single" defaultValue="description" collapsible>
+        <AccordionItem value="description" className="border-none">
+          <CardHeader className="p-4 sm:p-6">
+            <AccordionTrigger className="p-0 hover:no-underline">
+              <CardTitle className="text-xl font-semibold">Description</CardTitle>
+            </AccordionTrigger>
+          </CardHeader>
+          <AccordionContent>
+            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
+              {task.image_path && (
+                <div className="mb-4">
+                  <img
+                    src={task.image_path}
+                    alt={task.name}
+                    className="rounded-lg object-cover"
+                    style={{ maxHeight: "400px", width: "100%" }}
+                  />
+                </div>
               )}
-            </div>
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
+              <div className="prose dark:prose-invert max-w-none">
+                {task.description ? (
+                  <div dangerouslySetInnerHTML={{ __html: task.description }} />
+                ) : (
+                  <p className="text-muted-foreground">No description provided.</p>
+                )}
+              </div>
+            </CardContent>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </Card>
   );
 }

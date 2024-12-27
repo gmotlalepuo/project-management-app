@@ -144,8 +144,11 @@ class TaskController extends Controller {
             abort(403, 'You cannot create tasks for this project.');
         }
 
-        // If user is a project member, force self-assignment
-        if ($project->isProjectMember($user)) {
+        // If user is a project member and tries to assign to someone else, force self-assignment
+        if (
+            $project->isProjectMember($user) &&
+            ($data['assigned_user_id'] && $data['assigned_user_id'] != $user->id)
+        ) {
             $data['assigned_user_id'] = $user->id;
         }
 

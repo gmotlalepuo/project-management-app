@@ -79,7 +79,10 @@ export default function Edit({ project }: Props) {
 
               {/* Project Image */}
               <div>
-                <Label htmlFor="project_image_path">Project Image</Label>
+                <Label htmlFor="project_image_path">
+                  Project Image{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <Input
                   id="project_image_path"
                   type="file"
@@ -96,7 +99,9 @@ export default function Edit({ project }: Props) {
 
               {/* Project Name */}
               <div className="space-y-2">
-                <Label htmlFor="project_name">Project Name</Label>
+                <Label htmlFor="project_name">
+                  Project Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="project_name"
                   type="text"
@@ -110,7 +115,10 @@ export default function Edit({ project }: Props) {
 
               {/* Project Description */}
               <div className="space-y-2">
-                <Label htmlFor="project_description">Project Description</Label>
+                <Label htmlFor="project_description">
+                  Project Description{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <Textarea
                   id="project_description"
                   value={data.description}
@@ -122,7 +130,10 @@ export default function Edit({ project }: Props) {
 
               {/* Project Deadline with DateTime Picker */}
               <div className="space-y-2">
-                <Label htmlFor="project_due_date">Project Deadline</Label>
+                <Label htmlFor="project_due_date">
+                  Project Deadline{" "}
+                  <span className="text-muted-foreground">(Optional)</span>
+                </Label>
                 <DateTimePicker
                   className="w-full"
                   value={data.due_date ? new Date(data.due_date) : undefined}
@@ -135,7 +146,9 @@ export default function Edit({ project }: Props) {
 
               {/* Project Status */}
               <div className="space-y-2">
-                <Label htmlFor="project_status">Project Status</Label>
+                <Label htmlFor="project_status">
+                  Project Status <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   onValueChange={(value) =>
                     setData(

@@ -19,11 +19,18 @@ class StoreTaskRequest extends FormRequest {
         $projectId = $this->input('project_id');
         $project = Project::find($projectId);
 
-        // If user is not a project manager, force assigned_user_id to current user
-        if ($project && !$project->canManageTask($user)) {
-            $this->merge([
-                'assigned_user_id' => $user->id
-            ]);
+        // Convert empty string to null for assigned_user_id
+        if ($this->input('assigned_user_id') === '') {
+            $this->merge(['assigned_user_id' => null]);
+        }
+
+        // If user is not a project manager and tries to assign to someone else, force self-assignment
+        if (
+            $project && !$project->canManageTask($user) &&
+            $this->input('assigned_user_id') &&
+            $this->input('assigned_user_id') != $user->id
+        ) {
+            $this->merge(['assigned_user_id' => $user->id]);
         }
     }
 
@@ -39,7 +46,7 @@ class StoreTaskRequest extends FormRequest {
             'description' => ['nullable', 'string'],
             "due_date" => ["nullable", "date"],
             'project_id' => ['required', 'exists:projects,id'],
-            "assigned_user_id" => ["required", "exists:users,id"],
+            "assigned_user_id" => ["nullable", "exists:users,id"],
             'status' => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
             'label_ids' => ['nullable', 'array'],

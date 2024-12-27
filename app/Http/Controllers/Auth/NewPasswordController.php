@@ -34,7 +34,7 @@ class NewPasswordController extends Controller {
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            "password" => ["required", "confirmed", Password::min(8)
+            'password' => ['required', 'confirmed', Rules\Password::min(8)
                 ->letters()
                 ->numbers()
                 ->symbols()],

@@ -43,11 +43,18 @@ class UpdateTaskRequest extends FormRequest {
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:2048'],
             'description' => ['nullable', 'string'],
             "due_date" => ["nullable", "date"],
-            "assigned_user_id" => ["required", "exists:users,id"],
+            "assigned_user_id" => ["nullable", "exists:users,id"],
             'status' => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
             'label_ids' => ['nullable', 'array'],
             'label_ids.*' => ['integer', 'exists:task_labels,id'],
         ];
+    }
+
+    protected function prepareForValidation() {
+        // Convert empty string, "unassigned", or falsy values to null for assigned_user_id
+        if (empty($this->input('assigned_user_id')) || $this->input('assigned_user_id') === 'unassigned') {
+            $this->merge(['assigned_user_id' => null]);
+        }
     }
 }
