@@ -14,13 +14,11 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class NewPasswordController extends Controller
-{
+class NewPasswordController extends Controller {
     /**
      * Display the password reset view.
      */
-    public function create(Request $request): Response
-    {
+    public function create(Request $request): Response {
         return Inertia::render('Auth/ResetPassword', [
             'email' => $request->email,
             'token' => $request->route('token'),
@@ -32,12 +30,14 @@ class NewPasswordController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
-    {
+    public function store(Request $request): RedirectResponse {
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            "password" => ["required", "confirmed", Password::min(8)
+                ->letters()
+                ->numbers()
+                ->symbols()],
         ]);
 
         // Here we will attempt to reset the user's password. If it is successful we
