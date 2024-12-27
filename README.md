@@ -1,6 +1,7 @@
-<div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
-  <img src="public/logo.svg" alt="TeamSync Logo" width="50" height="50" style="vertical-align: middle;">
-  <h1 style="border: none;">TeamSync</h1>
+<div align="center">
+  <img src="public/logo.svg" alt="TeamSync Logo" width="80">
+  
+  # TeamSync
 </div>
 
 <p align="center">A modern project management application built with Laravel and React, designed to help teams collaborate efficiently through intuitive task management and real-time communication.</p>
