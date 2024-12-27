@@ -149,7 +149,26 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
   };
 
   return (
-    <div className="= space-y-6 rounded-lg">
+    <div className="space-y-6 rounded-lg">
+      {/* Project Image Card - Add this new card at the top */}
+      {project.image_path && (
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Project Image</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-hidden rounded-lg">
+              <img
+                src={project.image_path}
+                alt={project.name}
+                className="w-full object-cover"
+                style={{ maxHeight: "300px" }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Project Information Card */}
         <Card>

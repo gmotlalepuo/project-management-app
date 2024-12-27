@@ -64,24 +64,24 @@ export default function Create({}: Props) {
               onSubmit={onSubmit}
               className="space-y-6 bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8"
             >
-              {/* Project Image */}
-              <div>
-                <Label htmlFor="project_image_path">
+              {/* Project Image Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="image">
                   Project Image{" "}
                   <span className="text-muted-foreground">(Optional)</span>
                 </Label>
                 <Input
-                  id="project_image_path"
+                  id="image"
                   type="file"
-                  className="mt-1 block w-full"
+                  className="cursor-pointer"
                   accept=".jpg,.jpeg,.png,.webp,.svg"
                   onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
+                    if (e.target.files?.[0]) {
                       setData("image", e.target.files[0]);
                     }
                   }}
                 />
-                <InputError message={errors.image} className="mt-2" />
+                <InputError message={errors.image} />
               </div>
 
               {/* Project Name */}
@@ -103,8 +103,7 @@ export default function Create({}: Props) {
               {/* Project Description */}
               <div className="space-y-2">
                 <Label htmlFor="project_description">
-                  Project Description{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
+                  Project Description <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
                   id="project_description"

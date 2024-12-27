@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
 import { PROJECT_STATUS_TEXT_MAP } from "@/utils/constants";
 import { Project } from "@/types/project";
+import { Trash2 } from "lucide-react";
+import { router } from "@inertiajs/react";
 
 type Props = {
   project: Project;
@@ -51,6 +53,18 @@ export default function Edit({ project }: Props) {
     });
   };
 
+  const handleDeleteImage = () => {
+    router.delete(route("project.delete-image", project.id), {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Project image deleted successfully",
+          variant: "success",
+        });
+      },
+    });
+  };
+
   return (
     <AuthenticatedLayout
       header={
@@ -68,33 +82,47 @@ export default function Edit({ project }: Props) {
               onSubmit={onSubmit}
               className="space-y-6 bg-white p-4 shadow dark:bg-card sm:rounded-lg sm:p-8"
             >
-              {/* Display current project image if available */}
+              {/* Current Project Image */}
               {project.image_path && (
-                <img
-                  src={project.image_path}
-                  alt={project.name}
-                  className="d-block mb-4 w-64 rounded-sm"
-                />
+                <div className="space-y-2">
+                  <Label>Current Image</Label>
+                  <div className="relative w-full max-w-xl">
+                    <img
+                      src={project.image_path}
+                      alt={project.name}
+                      className="rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute right-2 top-2"
+                      onClick={handleDeleteImage}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               )}
 
-              {/* Project Image */}
-              <div>
-                <Label htmlFor="project_image_path">
+              {/* Project Image Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="image">
                   Project Image{" "}
                   <span className="text-muted-foreground">(Optional)</span>
                 </Label>
                 <Input
-                  id="project_image_path"
+                  id="image"
                   type="file"
-                  className="mt-1 block w-full"
+                  className="cursor-pointer"
                   accept=".jpg,.jpeg,.png,.webp,.svg"
                   onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
+                    if (e.target.files?.[0]) {
                       setData("image", e.target.files[0]);
                     }
                   }}
                 />
-                <InputError message={errors.image} className="mt-2" />
+                <InputError message={errors.image} />
               </div>
 
               {/* Project Name */}
@@ -116,8 +144,7 @@ export default function Edit({ project }: Props) {
               {/* Project Description */}
               <div className="space-y-2">
                 <Label htmlFor="project_description">
-                  Project Description{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
+                  Project Description <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
                   id="project_description"

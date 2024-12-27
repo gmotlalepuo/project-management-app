@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\RolesEnum;
 use App\Models\Task;
 use Inertia\Inertia;
+use App\Enum\RolesEnum;
 use App\Models\Project;
+use App\Models\TaskLabel;
 use App\Services\TaskService;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\Task\StoreTaskRequest;
-use App\Http\Requests\Task\UpdateTaskRequest;
+use App\Traits\LoadsCommentsTrait;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\ProjectResource;
-use App\Http\Resources\TaskCommentResource;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\TaskLabelResource;
-use App\Models\TaskLabel;
-use App\Traits\LoadsCommentsTrait;
+use App\Http\Resources\TaskCommentResource;
+use App\Http\Requests\Task\StoreTaskRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
 
 class TaskController extends Controller {
     use LoadsCommentsTrait;
@@ -290,5 +291,23 @@ class TaskController extends Controller {
         ]);
 
         return back()->with('success', 'Task unassigned successfully.');
+    }
+
+    public function deleteImage(Task $task) {
+        $user = Auth::user();
+
+        if (!$task->project->canEditTask($user, $task)) {
+            abort(403, 'You are not authorized to delete this task\'s image.');
+        }
+
+        // Delete the image file
+        if ($task->image_path) {
+            Storage::disk('public')->delete($task->image_path);
+        }
+
+        // Update the task record
+        $task->update(['image_path' => null]);
+
+        return back()->with('success', 'Task image deleted successfully.');
     }
 }

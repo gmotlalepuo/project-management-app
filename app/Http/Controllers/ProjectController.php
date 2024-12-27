@@ -14,6 +14,7 @@ use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 use App\Enum\RolesEnum;
 use App\Models\TaskLabel;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller {
     protected $projectService;
@@ -273,5 +274,21 @@ class ProjectController extends Controller {
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    public function deleteImage(Project $project) {
+        if (!$project->canEditProject(Auth::user())) {
+            abort(403, 'You are not authorized to delete this project\'s image.');
+        }
+
+        // Delete the image file
+        if ($project->image_path) {
+            Storage::disk('public')->delete($project->image_path);
+        }
+
+        // Update the project record
+        $project->update(['image_path' => null]);
+
+        return back()->with('success', 'Project image deleted successfully.');
     }
 }

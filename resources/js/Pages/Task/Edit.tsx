@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
@@ -18,7 +18,7 @@ import { Task } from "@/types/task";
 import { PaginatedUser } from "@/types/user";
 import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
-import { Info } from "lucide-react";
+import { Info, Trash2 } from "lucide-react";
 import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
 import { useState } from "react";
@@ -101,6 +101,18 @@ export default function Edit({
     return `${assignedUser.name} (${assignedUser.email})`;
   };
 
+  const handleDeleteImage = () => {
+    router.delete(route("task.delete-image", task.id), {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Task image deleted successfully",
+          variant: "success",
+        });
+      },
+    });
+  };
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -137,11 +149,25 @@ export default function Edit({
             >
               {/* Display Existing Task Image */}
               {task.image_path && (
-                <img
-                  src={task.image_path}
-                  alt={task.name}
-                  className="d-block mb-4 w-64 rounded-sm"
-                />
+                <div className="space-y-2">
+                  <Label>Current Image</Label>
+                  <div className="relative w-full max-w-xl">
+                    <img
+                      src={task.image_path}
+                      alt={task.name}
+                      className="rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute right-2 top-2"
+                      onClick={handleDeleteImage}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               )}
 
               {/* Project Selection */}
