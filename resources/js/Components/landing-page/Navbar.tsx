@@ -92,7 +92,7 @@ export const Navbar = () => {
                     <Button className="w-full">Get Started</Button>
                   </Link>
                   <a
-                    href="https://github.com/your-username/your-repo"
+                    href="https://github.com/stekatag/project-management-app"
                     target="_blank"
                     rel="noreferrer noopener"
                     className="w-full"
