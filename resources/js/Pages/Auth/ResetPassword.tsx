@@ -13,6 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+} from "@/Components/ui/accordion";
+import PasswordStrengthMeter from "@/Components/PasswordStrengthMeter";
+import React from "react";
 
 export default function ResetPassword({
   token,
@@ -27,6 +34,8 @@ export default function ResetPassword({
     password: "",
     password_confirmation: "",
   });
+
+  const [isPasswordValid, setIsPasswordValid] = React.useState(false);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -62,6 +71,19 @@ export default function ResetPassword({
                 onChange={(e) => setData("password", e.target.value)}
                 required
               />
+              <Accordion
+                type="single"
+                value={data.password.length > 0 ? "password" : ""}
+              >
+                <AccordionItem value="password" className="border-none">
+                  <AccordionContent className="pb-0">
+                    <PasswordStrengthMeter
+                      password={data.password}
+                      onValidationChange={setIsPasswordValid}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
               <InputError message={errors.password} className="mt-2" />
             </div>
 
@@ -77,7 +99,13 @@ export default function ResetPassword({
               <InputError message={errors.password_confirmation} className="mt-2" />
             </div>
 
-            <Button type="submit" className="w-full" disabled={processing}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={
+                processing || !isPasswordValid || !data.password_confirmation
+              }
+            >
               <KeyRound className="h-4 w-4" />
               Reset Password
             </Button>

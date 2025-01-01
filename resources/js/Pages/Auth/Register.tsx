@@ -15,6 +15,13 @@ import {
 import { LogIn } from "lucide-react";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { Separator } from "@/Components/ui/separator";
+import PasswordStrengthMeter from "@/Components/PasswordStrengthMeter";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+} from "@/Components/ui/accordion";
+import React from "react";
 
 export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -23,6 +30,8 @@ export default function Register() {
     password: "",
     password_confirmation: "",
   });
+
+  const [isPasswordValid, setIsPasswordValid] = React.useState(false);
 
   const submit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -87,6 +96,19 @@ export default function Register() {
                 onChange={(e) => setData("password", e.target.value)}
                 required
               />
+              <Accordion
+                type="single"
+                value={data.password.length > 0 ? "password" : ""}
+              >
+                <AccordionItem value="password" className="border-none">
+                  <AccordionContent className="pb-0">
+                    <PasswordStrengthMeter
+                      password={data.password}
+                      onValidationChange={setIsPasswordValid}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
               <InputError message={errors.password} className="mt-2" />
             </div>
 
@@ -103,7 +125,13 @@ export default function Register() {
             </div>
 
             <div className="space-y-3">
-              <Button type="submit" className="flex w-full" disabled={processing}>
+              <Button
+                type="submit"
+                className="flex w-full"
+                disabled={
+                  processing || !isPasswordValid || !data.password_confirmation
+                }
+              >
                 <LogIn />
                 <span>Sign up</span>
               </Button>
