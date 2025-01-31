@@ -54,6 +54,10 @@ class Project extends Model {
         return $this->hasMany(TaskLabel::class);
     }
 
+    public function kanbanColumns() {
+        return $this->hasMany(KanbanColumn::class);
+    }
+
     // Scopes
     public function scopeVisibleToUser($query, $userId) {
         return $query->whereHas('invitedUsers', function ($query) use ($userId) {

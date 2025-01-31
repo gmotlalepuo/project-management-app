@@ -23,11 +23,14 @@ class Task extends Model {
         'created_by',
         'updated_by',
         'task_number',
+        'kanban_column_id',
     ];
 
     protected $casts = [
         'assigned_user_id' => 'integer', // Add this to properly handle null values
     ];
+
+    protected $with = ['labels', 'assignedUser', 'project']; // Add default eager loading
 
     protected static function boot() {
         parent::boot();
@@ -40,6 +43,30 @@ class Task extends Model {
 
             // Set the task number as the next number for this project
             $task->task_number = $lastTask ? $lastTask->task_number + 1 : 1;
+
+            // Assign to appropriate kanban column based on status
+            if (!$task->kanban_column_id) {
+                $defaultColumn = KanbanColumn::where('project_id', $task->project_id)
+                    ->where('maps_to_status', $task->status)
+                    ->first();
+
+                if ($defaultColumn) {
+                    $task->kanban_column_id = $defaultColumn->id;
+                }
+            }
+        });
+
+        // When a task's status changes, update its kanban column
+        static::updating(function ($task) {
+            if ($task->isDirty('status')) {
+                $mappedColumn = KanbanColumn::where('project_id', $task->project_id)
+                    ->where('maps_to_status', $task->status)
+                    ->first();
+
+                if ($mappedColumn) {
+                    $task->kanban_column_id = $mappedColumn->id;
+                }
+            }
         });
     }
 
@@ -90,5 +117,9 @@ class Task extends Model {
 
     public function allComments(): HasMany {
         return $this->hasMany(TaskComment::class);
+    }
+
+    public function kanbanColumn() {
+        return $this->belongsTo(KanbanColumn::class);
     }
 }

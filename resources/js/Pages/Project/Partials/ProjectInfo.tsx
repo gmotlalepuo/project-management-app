@@ -18,6 +18,7 @@ import {
   UserMinus,
   Tag,
   UserCog,
+  LayoutDashboard,
 } from "lucide-react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
@@ -482,6 +483,12 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                   <Button className="w-full" variant="outline">
                     <Tag className="h-5 w-5" />
                     <span>Manage Task Labels</span>
+                  </Button>
+                </Link>
+                <Link href={route("kanban.show", project.id)}>
+                  <Button className="w-full" variant="outline">
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Kanban Board</span>
                   </Button>
                 </Link>
               </>
