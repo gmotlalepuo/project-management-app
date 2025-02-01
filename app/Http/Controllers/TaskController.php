@@ -260,13 +260,15 @@ class TaskController extends Controller {
     public function myTasks() {
         $user = Auth::user();
         $tasks = $this->taskService->getMyTasks($user, request()->all());
+        $options = $this->taskService->getOptions();
 
         return Inertia::render('Task/Index', [
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
-            'labelOptions' => $this->taskService->getLabelOptions(),
-            'projectOptions' => $this->taskService->getProjectOptions($user),
+            'labelOptions' => $options['labelOptions'],
+            'projectOptions' => $options['projectOptions'],
+            'statusOptions' => $options['statusOptions'],
             'permissions' => [
                 'canManageTasks' => $tasks->first()?->project->canManageTask($user),
             ],

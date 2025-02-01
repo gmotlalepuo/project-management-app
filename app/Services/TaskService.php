@@ -153,7 +153,7 @@ class TaskService extends BaseService {
       $this->applyNameFilter($query, $filters['name']);
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status']);
+      $this->applyStatusFilter($query, $filters['status'], 'task');
     }
     if (isset($filters['priority'])) {
       $this->applyPriorityFilter($query, $filters['priority']);
@@ -208,7 +208,7 @@ class TaskService extends BaseService {
   }
 
   public function getStatusOptions(?Project $project = null) {
-    $query = \App\Models\TaskStatus::query()
+    $query = TaskStatus::query()
       ->where('is_default', true)
       ->whereNull('project_id');
 
@@ -216,9 +216,9 @@ class TaskService extends BaseService {
       $query->orWhere('project_id', $project->id);
     }
 
-    return $query->get()->map(function ($status) {
+    return $query->orderBy('name')->get()->map(function ($status) {
       return [
-        'value' => $status->id, // Change to use ID instead of slug
+        'value' => (string)$status->id, // Ensure ID is cast to string for frontend
         'label' => $status->name,
       ];
     });

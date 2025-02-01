@@ -17,13 +17,10 @@ trait FilterableTrait {
     // For tasks - use relationship filtering
     if ($type === 'task') {
       if (is_array($statuses)) {
-        $query->whereHas('status', function ($q) use ($statuses) {
-          $q->whereIn('slug', $statuses);
-        });
+        // The statuses array now contains status IDs
+        $query->whereIn('status_id', $statuses);
       } else {
-        $query->whereHas('status', function ($q) use ($statuses) {
-          $q->where('slug', $statuses);
-        });
+        $query->where('status_id', $statuses);
       }
       return;
     }

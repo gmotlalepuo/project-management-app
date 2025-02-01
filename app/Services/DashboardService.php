@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Task;
+use App\Models\TaskStatus;
 use App\Traits\FilterableTrait;
 use App\Traits\SortableTrait;
 
@@ -28,8 +29,10 @@ class DashboardService extends BaseService {
 
     // Don't apply initial status filter if we're filtering manually
     if (!isset($filters['status'])) {
-      $query->whereHas('status', function ($q) {
-        $q->whereIn('slug', ['pending', 'in_progress']);
+      $query->whereIn('status_id', function ($q) {
+        $q->select('id')
+          ->from('task_statuses')
+          ->whereIn('slug', ['pending', 'in_progress']);
       });
     }
 
@@ -74,10 +77,12 @@ class DashboardService extends BaseService {
   }
 
   protected function getStatusOptions() {
-    return \App\Models\TaskStatus::all()
+    return TaskStatus::where('is_default', true)
+      ->whereNull('project_id')
+      ->get()
       ->map(function ($status) {
         return [
-          'value' => $status->slug,
+          'value' => (string)$status->id,
           'label' => $status->name,
         ];
       });

@@ -20,47 +20,26 @@ class DashboardController extends Controller {
         $user = Auth::user();
         $filters = request()->all();
 
-        // Get task counts from projects where user participates (as creator or accepted member)
+        // Initialize task counts with status IDs instead of slugs
+        $pendingStatus = \App\Models\TaskStatus::where('slug', 'pending')->first();
+        $inProgressStatus = \App\Models\TaskStatus::where('slug', 'in_progress')->first();
+        $completedStatus = \App\Models\TaskStatus::where('slug', 'completed')->first();
+
         $taskQuery = Task::whereHas('project', function ($query) use ($user) {
-            $query->where(function ($q) use ($user) {
-                $q->where('created_by', $user->id)
-                    ->orWhereHas('acceptedUsers', function ($sq) use ($user) {
-                        $sq->where('user_id', $user->id)
-                            ->where('status', 'accepted');
-                    });
-            });
+            $query->visibleToUser($user->id);
         });
 
-        // Get status IDs first
-        $statusIds = TaskStatus::whereIn('slug', ['pending', 'in_progress', 'completed'])
-            ->pluck('id', 'slug');
+        $totalPendingTasks = (clone $taskQuery)->where('status_id', $pendingStatus->id)->count();
+        $myPendingTasks = (clone $taskQuery)->where('status_id', $pendingStatus->id)
+            ->where('assigned_user_id', $user->id)->count();
 
-        // Get total counts for all tasks in user's projects
-        $totalPendingTasks = (clone $taskQuery)
-            ->where('status_id', $statusIds['pending'])
-            ->count();
+        $totalProgressTasks = (clone $taskQuery)->where('status_id', $inProgressStatus->id)->count();
+        $myProgressTasks = (clone $taskQuery)->where('status_id', $inProgressStatus->id)
+            ->where('assigned_user_id', $user->id)->count();
 
-        $totalProgressTasks = (clone $taskQuery)
-            ->where('status_id', $statusIds['in_progress'])
-            ->count();
-
-        $totalCompletedTasks = (clone $taskQuery)
-            ->where('status_id', $statusIds['completed'])
-            ->count();
-
-        // Get counts for tasks assigned to the user in their projects
-        $myPendingTasks = (clone $taskQuery)
-            ->where('assigned_user_id', $user->id)
-            ->where('status_id', $statusIds['pending'])
-            ->count();
-        $myProgressTasks = (clone $taskQuery)
-            ->where('assigned_user_id', $user->id)
-            ->where('status_id', $statusIds['in_progress'])
-            ->count();
-        $myCompletedTasks = (clone $taskQuery)
-            ->where('assigned_user_id', $user->id)
-            ->where('status_id', $statusIds['completed'])
-            ->count();
+        $totalCompletedTasks = (clone $taskQuery)->where('status_id', $completedStatus->id)->count();
+        $myCompletedTasks = (clone $taskQuery)->where('status_id', $completedStatus->id)
+            ->where('assigned_user_id', $user->id)->count();
 
         // Get active tasks and apply sorting/pagination
         $query = $this->dashboardService->getActiveTasks($user, $filters);
