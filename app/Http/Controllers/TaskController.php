@@ -81,12 +81,16 @@ class TaskController extends Controller {
         }
         $labels = $labelsQuery->orderBy('name', 'asc')->get();
 
+        // Always get default statuses even if no project is selected
+        $statuses = $this->taskService->getStatusOptions($selectedProject);
+
         return Inertia::render('Task/Create', [
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
             'labels' => TaskLabelResource::collection($labels),
             'canAssignOthers' => $canAssignOthers,
             'currentUserId' => $user->id,
+            'statusOptions' => $statuses,
             'selectedProjectId' => $selectedProject?->id,
             'fromProjectPage' => (bool)$projectId,
         ]);
@@ -202,12 +206,16 @@ class TaskController extends Controller {
             ->orderBy('name', 'asc')
             ->get();
 
+        // Get task statuses for the project
+        $statuses = $this->taskService->getStatusOptions($task->project);
+
         return Inertia::render('Task/Edit', [
             'task' => new TaskResource($task),
             'projects' => ProjectResource::collection($projects),
             'users' => UserResource::collection($users),
             'labels' => TaskLabelResource::collection($labels),
             'canChangeAssignee' => $canChangeAssignee,
+            'statusOptions' => $statuses,
         ]);
     }
 

@@ -208,21 +208,17 @@ class TaskService extends BaseService {
   }
 
   public function getStatusOptions(?Project $project = null) {
-    $query = \App\Models\TaskStatus::query();
+    $query = \App\Models\TaskStatus::query()
+      ->where('is_default', true)
+      ->whereNull('project_id');
 
     if ($project) {
-      $query->where(function ($q) use ($project) {
-        $q->where('project_id', $project->id)
-          ->orWhere(function ($sq) {
-            $sq->whereNull('project_id')
-              ->where('is_default', true);
-          });
-      });
+      $query->orWhere('project_id', $project->id);
     }
 
     return $query->get()->map(function ($status) {
       return [
-        'value' => $status->slug,
+        'value' => $status->id, // Change to use ID instead of slug
         'label' => $status->name,
       ];
     });

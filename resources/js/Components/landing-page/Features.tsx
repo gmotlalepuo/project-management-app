@@ -1,3 +1,4 @@
+import { JSX } from "react/jsx-runtime";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { ClipboardList, Users2, Tags, MessageSquare } from "lucide-react";
 

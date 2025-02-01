@@ -32,6 +32,10 @@ type Props = {
     data: Option[];
   };
   canChangeAssignee: boolean;
+  statusOptions: Array<{
+    value: number | string;
+    label: string;
+  }>;
 };
 
 export default function Edit({
@@ -40,12 +44,13 @@ export default function Edit({
   users,
   labels,
   canChangeAssignee,
+  statusOptions,
 }: Props) {
   const { data, setData, post, errors } = useForm({
     image: null as File | null,
     name: task.name || "",
     description: task.description || "",
-    status: task.status || "",
+    status_id: task.status?.id?.toString() ?? "",
     due_date: task.due_date || "",
     priority: task.priority || "",
     assigned_user_id: task.assigned_user_id
@@ -306,25 +311,22 @@ export default function Edit({
                   Task Status <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  onValueChange={(value) =>
-                    setData(
-                      "status",
-                      value as "completed" | "pending" | "in_progress",
-                    )
-                  }
-                  defaultValue={data.status}
+                  onValueChange={(value) => setData("status_id", value)}
+                  value={data.status_id}
                   required
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    {statusOptions.map(({ value, label }) => (
+                      <SelectItem key={value} value={value.toString()}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                <InputError message={errors.status} className="mt-2" />
+                <InputError message={errors.status_id} className="mt-2" />
               </div>
 
               {/* Task Priority */}

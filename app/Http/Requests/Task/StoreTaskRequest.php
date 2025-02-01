@@ -5,6 +5,7 @@ namespace App\Http\Requests\Task;
 use App\Models\Project;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\ValidTaskStatus;
 
 class StoreTaskRequest extends FormRequest {
     /**
@@ -47,7 +48,11 @@ class StoreTaskRequest extends FormRequest {
             "due_date" => ["nullable", "date"],
             'project_id' => ['required', 'exists:projects,id'],
             "assigned_user_id" => ["nullable", "exists:users,id"],
-            'status_id' => ['required', 'exists:task_statuses,id'], // Replace status rule
+            'status_id' => [
+                'required',
+                'exists:task_statuses,id',
+                new ValidTaskStatus($this->input('project_id')),
+            ],
             'priority' => ['required', Rule::in(['low', 'medium', 'high'])],
             'label_ids' => ['nullable', 'array'],
             'label_ids.*' => ['integer', 'exists:task_labels,id'],

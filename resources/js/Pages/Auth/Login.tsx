@@ -28,7 +28,11 @@ export default function Login({
   canResetPassword: boolean;
 }) {
   const isMobile = useIsMobile();
-  const { data, setData, post, processing, errors, reset } = useForm({
+  const { data, setData, post, processing, errors, reset } = useForm<{
+    email: string;
+    password: string;
+    remember: boolean;
+  }>({
     email: "",
     password: "",
     remember: false,

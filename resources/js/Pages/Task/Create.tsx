@@ -18,7 +18,7 @@ import { PaginatedUser } from "@/types/user";
 import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Info } from "lucide-react";
-import { TaskLabelBadgeVariant, getStatusOptions } from "@/utils/constants";
+import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import RichTextEditor from "@/Components/RichTextEditor";
@@ -32,6 +32,10 @@ type Props = {
   currentUserId: number;
   selectedProjectId?: number;
   fromProjectPage?: boolean;
+  statusOptions: Array<{
+    value: number | string;
+    label: string;
+  }>;
 };
 
 export default function Create({
@@ -41,6 +45,7 @@ export default function Create({
   currentUserId,
   selectedProjectId,
   fromProjectPage,
+  statusOptions,
 }: Props) {
   const [canAssignOthers, setCanAssignOthers] = useState(true);
   const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
@@ -49,7 +54,7 @@ export default function Create({
     image: null as File | null,
     name: "",
     description: "",
-    status: "",
+    status_id: "",
     due_date: "",
     priority: "",
     assigned_user_id: canAssignOthers ? "" : currentUserId.toString(),
@@ -310,22 +315,22 @@ export default function Create({
                   Task Status <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  onValueChange={(value) => setData("status", value)}
-                  defaultValue={data.status}
+                  onValueChange={(value) => setData("status_id", value)}
+                  value={data.status_id?.toString()}
                   required
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {getStatusOptions().map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>
+                    {statusOptions.map(({ value, label }) => (
+                      <SelectItem key={value} value={value.toString()}>
                         {label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <InputError message={errors.status} className="mt-2" />
+                <InputError message={errors.status_id} className="mt-2" />
               </div>
 
               {/* Task Priority */}
