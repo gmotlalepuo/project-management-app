@@ -20,12 +20,12 @@ class TaskFactory extends Factory {
             'name' => fake()->sentence(),
             'description' => fake()->paragraph(),
             'due_date' => fake()->dateTimeBetween('now', '+1 year')->format('Y-m-d H:i:s'),
-            'status' => fake()->randomElement(['pending', 'in_progress', 'completed']),
             'priority' => fake()->randomElement(['low', 'medium', 'high']),
             'image_path' => null,
             'assigned_user_id' => 1,
             'created_by' => 1,
             'updated_by' => 1,
+            // Remove status field as it's now handled through status_id
         ];
     }
 

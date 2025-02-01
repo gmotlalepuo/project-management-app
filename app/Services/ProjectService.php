@@ -17,6 +17,19 @@ use App\Notifications\ProjectInvitationNotification;
 class ProjectService extends BaseService {
   use FilterableTrait, SortableTrait;
 
+  protected $taskService;
+
+  public function __construct(TaskService $taskService) {
+    $this->taskService = $taskService;
+  }
+
+  public function getProjectOptions($project) {
+    return [
+      'labelOptions' => $this->taskService->getLabelOptions($project),
+      'statusOptions' => $this->taskService->getStatusOptions($project),
+    ];
+  }
+
   public function getProjects($user, array $filters) {
     $query = Project::visibleToUser($user->id)
       ->with(['tasks' => function ($query) {
@@ -34,7 +47,7 @@ class ProjectService extends BaseService {
       $this->applyNameFilter($query, $filters['name']);
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status']);
+      $this->applyStatusFilter($query, $filters['status'], 'project'); // Specify type as 'project'
     }
     if (isset($filters['created_at'])) {
       $this->applyDateRangeFilter($query, $filters['created_at'], 'created_at');
@@ -92,7 +105,7 @@ class ProjectService extends BaseService {
       $this->applyNameFilter($query, $filters['name'], 'tasks.name');
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status'], 'tasks.status');
+      $this->applyStatusFilter($query, $filters['status'], 'task');
     }
     if (isset($filters['priority'])) {
       $this->applyPriorityFilter($query, $filters['priority']);

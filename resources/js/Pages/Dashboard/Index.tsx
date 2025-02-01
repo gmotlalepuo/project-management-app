@@ -23,10 +23,10 @@ type Props = {
   queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
   projectOptions: { value: string; label: string }[];
+  statusOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
-  allTasks: Task[];
 };
 
 export default function Dashboard({
@@ -41,7 +41,7 @@ export default function Dashboard({
   labelOptions,
   permissions,
   success,
-  allTasks,
+  statusOptions,
   projectOptions,
 }: Props) {
   const { toast } = useToast();
@@ -56,9 +56,15 @@ export default function Dashboard({
     }
   }, [success]);
 
+  const stats = [
+    { slug: "pending", total: totalPendingTasks, mine: myPendingTasks },
+    { slug: "in_progress", total: totalProgressTasks, mine: myProgressTasks },
+    { slug: "completed", total: totalCompletedTasks, mine: myCompletedTasks },
+  ];
+
   const hasStats =
     totalPendingTasks > 0 || totalProgressTasks > 0 || totalCompletedTasks > 0;
-  const hasActiveTasks = allTasks.length > 0;
+  const hasActiveTasks = activeTasks.data.length > 0;
   const shouldShowTabs = hasStats || hasActiveTasks;
 
   // Determine default tab based on available data
@@ -162,20 +168,14 @@ export default function Dashboard({
                         labelOptions={labelOptions}
                         permissions={permissions}
                         projectOptions={projectOptions}
+                        statusOptions={statusOptions}
                       />
                     </TabsContent>
                   )}
 
                   {hasStats && (
                     <TabsContent value="stats" className="mt-4">
-                      <StatsCards
-                        totalPendingTasks={totalPendingTasks}
-                        myPendingTasks={myPendingTasks}
-                        totalProgressTasks={totalProgressTasks}
-                        myProgressTasks={myProgressTasks}
-                        totalCompletedTasks={totalCompletedTasks}
-                        myCompletedTasks={myCompletedTasks}
-                      />
+                      <StatsCards stats={stats} />
                     </TabsContent>
                   )}
                 </Tabs>

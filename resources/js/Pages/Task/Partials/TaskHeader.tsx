@@ -7,7 +7,6 @@ import {
   TASK_PRIORITY_BADGE_MAP,
   TASK_PRIORITY_TEXT_MAP,
   TASK_STATUS_BADGE_MAP,
-  TASK_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { Link } from "@inertiajs/react";
 
@@ -48,8 +47,8 @@ export function TaskHeader({ task }: TaskHeaderProps) {
           <h1 className="text-2xl font-semibold md:text-2xl">{task.name}</h1>
 
           <div className="flex gap-2">
-            <Badge variant={TASK_STATUS_BADGE_MAP[task.status]}>
-              {TASK_STATUS_TEXT_MAP[task.status]}
+            <Badge variant={TASK_STATUS_BADGE_MAP(task.status.slug)}>
+              {task.status.name}
             </Badge>
             <Badge variant={TASK_PRIORITY_BADGE_MAP[task.priority]}>
               {TASK_PRIORITY_TEXT_MAP[task.priority]}

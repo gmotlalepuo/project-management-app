@@ -17,16 +17,21 @@ class DashboardService extends BaseService {
 
   public function getActiveTasks($user, array $filters) {
     $query = Task::query()
-      ->with(['labels', 'project', 'assignedUser'])
+      ->with(['labels', 'project', 'assignedUser', 'status'])
       ->whereHas('project', function ($query) use ($user) {
         $query->where('created_by', $user->id)
           ->orWhereHas('acceptedUsers', function ($q) use ($user) {
             $q->where('user_id', $user->id)
               ->where('status', 'accepted');
           });
-      })
-      ->whereIn('status', ['pending', 'in_progress'])
-      ->where('assigned_user_id', $user->id);
+      });
+
+    // Don't apply initial status filter if we're filtering manually
+    if (!isset($filters['status'])) {
+      $query->whereHas('status', function ($q) {
+        $q->whereIn('slug', ['pending', 'in_progress']);
+      });
+    }
 
     // Apply filters
     if (isset($filters['project_id'])) {
@@ -39,7 +44,7 @@ class DashboardService extends BaseService {
       $this->applyPriorityFilter($query, $filters['priority']);
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status']);
+      $this->applyStatusFilter($query, $filters['status'], 'task'); // Specify type as 'task'
     }
     if (isset($filters['label_ids'])) {
       $this->applyLabelFilter($query, $filters['label_ids']);
@@ -64,6 +69,17 @@ class DashboardService extends BaseService {
     return [
       'projectOptions' => $this->taskService->getProjectOptions($user),
       'labelOptions' => $this->taskService->getLabelOptions(),
+      'statusOptions' => $this->getStatusOptions(),
     ];
+  }
+
+  protected function getStatusOptions() {
+    return \App\Models\TaskStatus::all()
+      ->map(function ($status) {
+        return [
+          'value' => $status->slug,
+          'label' => $status->name,
+        ];
+      });
   }
 }

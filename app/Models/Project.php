@@ -66,4 +66,32 @@ class Project extends Model {
                 ->whereIn('project_user.role', [RolesEnum::ProjectManager->value, RolesEnum::ProjectMember->value]);
         });
     }
+
+    public function getCompletedTasksCountAttribute() {
+        return $this->tasks()
+            ->whereHas('status', function ($query) {
+                $query->where('slug', 'completed');
+            })
+            ->count();
+    }
+
+    public function getTotalTasksAttribute() {
+        return $this->tasks()->count();
+    }
+
+    public function getPendingTasksCountAttribute() {
+        return $this->tasks()
+            ->whereHas('status', function ($query) {
+                $query->where('slug', 'pending');
+            })
+            ->count();
+    }
+
+    public function getInProgressTasksCountAttribute() {
+        return $this->tasks()
+            ->whereHas('status', function ($query) {
+                $query->where('slug', 'in_progress');
+            })
+            ->count();
+    }
 }

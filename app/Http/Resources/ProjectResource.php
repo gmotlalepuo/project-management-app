@@ -18,10 +18,6 @@ class ProjectResource extends JsonResource {
         // Set a flag to indicate that tasks are being accessed within the project context
         $request->merge(['projectContext' => true]);
 
-        // Calculate total and completed tasks for the entire project
-        $totalTasks = $this->tasks()->count();
-        $completedTasks = $this->tasks()->where('status', 'completed')->count();
-
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -54,10 +50,24 @@ class ProjectResource extends JsonResource {
             // Include the latest 5 tasks sorted by updated_at
             'tasks' => TaskResource::collection($this->tasks()->orderBy('updated_at', 'desc')->take(5)->get()),
 
-            // Include total and completed tasks count for the entire project
-            'total_tasks' => $totalTasks,
-            'completed_tasks' => $completedTasks,
             'taskLabels' => TaskLabelResource::collection($this->whenLoaded('taskLabels')),
+
+            // Single source of truth for task counts
+            'task_counts' => [
+                'total' => $this->tasks()->count(),
+                'completed' => $this->tasks()
+                    ->whereHas('status', function ($q) {
+                        $q->where('slug', 'completed');
+                    })->count(),
+                'in_progress' => $this->tasks()
+                    ->whereHas('status', function ($q) {
+                        $q->where('slug', 'in_progress');
+                    })->count(),
+                'pending' => $this->tasks()
+                    ->whereHas('status', function ($q) {
+                        $q->where('slug', 'pending');
+                    })->count(),
+            ],
         ];
     }
 }

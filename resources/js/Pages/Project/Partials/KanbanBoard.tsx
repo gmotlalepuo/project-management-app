@@ -3,6 +3,7 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -13,6 +14,7 @@ import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { Task } from "@/types/task";
 import { router } from "@inertiajs/react";
+import { useToast } from "@/hooks/use-toast";
 
 type Props = {
   columns: KanbanColumnType[];
@@ -25,47 +27,95 @@ type Props = {
 
 export function KanbanBoard({ columns, projectId, permissions }: Props) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const sensors = useSensors(useSensor(PointerSensor));
+  const [startingColumn, setStartingColumn] = useState<number | null>(null);
+  const [activeColumn, setActiveColumn] = useState<number | null>(null);
+  const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+        delay: 0,
+        tolerance: 1,
+      },
+    }),
+  );
 
   const handleDragStart = (event: DragStartEvent) => {
-    // Ensure we're working with arrays
-    const allTasks = columns.reduce<Task[]>((acc, col) => {
-      return acc.concat(Array.isArray(col.tasks) ? col.tasks : []);
-    }, []);
+    if (!event.active) return;
 
-    const task = allTasks.find((t) => t.id === event.active.id);
-    setActiveTask(task || null);
+    // Find task in columns
+    for (const column of columns) {
+      const task = column.tasks.find((t) => t.id === event.active.id);
+      if (task) {
+        setActiveTask(task);
+        setStartingColumn(column.id);
+        break;
+      }
+    }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const taskId = active.id;
-      const newColumnId = over.id;
-
-      router.post(
-        route("kanban.move-task", taskId),
-        {
-          column_id: newColumnId,
-        },
-        {
-          preserveScroll: true,
-        },
-      );
+  const handleDragOver = (event: DragOverEvent) => {
+    if (!event.over) {
+      setActiveColumn(null);
+      return;
     }
+    setActiveColumn(Number(event.over.id));
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    if (!event.over || !startingColumn) {
+      resetDragState();
+      return;
+    }
+
+    const newColumnId = event.over.id as number;
+
+    if (startingColumn !== newColumnId) {
+      try {
+        router.post(
+          route("kanban.move-task", event.active.id),
+          { column_id: newColumnId },
+          { preserveScroll: true },
+        );
+      } catch (error) {
+        toast({
+          title: "Error moving task",
+          description: "The task could not be moved. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    resetDragState();
+  };
+
+  const handleDragCancel = () => {
+    resetDragState();
+  };
+
+  const resetDragState = () => {
     setActiveTask(null);
+    setStartingColumn(null);
+    setActiveColumn(null);
   };
 
   return (
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex gap-4 overflow-x-auto p-1">
         {columns.map((column) => (
-          <KanbanColumn key={column.id} column={column} permissions={permissions} />
+          <KanbanColumn
+            key={column.id}
+            column={column}
+            permissions={permissions}
+            isOver={activeColumn === column.id}
+          />
         ))}
       </div>
       <DragOverlay>

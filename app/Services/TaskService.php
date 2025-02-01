@@ -6,6 +6,7 @@ use App\Models\Project;
 use Carbon\Carbon;
 use App\Models\Task;
 use App\Models\TaskLabel;
+use App\Models\TaskStatus;
 use Illuminate\Support\Str;
 use App\Traits\FilterableTrait;
 use App\Traits\SortableTrait;
@@ -17,14 +18,20 @@ class TaskService extends BaseService {
   use FilterableTrait, SortableTrait;
 
   public function getTasks($user, array $filters) {
-    $query = Task::visibleToUser($user->id)->with('labels');
+    $query = Task::visibleToUser($user->id)
+      ->with([
+        'labels',
+        'status',
+        'project',
+        'assignedUser'
+      ]);
 
     // Apply filters
     if (isset($filters['name'])) {
       $this->applyNameFilter($query, $filters['name']);
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status']);
+      $this->applyStatusFilter($query, $filters['status'], 'task');
     }
     if (isset($filters['priority'])) {
       $this->applyPriorityFilter($query, $filters['priority']);
@@ -57,7 +64,28 @@ class TaskService extends BaseService {
       $data['image_path'] = $this->handleImageUpload($data['image'], 'task');
     }
 
+    if (!isset($data['status_id'])) {
+      $defaultStatus = TaskStatus::where('slug', 'pending')
+        ->where(function ($query) use ($data) {
+          $query->where('project_id', $data['project_id'])
+            ->orWhere(function ($q) {
+              $q->whereNull('project_id')
+                ->where('is_default', true);
+            });
+        })
+        ->first();
+
+      if ($defaultStatus) {
+        $data['status_id'] = $defaultStatus->id;
+      }
+    }
+
     $task = Task::create($data);
+
+    // Record initial status in history
+    if ($task->status_id) {
+      $task->statusHistory()->attach($task->status_id);
+    }
 
     if (isset($data['label_ids']) && is_array($data['label_ids'])) {
       $task->labels()->sync($data['label_ids']);
@@ -110,7 +138,12 @@ class TaskService extends BaseService {
 
   public function getMyTasks($user, $filters) {
     $query = Task::where('assigned_user_id', $user->id)
-      ->with(['labels', 'project', 'assignedUser'])
+      ->with([
+        'labels',
+        'status',
+        'project',
+        'assignedUser'
+      ])
       ->whereHas('project', function ($query) use ($user) {
         $query->visibleToUser($user->id);
       });
@@ -164,5 +197,34 @@ class TaskService extends BaseService {
         'value' => (string)$label->id,
         'label' => $label->name
       ]);
+  }
+
+  public function getOptions(?Project $project = null) {
+    return [
+      'projectOptions' => $this->getProjectOptions(Auth::user()),
+      'labelOptions' => $this->getLabelOptions($project),
+      'statusOptions' => $this->getStatusOptions($project),
+    ];
+  }
+
+  public function getStatusOptions(?Project $project = null) {
+    $query = \App\Models\TaskStatus::query();
+
+    if ($project) {
+      $query->where(function ($q) use ($project) {
+        $q->where('project_id', $project->id)
+          ->orWhere(function ($sq) {
+            $sq->whereNull('project_id')
+              ->where('is_default', true);
+          });
+      });
+    }
+
+    return $query->get()->map(function ($status) {
+      return [
+        'value' => $status->slug,
+        'label' => $status->name,
+      ];
+    });
   }
 }

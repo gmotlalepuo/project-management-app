@@ -103,11 +103,6 @@ class ProjectController extends Controller {
             }
         }
 
-        // Fetch label options for the filter
-        $labelOptions = TaskLabel::all()->map(function ($label) {
-            return ['value' => $label->id, 'label' => $label->name];
-        });
-
         // Ensure sorting parameters are explicitly set
         $filters = request()->all();
         $filters['sort_field'] = request('sort_field', 'created_at');
@@ -116,6 +111,7 @@ class ProjectController extends Controller {
         $filters['page'] = (int) request('page', 1);
 
         $tasks = $this->projectService->getProjectWithTasks($project, $filters);
+        $options = $this->projectService->getProjectOptions($project);
 
         return Inertia::render('Project/Show', [
             'project' => new ProjectResource($project->load(['acceptedUsers'])),
@@ -124,7 +120,8 @@ class ProjectController extends Controller {
             'success' => session('success'),
             'error' => session('error'),
             'activeTab' => $requestedTab ?: 'tasks',
-            'labelOptions' => $labelOptions,
+            'labelOptions' => $options['labelOptions'],
+            'statusOptions' => $options['statusOptions'],
             'permissions' => [
                 'canInviteUsers' => $project->canInviteUsers($user),
                 'canEditProject' => $project->canEditProject($user),

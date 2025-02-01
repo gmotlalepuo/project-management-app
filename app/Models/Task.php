@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model {
     /** @use HasFactory<\Database\Factories\TaskFactory> */
@@ -16,7 +17,6 @@ class Task extends Model {
         'description',
         'image_path',
         'due_date',
-        'status',
         'priority',
         'project_id',
         'assigned_user_id',
@@ -24,13 +24,19 @@ class Task extends Model {
         'updated_by',
         'task_number',
         'kanban_column_id',
+        'status_id',
     ];
 
     protected $casts = [
         'assigned_user_id' => 'integer', // Add this to properly handle null values
     ];
 
-    protected $with = ['labels', 'assignedUser', 'project']; // Add default eager loading
+    protected $with = [
+        'labels',
+        'assignedUser',
+        'project',
+        'status'  // Always eager load status
+    ];
 
     protected static function boot() {
         parent::boot();
@@ -44,27 +50,31 @@ class Task extends Model {
             // Set the task number as the next number for this project
             $task->task_number = $lastTask ? $lastTask->task_number + 1 : 1;
 
+            // Set default status if not provided
+            if (!$task->status_id) {
+                $defaultStatus = TaskStatus::where(function ($query) use ($task) {
+                    $query->where('project_id', $task->project_id)
+                        ->orWhere(function ($q) {
+                            $q->whereNull('project_id')
+                                ->where('is_default', true);
+                        });
+                })
+                    ->where('slug', 'pending')
+                    ->first();
+
+                if ($defaultStatus) {
+                    $task->status_id = $defaultStatus->id;
+                }
+            }
+
             // Assign to appropriate kanban column based on status
-            if (!$task->kanban_column_id) {
+            if (!$task->kanban_column_id && $task->status_id) {
                 $defaultColumn = KanbanColumn::where('project_id', $task->project_id)
-                    ->where('maps_to_status', $task->status)
+                    ->where('task_status_id', $task->status_id)
                     ->first();
 
                 if ($defaultColumn) {
                     $task->kanban_column_id = $defaultColumn->id;
-                }
-            }
-        });
-
-        // When a task's status changes, update its kanban column
-        static::updating(function ($task) {
-            if ($task->isDirty('status')) {
-                $mappedColumn = KanbanColumn::where('project_id', $task->project_id)
-                    ->where('maps_to_status', $task->status)
-                    ->first();
-
-                if ($mappedColumn) {
-                    $task->kanban_column_id = $mappedColumn->id;
                 }
             }
         });
@@ -121,5 +131,27 @@ class Task extends Model {
 
     public function kanbanColumn() {
         return $this->belongsTo(KanbanColumn::class);
+    }
+
+    public function status(): BelongsTo {
+        return $this->belongsTo(TaskStatus::class, 'status_id');
+    }
+
+    public function statusHistory(): BelongsToMany {
+        return $this->belongsToMany(TaskStatus::class, 'status_task')
+            ->withTimestamps();
+    }
+
+    public function scopeWithStatus($query, $status) {
+        return $query->whereHas('status', function ($q) use ($status) {
+            $q->where('slug', $status);
+        });
+    }
+
+    // This will help with any dynamic status queries
+    public function scopeWithStatusIn($query, array $statuses) {
+        return $query->whereHas('status', function ($q) use ($statuses) {
+            $q->whereIn('slug', $statuses);
+        });
     }
 }

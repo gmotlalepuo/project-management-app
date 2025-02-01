@@ -14,7 +14,7 @@ import {
 import InputError from "@/Components/InputError";
 import { useToast } from "@/hooks/use-toast";
 import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
-import { PROJECT_STATUS_TEXT_MAP } from "@/utils/constants";
+import { getStatusOptions } from "@/utils/constants";
 
 type Props = {};
 
@@ -144,13 +144,11 @@ export default function Create({}: Props) {
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(PROJECT_STATUS_TEXT_MAP).map(
-                      ([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ),
-                    )}
+                    {getStatusOptions().map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <InputError message={errors.status} className="mt-2" />

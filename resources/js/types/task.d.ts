@@ -9,7 +9,14 @@ export type Task = {
   created_at: string;
   updated_at: string;
   due_date: string;
-  status: "completed" | "pending" | "in_progress";
+  status: {
+    id: number;
+    name: string;
+    slug: string;
+    color: string;
+    is_default: boolean;
+  };
+  status_id: number;
   priority: "low" | "medium" | "high";
   image_path: string;
   project: Project;

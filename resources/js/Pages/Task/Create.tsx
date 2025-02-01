@@ -18,7 +18,7 @@ import { PaginatedUser } from "@/types/user";
 import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
 import { Info } from "lucide-react";
-import { TaskLabelBadgeVariant } from "@/utils/constants";
+import { TaskLabelBadgeVariant, getStatusOptions } from "@/utils/constants";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import RichTextEditor from "@/Components/RichTextEditor";
@@ -318,9 +318,11 @@ export default function Create({
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
+                    {getStatusOptions().map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <InputError message={errors.status} className="mt-2" />

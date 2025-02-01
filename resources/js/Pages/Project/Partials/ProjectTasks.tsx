@@ -5,8 +5,7 @@ import { formatDate } from "@/utils/helpers";
 import {
   TASK_PRIORITY_BADGE_MAP,
   TASK_PRIORITY_TEXT_MAP,
-  PROJECT_STATUS_BADGE_MAP,
-  PROJECT_STATUS_TEXT_MAP,
+  TASK_STATUS_BADGE_MAP,
 } from "@/utils/constants";
 import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn, QueryParams } from "@/types/utils";
@@ -21,6 +20,7 @@ type Props = {
   queryParams: QueryParams;
   projectId: number;
   labelOptions: { value: string; label: string }[];
+  statusOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
@@ -32,6 +32,7 @@ export default function ProjectTasks({
   projectId,
   permissions,
   labelOptions,
+  statusOptions,
 }: Props) {
   queryParams = queryParams || {};
 
@@ -86,12 +87,13 @@ export default function ProjectTasks({
     },
     {
       accessorKey: "status",
+      enableSorting: false,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => (
-        <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
-          {PROJECT_STATUS_TEXT_MAP[row.original.status]}
+        <Badge variant={TASK_STATUS_BADGE_MAP(row.original.status.slug)}>
+          {row.original.status.name}
         </Badge>
       ),
     },
@@ -174,10 +176,7 @@ export default function ProjectTasks({
       accessorKey: "status",
       title: "Status",
       filterType: "select",
-      options: Object.entries(PROJECT_STATUS_TEXT_MAP).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: statusOptions,
     },
     {
       accessorKey: "due_date",

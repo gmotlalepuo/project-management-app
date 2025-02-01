@@ -18,6 +18,7 @@ type Props = {
   queryParams: QueryParams;
   activeTab: string;
   labelOptions: { value: string; label: string }[];
+  statusOptions: { value: string; label: string }[];
   permissions: {
     canInviteUsers: boolean;
     canEditProject: boolean;
@@ -34,6 +35,7 @@ export default function Show({
   activeTab: initialActiveTab,
   permissions,
   labelOptions,
+  statusOptions,
 }: Props) {
   queryParams = queryParams || {};
 
@@ -110,6 +112,7 @@ export default function Show({
                 projectId={project.id}
                 permissions={permissions}
                 labelOptions={labelOptions}
+                statusOptions={statusOptions}
               />
             </TabsContent>
             <TabsContent value="info">

@@ -8,9 +8,7 @@ export type KanbanColumn = {
   is_default: boolean;
   maps_to_status: string | null;
   color: string | null;
-  tasks: {
-    data: Task[];
-  };
+  tasks: Task[];
 };
 
 export type KanbanColumnData = {

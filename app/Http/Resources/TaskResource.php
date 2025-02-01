@@ -31,7 +31,18 @@ class TaskResource extends JsonResource {
             'updated_at' => Carbon::parse($this->updated_at)
                 ->setTimezone($request->header('User-Timezone', 'UTC'))
                 ->toISOString(),
-            'status' => $this->status,
+            'status' => $this->status ? [
+                'id' => $this->status->id,
+                'name' => $this->status->name,
+                'slug' => $this->status->slug,
+                'color' => $this->status->color,
+                'is_default' => $this->status->is_default,
+            ] : null,
+            'kanban_column' => [
+                'id' => $this->kanbanColumn?->id,
+                'name' => $this->kanbanColumn?->name,
+                'color' => $this->kanbanColumn?->color,
+            ],
             'priority' => $this->priority,
             'image_path' => $this->image_path ? Storage::url($this->image_path) : "",
             // Conditionally load the project reference to avoid circular dependency

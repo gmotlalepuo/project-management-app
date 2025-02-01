@@ -74,6 +74,7 @@ class HandleInertiaRequests extends Middleware {
     }
 
     // Add new method for minimal shared data
+    // Add new method for minimal shared data
     protected function getMinimalDataShare($user): array {
         // Get recent projects with optimized query
         $recentProjects = Project::query()
@@ -103,9 +104,10 @@ class HandleInertiaRequests extends Middleware {
         // Get recent tasks with optimized query
         $recentTasks = Task::query()
             ->where('assigned_user_id', $user->id)
-            ->select('id', 'name', 'project_id', 'status')
+            ->select('id', 'name', 'project_id', 'status_id')
             ->with([
                 'labels:id,name,variant',
+                'status:id,name,slug,color',
                 'project:id,name'
             ])
             ->orderBy('updated_at', 'desc')
@@ -116,6 +118,7 @@ class HandleInertiaRequests extends Middleware {
                     'id' => $task->id,
                     'name' => $task->name,
                     'labels' => $task->labels,
+                    'status' => $task->status,
                     'url' => route('task.show', $task->id),
                     'permissions' => [
                         'canDelete' => $task->project->canDeleteTask($user),
@@ -163,13 +166,18 @@ class HandleInertiaRequests extends Middleware {
             ->withCount([
                 'tasks as total_tasks',
                 'tasks as completed_tasks' => function ($query) {
-                    $query->where('status', 'completed');
+                    $query->whereHas('status', function ($q) {
+                        $q->where('slug', 'completed');
+                    });
                 }
             ])
             ->with([
                 'tasks' => function ($query) {
-                    $query->select('id', 'project_id', 'name', 'status', 'updated_at')
-                        ->with('labels:id,name,variant')
+                    $query->select('id', 'project_id', 'name', 'status_id', 'updated_at')
+                        ->with([
+                            'labels:id,name,variant',
+                            'status:id,name,slug,color'
+                        ])
                         ->orderByDesc('updated_at');
                 }
             ])
@@ -180,8 +188,11 @@ class HandleInertiaRequests extends Middleware {
     protected function getAllTasks($user) {
         return Task::query()
             ->where('assigned_user_id', $user->id)
-            ->select('id', 'name', 'status', 'project_id')
-            ->with('labels:id,name,variant')
+            ->select('id', 'name', 'status_id', 'project_id')
+            ->with([
+                'labels:id,name,variant',
+                'status:id,name,slug,color',
+            ])
             ->get();
     }
 }

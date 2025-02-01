@@ -114,8 +114,11 @@ export default function ProjectCards({
 
             <ul className="mt-3 space-y-1.5 text-sm text-gray-800 dark:text-gray-200">
               {project.tasks.slice(0, 5).map((task) => {
-                const TaskStatusIcon = STATUS_CONFIG[task.status as StatusType].icon;
-                const primaryLabel = task.labels?.[0];
+                const statusConfig = task.status
+                  ? STATUS_CONFIG[task.status.slug as StatusType]
+                  : STATUS_CONFIG.pending;
+                const TaskStatusIcon = statusConfig.icon;
+                const primaryLabel = task.labels?.[0]; // Get first label if it exists
 
                 return (
                   <li key={task.id} className="min-w-0">
@@ -124,12 +127,9 @@ export default function ProjectCards({
                       href={route("task.show", task.id)}
                       title={task.name}
                     >
-                      <span
-                        className="shrink-0"
-                        title={STATUS_CONFIG[task.status as StatusType].text}
-                      >
+                      <span className="shrink-0" title={statusConfig.text}>
                         <TaskStatusIcon
-                          className={`h-4 w-4 ${STATUS_CONFIG[task.status as StatusType].color}`}
+                          className={`h-4 w-4 ${statusConfig.color}`}
                         />
                       </span>
                       <span

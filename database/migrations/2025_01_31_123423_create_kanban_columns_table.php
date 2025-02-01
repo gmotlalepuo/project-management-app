@@ -12,22 +12,24 @@ return new class extends Migration {
       $table->integer('order');
       $table->foreignId('project_id')->constrained()->cascadeOnDelete();
       $table->boolean('is_default')->default(false);
-      $table->string('maps_to_status')->nullable();
       $table->string('color')->nullable();
+      $table->foreignId('task_status_id')->constrained()->cascadeOnDelete();
       $table->timestamps();
     });
 
-    // Add kanban_column_id to tasks table
     Schema::table('tasks', function (Blueprint $table) {
       $table->foreignId('kanban_column_id')->nullable()->constrained()->nullOnDelete();
     });
   }
 
   public function down(): void {
+    // First remove the foreign key from tasks
     Schema::table('tasks', function (Blueprint $table) {
       $table->dropForeign(['kanban_column_id']);
       $table->dropColumn('kanban_column_id');
     });
+
+    // Then drop the kanban_columns table
     Schema::dropIfExists('kanban_columns');
   }
 };

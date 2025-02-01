@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Models\TaskStatus;
 use App\Services\DashboardService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -30,23 +31,35 @@ class DashboardController extends Controller {
             });
         });
 
+        // Get status IDs first
+        $statusIds = TaskStatus::whereIn('slug', ['pending', 'in_progress', 'completed'])
+            ->pluck('id', 'slug');
+
         // Get total counts for all tasks in user's projects
-        $totalPendingTasks = (clone $taskQuery)->where('status', 'pending')->count();
-        $totalProgressTasks = (clone $taskQuery)->where('status', 'in_progress')->count();
-        $totalCompletedTasks = (clone $taskQuery)->where('status', 'completed')->count();
+        $totalPendingTasks = (clone $taskQuery)
+            ->where('status_id', $statusIds['pending'])
+            ->count();
+
+        $totalProgressTasks = (clone $taskQuery)
+            ->where('status_id', $statusIds['in_progress'])
+            ->count();
+
+        $totalCompletedTasks = (clone $taskQuery)
+            ->where('status_id', $statusIds['completed'])
+            ->count();
 
         // Get counts for tasks assigned to the user in their projects
         $myPendingTasks = (clone $taskQuery)
             ->where('assigned_user_id', $user->id)
-            ->where('status', 'pending')
+            ->where('status_id', $statusIds['pending'])
             ->count();
         $myProgressTasks = (clone $taskQuery)
-            ->where('status', 'in_progress')
             ->where('assigned_user_id', $user->id)
+            ->where('status_id', $statusIds['in_progress'])
             ->count();
         $myCompletedTasks = (clone $taskQuery)
-            ->where('status', 'completed')
             ->where('assigned_user_id', $user->id)
+            ->where('status_id', $statusIds['completed'])
             ->count();
 
         // Get active tasks and apply sorting/pagination
@@ -67,6 +80,7 @@ class DashboardController extends Controller {
             'success' => session('success'),
             'labelOptions' => $options['labelOptions'],
             'projectOptions' => $options['projectOptions'],
+            'statusOptions' => $options['statusOptions'],
             'permissions' => [
                 'canManageTasks' => $activeTasks->first()?->project->canManageTask($user),
             ],

@@ -11,7 +11,6 @@ import {
   TASK_PRIORITY_BADGE_MAP,
   TASK_PRIORITY_TEXT_MAP,
   TASK_STATUS_BADGE_MAP,
-  TASK_STATUS_TEXT_MAP,
 } from "@/utils/constants";
 import { useTruncate } from "@/hooks/use-truncate";
 
@@ -20,6 +19,7 @@ type ActiveTasksTableProps = {
   queryParams: QueryParams;
   labelOptions: { value: string; label: string }[];
   projectOptions: { value: string; label: string }[];
+  statusOptions: { value: string; label: string }[];
   permissions: {
     canManageTasks: boolean;
   };
@@ -31,6 +31,7 @@ export function ActiveTasksTable({
   labelOptions,
   permissions,
   projectOptions,
+  statusOptions,
 }: ActiveTasksTableProps) {
   queryParams = queryParams || {};
 
@@ -101,12 +102,13 @@ export function ActiveTasksTable({
       },
       {
         accessorKey: "status",
+        enableSorting: false,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Status" />
         ),
         cell: ({ row }) => (
-          <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
-            {TASK_STATUS_TEXT_MAP[row.original.status]}
+          <Badge variant={TASK_STATUS_BADGE_MAP(row.original.status.slug)}>
+            {row.original.status.name}
           </Badge>
         ),
       },
@@ -190,13 +192,10 @@ export function ActiveTasksTable({
       })),
     },
     {
-      accessorKey: "status",
+      accessorKey: "status", // Change back to 'status' for slug-based filtering
       title: "Status",
       filterType: "select",
-      options: Object.entries(TASK_STATUS_TEXT_MAP).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: statusOptions,
     },
     {
       accessorKey: "due_date",

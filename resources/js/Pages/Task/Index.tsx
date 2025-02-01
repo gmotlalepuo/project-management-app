@@ -5,7 +5,6 @@ import { DataTable, ColumnDef } from "@/Components/data-table-components/data-ta
 import { DataTableColumnHeader } from "@/Components/data-table-components/data-table-column-header";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import {
-  TASK_STATUS_TEXT_MAP,
   TASK_PRIORITY_TEXT_MAP,
   TASK_STATUS_BADGE_MAP,
   TASK_PRIORITY_BADGE_MAP,
@@ -29,6 +28,7 @@ type IndexProps = {
   permissions: {
     canManageTasks: boolean;
   };
+  statusOptions: { value: string; label: string }[];
 };
 
 // Main component for the Task index page
@@ -39,6 +39,7 @@ export default function Index({
   labelOptions,
   permissions,
   projectOptions,
+  statusOptions,
 }: IndexProps) {
   queryParams = queryParams || {};
 
@@ -134,12 +135,13 @@ export default function Index({
       },
       {
         accessorKey: "status",
+        enableSorting: false,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="Status" />
         ),
         cell: ({ row }) => (
-          <Badge variant={TASK_STATUS_BADGE_MAP[row.original.status]}>
-            {TASK_STATUS_TEXT_MAP[row.original.status]}
+          <Badge variant={TASK_STATUS_BADGE_MAP(row.original.status.slug)}>
+            {row.original.status.name}
           </Badge>
         ),
       },
@@ -235,10 +237,7 @@ export default function Index({
       accessorKey: "status",
       title: "Status",
       filterType: "select",
-      options: Object.entries(TASK_STATUS_TEXT_MAP).map(([value, label]) => ({
-        value,
-        label,
-      })),
+      options: statusOptions,
     },
     {
       accessorKey: "due_date",

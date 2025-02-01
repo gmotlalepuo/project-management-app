@@ -116,7 +116,7 @@ export default function Index({ projects, queryParams, success }: IndexProps) {
         <DataTableColumnHeader column={column} title="Status" />
       ),
       cell: ({ row }) => (
-        <Badge variant={PROJECT_STATUS_BADGE_MAP[row.original.status]}>
+        <Badge variant={PROJECT_STATUS_BADGE_MAP(row.original.status)}>
           {PROJECT_STATUS_TEXT_MAP[row.original.status]}
         </Badge>
       ),

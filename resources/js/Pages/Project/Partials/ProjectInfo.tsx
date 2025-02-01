@@ -4,11 +4,7 @@ import { Badge } from "@/Components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import { formatDate } from "@/utils/helpers";
 import { Project } from "@/types/project";
-import {
-  PROJECT_STATUS_BADGE_MAP,
-  PROJECT_STATUS_TEXT_MAP,
-  ROLE_TEXT_MAP,
-} from "@/utils/constants";
+import { PROJECT_STATUS_BADGE_MAP, ROLE_TEXT_MAP } from "@/utils/constants";
 import { Button } from "@/Components/ui/button";
 import {
   CircleX,
@@ -189,8 +185,8 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
             </div>
             <div className="flex flex-col items-baseline space-y-3">
               <Label>Project Status</Label>
-              <Badge variant={PROJECT_STATUS_BADGE_MAP[project.status]}>
-                {PROJECT_STATUS_TEXT_MAP[project.status]}
+              <Badge variant={PROJECT_STATUS_BADGE_MAP(project.status)}>
+                {project.status}
               </Badge>
             </div>
             <div>

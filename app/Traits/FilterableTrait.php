@@ -3,8 +3,6 @@
 namespace App\Traits;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 
 trait FilterableTrait {
   protected function applyNameFilter($query, string $name, string $column = 'name'): void {
@@ -15,11 +13,26 @@ trait FilterableTrait {
     $query->where('variant', $variant);
   }
 
-  protected function applyStatusFilter($query, $statuses, string $column = 'status'): void {
+  protected function applyStatusFilter($query, $statuses, string $type = 'task'): void {
+    // For tasks - use relationship filtering
+    if ($type === 'task') {
+      if (is_array($statuses)) {
+        $query->whereHas('status', function ($q) use ($statuses) {
+          $q->whereIn('slug', $statuses);
+        });
+      } else {
+        $query->whereHas('status', function ($q) use ($statuses) {
+          $q->where('slug', $statuses);
+        });
+      }
+      return;
+    }
+
+    // For projects - use direct column filtering
     if (is_array($statuses)) {
-      $query->whereIn($column, $statuses);
+      $query->whereIn('status', $statuses);
     } else {
-      $query->where($column, $statuses);
+      $query->where('status', $statuses);
     }
   }
 

@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskResource;
+use App\Http\Requests\StoreKanbanColumnRequest;
+use App\Models\TaskStatus;
+use Illuminate\Support\Str;
 
 class KanbanController extends Controller {
   public function show(Project $project) {
@@ -117,13 +120,62 @@ class KanbanController extends Controller {
       ->where('project_id', $project->id)
       ->firstOrFail();
 
-    // Update task status if moving to a mapped column
-    if ($newColumn->maps_to_status) {
-      $task->status = $newColumn->maps_to_status;
+    // Update task status based on column's task status
+    if ($newColumn->task_status_id) {
+      $task->status_id = $newColumn->task_status_id;
+      // Record in status history
+      $task->statusHistory()->attach($newColumn->task_status_id);
     }
 
     $task->kanban_column_id = $newColumn->id;
     $task->save();
+
+    return back();
+  }
+
+  public function store(StoreKanbanColumnRequest $request, Project $project) {
+    $user = Auth::user();
+    $userRole = $project->getUserProjectRole($user);
+
+    if ($userRole !== RolesEnum::ProjectManager->value) {
+      abort(403);
+    }
+
+    $data = $request->validated();
+
+    // Create new task status
+    $taskStatus = TaskStatus::create([
+      'name' => $data['status_name'],
+      'slug' => Str::slug($data['status_name']),
+      'color' => $data['status_color'],
+      'project_id' => $project->id,
+    ]);
+
+    // Create new kanban column
+    $lastOrder = $project->kanbanColumns()->max('order') ?? -1;
+
+    $column = $project->kanbanColumns()->create([
+      'name' => $data['name'],
+      'color' => $data['color'],
+      'order' => $lastOrder + 1,
+      'task_status_id' => $taskStatus->id,
+    ]);
+
+    return back()->with('success', 'Column created successfully.');
+  }
+
+  public function updateColumnsOrder(Request $request, Project $project) {
+    $request->validate([
+      'columns' => 'required|array',
+      'columns.*.id' => 'required|exists:kanban_columns,id',
+      'columns.*.order' => 'required|integer|min:0',
+    ]);
+
+    foreach ($request->columns as $column) {
+      $project->kanbanColumns()
+        ->where('id', $column['id'])
+        ->update(['order' => $column['order']]);
+    }
 
     return back();
   }
