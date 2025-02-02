@@ -208,19 +208,30 @@ class TaskService extends BaseService {
   }
 
   public function getStatusOptions(?Project $project = null) {
-    $query = TaskStatus::query()
-      ->where('is_default', true)
-      ->whereNull('project_id');
+    $query = TaskStatus::query();
 
     if ($project) {
-      $query->orWhere('project_id', $project->id);
+      // For project-specific views, get default statuses and project's custom statuses
+      $query->where(function ($q) use ($project) {
+        $q->where('is_default', true)
+          ->whereNull('project_id')
+          ->orWhere('project_id', $project->id);
+      });
+    } else {
+      // For global views, get all possible statuses
+      $query->where(function ($q) {
+        $q->where('is_default', true)
+          ->orWhereNotNull('project_id');
+      });
     }
 
-    return $query->orderBy('name')->get()->map(function ($status) {
-      return [
-        'value' => (string)$status->id, // Ensure ID is cast to string for frontend
-        'label' => $status->name,
-      ];
-    });
+    return $query->orderBy('name')
+      ->get()
+      ->map(function ($status) {
+        return [
+          'value' => (string)$status->id,
+          'label' => $status->name,
+        ];
+      });
   }
 }

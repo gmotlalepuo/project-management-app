@@ -13,6 +13,8 @@ return new class extends Migration {
       $table->string('color');
       $table->boolean('is_default')->default(false);
       $table->foreignId('project_id')->nullable()->constrained()->cascadeOnDelete();
+      $table->foreignId('created_by')->nullable()->constrained('users');
+      $table->foreignId('updated_by')->nullable()->constrained('users');
       $table->timestamps();
     });
   }

@@ -481,6 +481,12 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                     <span>Manage Task Labels</span>
                   </Button>
                 </Link>
+                <Link href={route("project.statuses.index", project.id)}>
+                  <Button className="w-full" variant="outline">
+                    <Tag className="h-5 w-5" />
+                    <span>Manage Task Statuses</span>
+                  </Button>
+                </Link>
                 <Link href={route("kanban.show", project.id)}>
                   <Button className="w-full" variant="outline">
                     <LayoutDashboard className="h-5 w-5" />

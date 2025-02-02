@@ -13,7 +13,9 @@ class TaskStatus extends Model {
     'slug',
     'color',
     'is_default',
-    'project_id'
+    'project_id',
+    'created_by',
+    'updated_by',
   ];
 
   protected $casts = [
@@ -24,8 +26,21 @@ class TaskStatus extends Model {
     return $this->belongsTo(Project::class);
   }
 
-  public function tasks(): BelongsToMany {
-    return $this->belongsToMany(Task::class, 'status_task');
+  public function tasks(): HasMany {
+    return $this->hasMany(Task::class, 'status_id');
+  }
+
+  public function createdBy(): BelongsTo {
+    return $this->belongsTo(User::class, 'created_by');
+  }
+
+  public function updatedBy(): BelongsTo {
+    return $this->belongsTo(User::class, 'updated_by');
+  }
+
+  public function statusHistory(): BelongsToMany {
+    return $this->belongsToMany(Task::class, 'task_status_history')
+      ->withTimestamps();
   }
 
   public function kanbanColumns(): HasMany {

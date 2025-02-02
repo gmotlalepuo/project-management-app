@@ -1,4 +1,4 @@
-import { TaskLabelBadgeVariant } from "@/utils/constants";
+import { TaskLabelBadgeVariant, TaskStatusBadgeVariant } from "@/utils/constants";
 import { PaginationLinks, PaginationMeta } from "./utils";
 
 export type Task = {
@@ -65,6 +65,16 @@ export type Label = {
   updated_by: User | null;
 };
 
+export type TaskStatus = {
+  id: number;
+  name: string;
+  color: TaskStatusBadgeVariant;
+  is_default: boolean;
+  created_by: {
+    name: string;
+  } | null;
+};
+
 export type PaginatedTask = {
   data: Task[];
   links: PaginationLinks;
@@ -73,6 +83,12 @@ export type PaginatedTask = {
 
 export type PaginatedLabel = {
   data: Label[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
+};
+
+export type PaginatedTaskStatus = {
+  data: TaskStatus[];
   links: PaginationLinks;
   meta: PaginationMeta;
 };

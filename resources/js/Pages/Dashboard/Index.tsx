@@ -1,6 +1,6 @@
 import { Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { PaginatedTask, Task } from "@/types/task";
+import { PaginatedTask } from "@/types/task";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -62,13 +62,8 @@ export default function Dashboard({
     { slug: "completed", total: totalCompletedTasks, mine: myCompletedTasks },
   ];
 
-  const hasStats =
-    totalPendingTasks > 0 || totalProgressTasks > 0 || totalCompletedTasks > 0;
-  const hasActiveTasks = activeTasks.data.length > 0;
-  const shouldShowTabs = hasStats || hasActiveTasks;
-
   // Determine default tab based on available data
-  const defaultTab = hasActiveTasks ? "tasks" : "stats";
+  const defaultTab = "tasks";
 
   return (
     <AuthenticatedLayout
@@ -144,44 +139,34 @@ export default function Dashboard({
             </Link>
           </div>
 
-          {shouldShowTabs && (
-            <Card>
-              <CardContent className="pt-6">
-                <Tabs defaultValue={defaultTab} className="w-full">
-                  <TabsList
-                    className="grid w-full"
-                    style={{
-                      gridTemplateColumns: `repeat(${hasActiveTasks && hasStats ? 2 : 1}, 1fr)`,
-                    }}
-                  >
-                    {hasActiveTasks && (
-                      <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
-                    )}
-                    {hasStats && <TabsTrigger value="stats">Statistics</TabsTrigger>}
-                  </TabsList>
+          <Card>
+            <CardContent className="pt-6">
+              <Tabs defaultValue={defaultTab} className="w-full">
+                <TabsList
+                  className="grid w-full"
+                  style={{ gridTemplateColumns: "repeat(2, 1fr)" }}
+                >
+                  <TabsTrigger value="tasks">Active Tasks</TabsTrigger>
+                  <TabsTrigger value="stats">Statistics</TabsTrigger>
+                </TabsList>
 
-                  {hasActiveTasks && (
-                    <TabsContent value="tasks" className="mt-4">
-                      <ActiveTasksTable
-                        activeTasks={activeTasks}
-                        queryParams={queryParams}
-                        labelOptions={labelOptions}
-                        permissions={permissions}
-                        projectOptions={projectOptions}
-                        statusOptions={statusOptions}
-                      />
-                    </TabsContent>
-                  )}
+                <TabsContent value="tasks" className="mt-4">
+                  <ActiveTasksTable
+                    activeTasks={activeTasks}
+                    queryParams={queryParams}
+                    labelOptions={labelOptions}
+                    permissions={permissions}
+                    projectOptions={projectOptions}
+                    statusOptions={statusOptions}
+                  />
+                </TabsContent>
 
-                  {hasStats && (
-                    <TabsContent value="stats" className="mt-4">
-                      <StatsCards stats={stats} />
-                    </TabsContent>
-                  )}
-                </Tabs>
-              </CardContent>
-            </Card>
-          )}
+                <TabsContent value="stats" className="mt-4">
+                  <StatsCards stats={stats} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AuthenticatedLayout>

@@ -140,7 +140,12 @@ export default function Index({
           <DataTableColumnHeader column={column} title="Status" />
         ),
         cell: ({ row }) => (
-          <Badge variant={TASK_STATUS_BADGE_MAP(row.original.status.slug)}>
+          <Badge
+            variant={TASK_STATUS_BADGE_MAP(
+              row.original.status.slug,
+              row.original.status.color,
+            )}
+          >
             {row.original.status.name}
           </Badge>
         ),

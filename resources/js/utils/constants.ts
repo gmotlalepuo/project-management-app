@@ -61,9 +61,18 @@ export const getStatusOptions = () => {
   }));
 };
 
-// Update task status badge map to handle custom statuses
-export const TASK_STATUS_BADGE_MAP = (status: StatusType): BadgeVariant => {
-  return getStatusConfig(status).badge;
+// Update task status badge map to handle both default and custom statuses
+export const TASK_STATUS_BADGE_MAP = (
+  status: StatusType | string,
+  color?: string,
+): BadgeVariant => {
+  // If it's a default status, use the predefined config
+  if (status in STATUS_CONFIG) {
+    return STATUS_CONFIG[status as StatusType].badge;
+  }
+
+  // For custom statuses, use their color value directly
+  return color as BadgeVariant;
 };
 
 export const PROJECT_STATUS_BADGE_MAP = (status: StatusType): BadgeVariant => {
@@ -122,6 +131,16 @@ export const TASK_LABEL_BADGE_VARIANT_MAP: Record<TaskLabelBadgeVariant, string>
   cyan: "cyan",
   gray: "gray",
 };
+
+// Task Status Badge variants (extends the label variants with status-specific ones)
+export const TASK_STATUS_BADGE_VARIANTS = {
+  ...TASK_LABEL_BADGE_VARIANTS, // Include all label colors
+  warning: "warning", // For pending
+  info: "info", // For in progress
+  success: "success", // For completed
+} as const;
+
+export type TaskStatusBadgeVariant = keyof typeof TASK_STATUS_BADGE_VARIANTS;
 
 // Invitation constants
 export const INVITATION_STATUS_BADGE_MAP: Record<

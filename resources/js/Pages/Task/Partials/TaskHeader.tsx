@@ -47,7 +47,9 @@ export function TaskHeader({ task }: TaskHeaderProps) {
           <h1 className="text-2xl font-semibold md:text-2xl">{task.name}</h1>
 
           <div className="flex gap-2">
-            <Badge variant={TASK_STATUS_BADGE_MAP(task.status.slug)}>
+            <Badge
+              variant={TASK_STATUS_BADGE_MAP(task.status.slug, task.status.color)}
+            >
               {task.status.name}
             </Badge>
             <Badge variant={TASK_PRIORITY_BADGE_MAP[task.priority]}>

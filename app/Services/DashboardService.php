@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Task;
-use App\Models\TaskStatus;
 use App\Traits\FilterableTrait;
 use App\Traits\SortableTrait;
 
@@ -27,12 +26,10 @@ class DashboardService extends BaseService {
           });
       });
 
-    // Don't apply initial status filter if we're filtering manually
+    // Only exclude completed tasks by default
     if (!isset($filters['status'])) {
-      $query->whereIn('status_id', function ($q) {
-        $q->select('id')
-          ->from('task_statuses')
-          ->whereIn('slug', ['pending', 'in_progress']);
+      $query->whereHas('status', function ($q) {
+        $q->where('slug', '!=', 'completed');
       });
     }
 
@@ -47,7 +44,7 @@ class DashboardService extends BaseService {
       $this->applyPriorityFilter($query, $filters['priority']);
     }
     if (isset($filters['status'])) {
-      $this->applyStatusFilter($query, $filters['status'], 'task'); // Specify type as 'task'
+      $this->applyStatusFilter($query, $filters['status'], 'task');
     }
     if (isset($filters['label_ids'])) {
       $this->applyLabelFilter($query, $filters['label_ids']);
@@ -72,19 +69,7 @@ class DashboardService extends BaseService {
     return [
       'projectOptions' => $this->taskService->getProjectOptions($user),
       'labelOptions' => $this->taskService->getLabelOptions(),
-      'statusOptions' => $this->getStatusOptions(),
+      'statusOptions' => $this->taskService->getStatusOptions(),
     ];
-  }
-
-  protected function getStatusOptions() {
-    return TaskStatus::where('is_default', true)
-      ->whereNull('project_id')
-      ->get()
-      ->map(function ($status) {
-        return [
-          'value' => (string)$status->id,
-          'label' => $status->name,
-        ];
-      });
   }
 }

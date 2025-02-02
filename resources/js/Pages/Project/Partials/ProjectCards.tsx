@@ -35,7 +35,10 @@ export default function ProjectCards({
       className={`grid flex-1 gap-6 ${projects.length > 1 ? "md:grid-cols-2" : "md:grid-cols-1"}`}
     >
       {projects.slice(0, 6).map((project) => {
-        const StatusIcon = STATUS_CONFIG[project.status as StatusType].icon;
+        // Use default status config if status not found
+        const StatusIcon =
+          STATUS_CONFIG[project.status as StatusType]?.icon ||
+          STATUS_CONFIG.default.icon;
 
         const tasksProgress = calculateTaskProgress(
           project.total_tasks,
@@ -114,9 +117,11 @@ export default function ProjectCards({
 
             <ul className="mt-3 space-y-1.5 text-sm text-gray-800 dark:text-gray-200">
               {project.tasks.slice(0, 5).map((task) => {
-                const statusConfig = task.status
-                  ? STATUS_CONFIG[task.status.slug as StatusType]
-                  : STATUS_CONFIG.pending;
+                // Use default status config if status not found
+                const statusConfig = task.status?.slug
+                  ? STATUS_CONFIG[task.status.slug as StatusType] ||
+                    STATUS_CONFIG.default
+                  : STATUS_CONFIG.default;
                 const TaskStatusIcon = statusConfig.icon;
                 const primaryLabel = task.labels?.[0]; // Get first label if it exists
 

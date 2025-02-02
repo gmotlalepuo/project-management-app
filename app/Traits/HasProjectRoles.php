@@ -49,6 +49,10 @@ trait HasProjectRoles {
     return $this->canManage($user);
   }
 
+  public function canManageBoard(User $user): bool {
+    return $this->canManage($user);
+  }
+
   public function canKickProjectManager(User $user): bool {
     return $user->id === $this->created_by;
   }
