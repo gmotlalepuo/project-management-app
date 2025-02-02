@@ -207,30 +207,38 @@ class TaskService extends BaseService {
     ];
   }
 
-  public function getStatusOptions(?Project $project = null) {
-    $query = TaskStatus::query();
+  public function getStatusOptions(?Project $project = null, bool $includeProjectNames = true) {
+    // Start with default statuses
+    $query = TaskStatus::query()
+      ->where('is_default', true)
+      ->whereNull('project_id');
 
     if ($project) {
-      // For project-specific views, get default statuses and project's custom statuses
-      $query->where(function ($q) use ($project) {
-        $q->where('is_default', true)
-          ->whereNull('project_id')
-          ->orWhere('project_id', $project->id);
-      });
+      // For project-specific views, add only this project's statuses
+      $query->orWhere('project_id', $project->id);
     } else {
-      // For global views, get all possible statuses
-      $query->where(function ($q) {
-        $q->where('is_default', true)
-          ->orWhereNotNull('project_id');
-      });
+      // For global views, get statuses from user's accessible projects
+      $userProjectIds = Auth::user()
+        ->projects()
+        ->pluck('projects.id');
+
+      $query->orWhereIn('project_id', $userProjectIds);
     }
 
-    return $query->orderBy('name')
+    return $query->with('project') // Still eager load project for condition check
+      ->orderBy('is_default', 'desc')
+      ->orderBy('name')
       ->get()
-      ->map(function ($status) {
+      ->map(function ($status) use ($includeProjectNames) {
+        $label = $status->name;
+        // Only add project name if requested and it's a custom status
+        if ($includeProjectNames && !$status->is_default && $status->project) {
+          $label .= " ({$status->project->name})";
+        }
+
         return [
           'value' => (string)$status->id,
-          'label' => $status->name,
+          'label' => $label,
         ];
       });
   }

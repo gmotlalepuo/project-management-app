@@ -26,7 +26,7 @@ class ProjectService extends BaseService {
   public function getProjectOptions($project) {
     return [
       'labelOptions' => $this->taskService->getLabelOptions($project),
-      'statusOptions' => $this->taskService->getStatusOptions($project),
+      'statusOptions' => $this->taskService->getStatusOptions($project, false),
     ];
   }
 

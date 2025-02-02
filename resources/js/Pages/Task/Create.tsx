@@ -45,10 +45,11 @@ export default function Create({
   currentUserId,
   selectedProjectId,
   fromProjectPage,
-  statusOptions,
+  statusOptions: initialStatusOptions,
 }: Props) {
   const [canAssignOthers, setCanAssignOthers] = useState(true);
   const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
+  const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
 
   const { data, setData, post, errors, reset } = useForm({
     image: null as File | null,
@@ -145,10 +146,29 @@ export default function Create({
     }
   };
 
-  const handleProjectChange = (projectId: string) => {
+  const handleProjectChange = async (projectId: string) => {
     setData("project_id", projectId);
-    checkProjectRole(projectId);
-    fetchProjectUsers(projectId);
+
+    try {
+      // Fetch project role and users
+      await checkProjectRole(projectId);
+      await fetchProjectUsers(projectId);
+
+      // Fetch project-specific status options
+      const response = await axios.get(route("task.statuses", projectId));
+      if (response.data.statusOptions) {
+        setStatusOptions(response.data.statusOptions);
+        // Reset status selection when options change
+        setData("status_id", "");
+      }
+    } catch (error) {
+      console.error("Failed to fetch project data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch project data",
+        variant: "destructive",
+      });
+    }
   };
 
   // Initialize project selection and fetch related data if coming from project page

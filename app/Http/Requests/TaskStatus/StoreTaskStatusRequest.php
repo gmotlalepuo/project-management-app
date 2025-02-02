@@ -7,7 +7,7 @@ use Illuminate\Validation\Rule;
 
 class StoreTaskStatusRequest extends FormRequest {
   public function authorize(): bool {
-    return true; // Authorization handled by middleware
+    return true;
   }
 
   public function rules(): array {
@@ -16,10 +16,20 @@ class StoreTaskStatusRequest extends FormRequest {
         'required',
         'string',
         'max:255',
-        Rule::unique('task_statuses')
-          ->where('project_id', $this->project->id)
+        Rule::unique('task_statuses', 'name')
+          ->where(function ($query) {
+            return $query->where('project_id', $this->project->id)
+              ->whereNotNull('project_id');
+          })
       ],
       'color' => ['required', 'string', 'in:red,green,blue,yellow,amber,indigo,purple,pink,teal,cyan,gray,warning,info,success'],
+      'project_id' => ['required', 'exists:projects,id'],
+    ];
+  }
+
+  public function messages(): array {
+    return [
+      'name.unique' => 'This status name is already in use in this project.',
     ];
   }
 }

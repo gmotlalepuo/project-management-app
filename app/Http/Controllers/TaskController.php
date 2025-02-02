@@ -322,4 +322,9 @@ class TaskController extends Controller {
 
         return back()->with('success', 'Task image deleted successfully.');
     }
+
+    public function getProjectStatuses(Project $project) {
+        $statusOptions = $this->taskService->getStatusOptions($project);
+        return response()->json(['statusOptions' => $statusOptions]);
+    }
 }
