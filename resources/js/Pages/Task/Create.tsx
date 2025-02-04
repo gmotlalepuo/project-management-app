@@ -53,6 +53,8 @@ export default function Create({
   const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
   const [statusOptions, setStatusOptions] = useState(initialStatusOptions);
 
+  const isProjectSelectionDisabled = Boolean(selectedProjectId && fromProjectPage);
+
   const { data, setData, post, errors, reset } = useForm({
     image: null as File | null,
     name: "",
@@ -156,12 +158,13 @@ export default function Create({
       await checkProjectRole(projectId);
       await fetchProjectUsers(projectId);
 
-      // Fetch project-specific status options
-      const response = await axios.get(route("task.statuses", projectId));
-      if (response.data.statusOptions) {
-        setStatusOptions(response.data.statusOptions);
-        // Reset status selection when options change
-        setData("status_id", "");
+      // Only fetch status options if we don't have a preselected status
+      if (!selectedStatusId) {
+        const response = await axios.get(route("task.statuses", projectId));
+        if (response.data.statusOptions) {
+          setStatusOptions(response.data.statusOptions);
+          setData("status_id", "");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch project data:", error);
@@ -180,8 +183,12 @@ export default function Create({
     }
   }, [selectedProjectId]);
 
-  // Disable project selection if coming from project page
-  const isProjectSelectionDisabled = fromProjectPage;
+  // Preserve selected status when project is preselected
+  useEffect(() => {
+    if (selectedStatusId) {
+      setData("status_id", selectedStatusId);
+    }
+  }, [selectedStatusId]);
 
   return (
     <AuthenticatedLayout

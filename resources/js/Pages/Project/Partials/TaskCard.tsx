@@ -101,105 +101,111 @@ export function TaskCard({ task, permissions, isDragging = false, columns }: Pro
           !canDragTask && "opacity-80", // Visual indication that task can't be moved
         )}
       >
-        <div
-          className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100"
-          onMouseDown={(e) => e.stopPropagation()} // Prevent drag when using dropdown
-        >
-          <DropdownMenu onOpenChange={handleDropdownOpenChange}>
-            <DropdownMenuTrigger asChild>
-              <button
-                className="rounded p-1 hover:bg-muted"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => router.visit(route("task.show", task.id))}
-              >
-                <Eye className="h-4 w-4" />
-                <span>View Task</span>
-              </DropdownMenuItem>
-              {task.can.edit && (
-                <DropdownMenuItem
-                  onClick={() => router.visit(route("task.edit", task.id))}
-                >
-                  <Pencil className="h-4 w-4" />
-                  <span>Edit Task</span>
-                </DropdownMenuItem>
-              )}
-              {task.can.assign && (
-                <DropdownMenuItem onClick={handleAssign}>
-                  <UserPlus className="h-4 w-4" />
-                  <span>Assign to me</span>
-                </DropdownMenuItem>
-              )}
-              {task.can.unassign && (
-                <DropdownMenuItem onClick={handleUnassign}>
-                  <UserMinus className="h-4 w-4" />
-                  <span>Unassign</span>
-                </DropdownMenuItem>
-              )}
-              {task.can.move && (
-                <MoveTaskDialog
-                  taskId={task.id}
-                  currentColumnId={task.kanban_column_id}
-                  columns={columns}
-                />
-              )}
-              {task.can.delete && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleDelete} className="text-red-500">
-                    <Trash2 className="h-4 w-4" />
-                    <span>Delete Task</span>
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <div className="flex items-start justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                #{task.task_number}
+              </span>
+              <h4 className="line-clamp-2 flex-1 font-medium">{task.name}</h4>
+            </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              #{task.task_number}
-            </span>
-            <h4 className="line-clamp-2 flex-1 font-medium">{task.name}</h4>
+            {task.labels.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {task.labels.map((label) => (
+                  <Badge key={label.id} variant={label.variant}>
+                    {label.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              {task.assignedUser ? (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={task.assignedUser.profile_picture} />
+                    <AvatarFallback>
+                      {task.assignedUser.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-muted-foreground">
+                    {task.assignedUser.name}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-sm text-muted-foreground">Unassigned</span>
+              )}
+
+              {task.due_date && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <CalendarClock className="h-4 w-4" />
+                  <span>{formatDate(task.due_date)}</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {task.labels.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {task.labels.map((label) => (
-                <Badge key={label.id} variant={label.variant}>
-                  {label.name}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            {task.assignedUser ? (
-              <div className="flex items-center gap-2">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={task.assignedUser.profile_picture} />
-                  <AvatarFallback>{task.assignedUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-muted-foreground">
-                  {task.assignedUser.name}
-                </span>
-              </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">Unassigned</span>
-            )}
-
-            {task.due_date && (
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <CalendarClock className="h-4 w-4" />
-                <span>{formatDate(task.due_date)}</span>
-              </div>
-            )}
+          <div
+            onMouseDown={(e) => e.stopPropagation()} // Prevent drag when using dropdown
+          >
+            <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="rounded p-1 hover:bg-muted"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => router.visit(route("task.show", task.id))}
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>View Task</span>
+                </DropdownMenuItem>
+                {task.can.edit && (
+                  <DropdownMenuItem
+                    onClick={() => router.visit(route("task.edit", task.id))}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span>Edit Task</span>
+                  </DropdownMenuItem>
+                )}
+                {task.can.assign && (
+                  <DropdownMenuItem onClick={handleAssign}>
+                    <UserPlus className="h-4 w-4" />
+                    <span>Assign to me</span>
+                  </DropdownMenuItem>
+                )}
+                {task.can.unassign && (
+                  <DropdownMenuItem onClick={handleUnassign}>
+                    <UserMinus className="h-4 w-4" />
+                    <span>Unassign</span>
+                  </DropdownMenuItem>
+                )}
+                {task.can.move && (
+                  <MoveTaskDialog
+                    taskId={task.id}
+                    currentColumnId={task.kanban_column_id}
+                    columns={columns}
+                  />
+                )}
+                {task.can.delete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-red-500"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Task</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

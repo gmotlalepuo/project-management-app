@@ -98,22 +98,22 @@ export function KanbanBoard({ columns, projectId, permissions }: Props) {
     return (
       <div className="mx-auto w-full">
         <Tabs defaultValue={columns[0]?.id.toString()} className="w-full">
-          <TabsList className="mb-4 w-full overflow-x-auto">
+          <TabsList className="mb-4 grid h-full grid-cols-2 gap-2 sm:grid-cols-3">
             {columns.map((column) => (
               <TabsTrigger
                 key={column.id}
                 value={column.id.toString()}
-                className="flex-shrink-0" // Prevent tab text from wrapping
+                className="w-full px-3 py-2"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <span
                     className={cn(
-                      "h-2 w-2 rounded-full",
+                      "h-2 w-2 flex-shrink-0 rounded-full",
                       column.color ? `bg-${column.color}-500` : "bg-secondary",
                     )}
                   />
-                  <span>{column.name}</span>
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                  <span className="truncate">{column.name}</span>
+                  <span className="flex-shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs">
                     {column.tasks?.length || 0}
                   </span>
                 </div>
