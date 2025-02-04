@@ -3,7 +3,6 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  DragOverEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -15,6 +14,9 @@ import { TaskCard } from "./TaskCard";
 import { Task } from "@/types/task";
 import { router } from "@inertiajs/react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Props = {
   columns: KanbanColumnType[];
@@ -28,7 +30,6 @@ type Props = {
 export function KanbanBoard({ columns, projectId, permissions }: Props) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [startingColumn, setStartingColumn] = useState<number | null>(null);
-  const [activeColumn, setActiveColumn] = useState<number | null>(null);
   const { toast } = useToast();
 
   const sensors = useSensors(
@@ -42,11 +43,11 @@ export function KanbanBoard({ columns, projectId, permissions }: Props) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    if (!event.active) return;
+    const { active } = event;
 
-    // Find task in columns
+    // Only handle task dragging
     for (const column of columns) {
-      const task = column.tasks.find((t) => t.id === event.active.id);
+      const task = column.tasks.find((t) => t.id === Number(active.id));
       if (task) {
         setActiveTask(task);
         setStartingColumn(column.id);
@@ -55,33 +56,25 @@ export function KanbanBoard({ columns, projectId, permissions }: Props) {
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
-    if (!event.over) {
-      setActiveColumn(null);
-      return;
-    }
-    setActiveColumn(Number(event.over.id));
-  };
-
   const handleDragEnd = async (event: DragEndEvent) => {
-    if (!event.over || !startingColumn) {
+    if (!event.over || !startingColumn || !activeTask) {
       resetDragState();
       return;
     }
 
-    const newColumnId = event.over.id as number;
+    const newColumnId = Number(event.over.id);
 
     if (startingColumn !== newColumnId) {
       try {
         router.post(
-          route("kanban.move-task", event.active.id),
+          route("kanban.move-task", activeTask.id),
           { column_id: newColumnId },
           { preserveScroll: true },
         );
       } catch (error) {
         toast({
-          title: "Error moving task",
-          description: "The task could not be moved. Please try again.",
+          title: "Error",
+          description: "Failed to move task. Please try again.",
           variant: "destructive",
         });
       }
@@ -97,30 +90,83 @@ export function KanbanBoard({ columns, projectId, permissions }: Props) {
   const resetDragState = () => {
     setActiveTask(null);
     setStartingColumn(null);
-    setActiveColumn(null);
   };
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <div className="mx-auto w-full">
+        <Tabs defaultValue={columns[0]?.id.toString()} className="w-full">
+          <TabsList className="mb-4 w-full overflow-x-auto">
+            {columns.map((column) => (
+              <TabsTrigger
+                key={column.id}
+                value={column.id.toString()}
+                className="flex-shrink-0" // Prevent tab text from wrapping
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "h-2 w-2 rounded-full",
+                      column.color ? `bg-${column.color}-500` : "bg-secondary",
+                    )}
+                  />
+                  <span>{column.name}</span>
+                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                    {column.tasks?.length || 0}
+                  </span>
+                </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {columns.map((column) => (
+            <TabsContent
+              key={column.id}
+              value={column.id.toString()}
+              className="mt-0 w-full"
+            >
+              <KanbanColumn
+                column={column}
+                permissions={permissions}
+                projectId={projectId}
+                columns={columns}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    );
+  }
 
   return (
     <DndContext
       sensors={sensors}
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-4 overflow-x-auto p-1">
+      <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
             column={column}
             permissions={permissions}
-            isOver={activeColumn === column.id}
+            projectId={projectId}
+            columns={columns}
+            isOver={activeTask !== null && startingColumn !== column.id}
           />
         ))}
       </div>
       <DragOverlay>
         {activeTask && (
-          <TaskCard task={activeTask} permissions={permissions} isDragging />
+          <TaskCard
+            task={activeTask}
+            permissions={permissions}
+            isDragging
+            columns={columns}
+          />
         )}
       </DragOverlay>
     </DndContext>

@@ -11,7 +11,7 @@ import { PaginatedTask, Task } from "@/types/task";
 import { FilterableColumn, QueryParams } from "@/types/utils";
 import { Link, router } from "@inertiajs/react";
 import { Button } from "@/Components/ui/button";
-import { CirclePlus, Tag } from "lucide-react";
+import { CirclePlus, LayoutDashboard, Tag } from "lucide-react";
 import { DataTableRowActions } from "@/Components/data-table-components/data-table-row-actions";
 import { useTruncate } from "@/hooks/use-truncate";
 
@@ -192,7 +192,7 @@ export default function ProjectTasks({
 
   return (
     <div className="rounded-lg bg-card p-4 shadow-sm sm:p-6">
-      <header className="mb-4 flex items-center justify-between">
+      <header className="mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
           All Project Tasks
         </h2>
@@ -204,6 +204,12 @@ export default function ProjectTasks({
             <Button className="w-full sm:w-auto">
               <CirclePlus className="h-5 w-5" />
               <span>Create Task</span>
+            </Button>
+          </Link>
+          <Link href={route("kanban.show", { project: projectId })}>
+            <Button variant="secondary" className="w-full sm:w-auto">
+              <LayoutDashboard className="h-5 w-5" />
+              <span>Kanban Board</span>
             </Button>
           </Link>
           {permissions.canManageTasks && (

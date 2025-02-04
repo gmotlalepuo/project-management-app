@@ -16,6 +16,7 @@ class TaskResource extends JsonResource {
      */
     public function toArray(Request $request): array {
         $user = $request->user();
+        $project = $this->project;
 
         return [
             'id' => $this->id,
@@ -58,8 +59,9 @@ class TaskResource extends JsonResource {
             'labels' => TaskLabelResource::collection($this->whenLoaded('labels')),
             'comments' => TaskCommentResource::collection($this->comments),
             'can' => [
-                'edit' => $this->project->canEditTask($user, $this->resource),
-                'delete' => $this->project->canDeleteTask($user),
+                'edit' => $project->canEditTask($user, $this->resource),
+                'delete' => $project->canDeleteTask($user),
+                'move' => $this->assigned_user_id === $user->id,
                 'assign' => $this->canBeAssignedBy($user),
                 'unassign' => $this->canBeUnassignedBy($user),
                 'comment' => $user->can('comment_on_tasks'),

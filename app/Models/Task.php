@@ -75,6 +75,17 @@ class Task extends Model {
 
                 if ($defaultColumn) {
                     $task->kanban_column_id = $defaultColumn->id;
+                } else {
+                    // Create the default column if it doesn't exist
+                    $defaultColumn = KanbanColumn::create([
+                        'name' => $task->status->name,
+                        'color' => $task->status->color,
+                        'order' => KanbanColumn::where('project_id', $task->project_id)->max('order') + 1,
+                        'project_id' => $task->project_id,
+                        'task_status_id' => $task->status_id,
+                        'is_default' => $task->status->is_default,
+                    ]);
+                    $task->kanban_column_id = $defaultColumn->id;
                 }
             }
         });

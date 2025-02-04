@@ -56,6 +56,7 @@ class TaskController extends Controller {
     public function create() {
         $user = Auth::user();
         $projectId = request('project_id');
+        $statusId = request('status_id');
         $selectedProject = $projectId ? Project::findOrFail($projectId) : null;
 
         // Get accessible projects for the user
@@ -92,6 +93,7 @@ class TaskController extends Controller {
             'currentUserId' => $user->id,
             'statusOptions' => $statuses,
             'selectedProjectId' => $selectedProject?->id,
+            'selectedStatusId' => $statusId,
             'fromProjectPage' => (bool)$projectId,
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\KanbanColumn;
 use App\Models\Project;
 use Carbon\Carbon;
 use App\Models\Task;
@@ -114,6 +115,29 @@ class TaskService extends BaseService {
         Storage::disk('public')->deleteDirectory(dirname($task->image_path));
       }
       $data['image_path'] = $data['image']->store('task/' . Str::random(10), 'public');
+    }
+
+    // Assign to appropriate kanban column based on status
+    if (isset($data['status_id']) && $task->status_id !== $data['status_id']) {
+      $defaultColumn = KanbanColumn::where('project_id', $task->project_id)
+        ->where('task_status_id', $data['status_id'])
+        ->first();
+
+      if ($defaultColumn) {
+        $data['kanban_column_id'] = $defaultColumn->id;
+      } else {
+        // Create the default column if it doesn't exist
+        $status = TaskStatus::find($data['status_id']);
+        $defaultColumn = KanbanColumn::create([
+          'name' => $status->name,
+          'color' => $status->color,
+          'order' => KanbanColumn::where('project_id', $task->project_id)->max('order') + 1,
+          'project_id' => $task->project_id,
+          'task_status_id' => $status->id,
+          'is_default' => $status->is_default,
+        ]);
+        $data['kanban_column_id'] = $defaultColumn->id;
+      }
     }
 
     $task->update($data);

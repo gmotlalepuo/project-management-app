@@ -87,4 +87,12 @@ trait HasProjectRoles {
 
     return $kickableUsers;
   }
+
+  public function getUserProjectRole(User $user): ?string {
+    $projectUser = $this->acceptedUsers()
+      ->where('user_id', $user->id)
+      ->first();
+
+    return $projectUser?->pivot?->role;
+  }
 }

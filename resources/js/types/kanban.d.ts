@@ -1,14 +1,20 @@
+import { TaskStatusBadgeVariant } from "@/utils/constants";
 import { Task } from "./task";
 
 export type KanbanColumn = {
   id: number;
   name: string;
   order: number;
-  project_id: number;
+  color: TaskStatusBadgeVariant;
   is_default: boolean;
-  maps_to_status: string | null;
-  color: string | null;
   tasks: Task[];
+  project_id: number;
+  taskStatus: {
+    id: number;
+    name: string;
+    slug: string;
+    color: string;
+  };
 };
 
 export type KanbanColumnData = {

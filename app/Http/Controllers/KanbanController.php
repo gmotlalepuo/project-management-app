@@ -11,35 +11,37 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Http\Resources\ProjectResource;
 use App\Http\Resources\TaskResource;
-use App\Http\Requests\StoreKanbanColumnRequest;
 use App\Models\TaskStatus;
-use Illuminate\Support\Str;
 
 class KanbanController extends Controller {
   public function show(Project $project) {
     $user = Auth::user();
+    $userRole = $project->getUserProjectRole($user);
 
-    // Get user's role from project's accepted users
-    $userRole = $project->acceptedUsers()
-      ->where('user_id', $user->id)
-      ->first()
-      ->pivot
-      ->role;
+    // Get all available statuses for this project (default + project-specific)
+    $statuses = TaskStatus::where('is_default', true)
+      ->whereNull('project_id')
+      ->orWhere('project_id', $project->id)
+      ->orderBy('name')
+      ->get();
 
-    // Add eager loading for tasks and their relationships
+    // Create or get columns for each status
+    $statuses->each(function ($status) use ($project) {
+      $project->kanbanColumns()->firstOrCreate(
+        ['task_status_id' => $status->id],
+        [
+          'name' => $status->name,
+          'color' => $status->color,
+          'order' => $project->kanbanColumns()->max('order') + 1,
+          'is_default' => $status->is_default,
+        ]
+      );
+    });
+
+    // Get columns with tasks
     $columns = $project->kanbanColumns()
       ->orderBy('order')
-      ->with([
-        'tasks' => function ($query) {
-          $query->with([
-            'labels',
-            'assignedUser',
-            'project',
-            'createdBy',
-            'updatedBy'
-          ]);
-        }
-      ])
+      ->with(['tasks.labels', 'tasks.assignedUser', 'tasks.project', 'tasks.createdBy', 'tasks.updatedBy', 'taskStatus'])
       ->get();
 
     return Inertia::render('Project/Kanban', [
@@ -49,11 +51,10 @@ class KanbanController extends Controller {
           'id' => $column->id,
           'name' => $column->name,
           'order' => $column->order,
-          'project_id' => $column->project_id,
-          'is_default' => $column->is_default,
-          'maps_to_status' => $column->maps_to_status,
           'color' => $column->color,
-          'tasks' => TaskResource::collection($column->tasks)->resource, // Add ->resource to get raw array
+          'is_default' => $column->is_default,
+          'taskStatus' => $column->taskStatus,
+          'tasks' => TaskResource::collection($column->tasks)->resource,
         ];
       }),
       'permissions' => [
@@ -63,16 +64,14 @@ class KanbanController extends Controller {
         ]),
         'canManageBoard' => $userRole === RolesEnum::ProjectManager->value,
       ],
+      'success' => session('success'),
+      'error' => session('error'),
     ]);
   }
 
   public function updateColumnOrder(Request $request, Project $project) {
     $user = Auth::user();
-    $userRole = $project->acceptedUsers()
-      ->where('user_id', $user->id)
-      ->first()
-      ->pivot
-      ->role;
+    $userRole = $project->getUserProjectRole($user);
 
     if ($userRole !== RolesEnum::ProjectManager->value) {
       abort(403, 'You are not authorized to manage the kanban board.');
@@ -96,11 +95,7 @@ class KanbanController extends Controller {
   public function moveTask(Request $request, Task $task) {
     $user = Auth::user();
     $project = $task->project;
-    $userRole = $project->acceptedUsers()
-      ->where('user_id', $user->id)
-      ->first()
-      ->pivot
-      ->role;
+    $userRole = $project->getUserProjectRole($user);
 
     // Project members can only move their own tasks
     if ($userRole === RolesEnum::ProjectMember->value && $task->assigned_user_id !== $user->id) {
@@ -120,48 +115,25 @@ class KanbanController extends Controller {
       ->where('project_id', $project->id)
       ->firstOrFail();
 
-    // Update task status based on column's task status
-    if ($newColumn->task_status_id) {
+    // Only update status if it's different from current status
+    if ($newColumn->task_status_id && $task->status_id !== $newColumn->task_status_id) {
       $task->status_id = $newColumn->task_status_id;
-      // Record in status history
-      $task->statusHistory()->attach($newColumn->task_status_id);
+      $task->save();
+
+      // Record in status history if not already recorded
+      if (!$task->statusHistory()->where('task_status_id', $newColumn->task_status_id)->exists()) {
+        $task->statusHistory()->attach($newColumn->task_status_id);
+      }
     }
 
     $task->kanban_column_id = $newColumn->id;
     $task->save();
 
-    return back();
-  }
-
-  public function store(StoreKanbanColumnRequest $request, Project $project) {
-    $user = Auth::user();
-    $userRole = $project->getUserProjectRole($user);
-
-    if ($userRole !== RolesEnum::ProjectManager->value) {
-      abort(403);
+    try {
+      return back()->with('success', 'Task moved successfully');
+    } catch (\Exception $e) {
+      return back()->with('error', 'Failed to move task. Please try again.');
     }
-
-    $data = $request->validated();
-
-    // Create new task status
-    $taskStatus = TaskStatus::create([
-      'name' => $data['status_name'],
-      'slug' => Str::slug($data['status_name']),
-      'color' => $data['status_color'],
-      'project_id' => $project->id,
-    ]);
-
-    // Create new kanban column
-    $lastOrder = $project->kanbanColumns()->max('order') ?? -1;
-
-    $column = $project->kanbanColumns()->create([
-      'name' => $data['name'],
-      'color' => $data['color'],
-      'order' => $lastOrder + 1,
-      'task_status_id' => $taskStatus->id,
-    ]);
-
-    return back()->with('success', 'Column created successfully.');
   }
 
   public function updateColumnsOrder(Request $request, Project $project) {
@@ -177,6 +149,10 @@ class KanbanController extends Controller {
         ->update(['order' => $column['order']]);
     }
 
-    return back();
+    try {
+      return back()->with('success', 'Column order updated successfully');
+    } catch (\Exception $e) {
+      return back()->with('error', 'Failed to update column order');
+    }
   }
 }

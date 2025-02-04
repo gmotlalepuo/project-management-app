@@ -36,6 +36,7 @@ type Props = {
     value: number | string;
     label: string;
   }>;
+  selectedStatusId?: string;
 };
 
 export default function Create({
@@ -46,6 +47,7 @@ export default function Create({
   selectedProjectId,
   fromProjectPage,
   statusOptions: initialStatusOptions,
+  selectedStatusId,
 }: Props) {
   const [canAssignOthers, setCanAssignOthers] = useState(true);
   const [users, setUsers] = useState<PaginatedUser>(initialUsers || { data: [] });
@@ -55,7 +57,7 @@ export default function Create({
     image: null as File | null,
     name: "",
     description: "",
-    status_id: "",
+    status_id: selectedStatusId || "",
     due_date: "",
     priority: "",
     assigned_user_id: canAssignOthers ? "" : currentUserId.toString(),

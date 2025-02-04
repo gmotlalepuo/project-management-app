@@ -22,6 +22,7 @@ export type Task = {
   project: Project;
   assignedUser: User | null;
   assigned_user_id: number;
+  kanban_column_id: number;
   project_id: number;
   createdBy: User;
   updatedBy: User;
@@ -33,6 +34,7 @@ export type Task = {
   can: {
     edit: boolean;
     delete: boolean;
+    move: boolean;
     assign: boolean;
     unassign: boolean;
     comment: boolean;
