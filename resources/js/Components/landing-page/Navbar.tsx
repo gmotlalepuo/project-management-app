@@ -8,6 +8,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -64,12 +65,15 @@ export const Navbar = () => {
                 <Menu className="h-5 w-5" onClick={() => setIsOpen(true)}></Menu>
               </SheetTrigger>
 
-              <SheetContent side="left">
+              <SheetContent side="right">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
                     <ApplicationLogo variant="circular" className="h-8 w-8" />
                     <span className="font-bold">TeamSync</span>
                   </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Navigation menu
+                  </SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col items-center gap-3">
                   {routeList.map(({ href, label }) => (

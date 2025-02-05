@@ -15,6 +15,7 @@ import {
   Tag,
   UserCog,
   LayoutDashboard,
+  Settings,
 } from "lucide-react";
 import { Link, router, usePage } from "@inertiajs/react";
 import { PageProps } from "@/types";
@@ -274,8 +275,14 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
             .map((user) => (
               <div key={user.id} className="flex items-center space-x-2">
                 <Avatar>
-                  <AvatarImage src={user.profile_picture} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  {user.profile_picture ? (
+                    <AvatarImage
+                      src={`/storage/${user.profile_picture}`}
+                      alt={user.name}
+                    />
+                  ) : (
+                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  )}
                 </Avatar>
                 <div>
                   <p className="text-gray-700 dark:text-gray-300">
@@ -483,7 +490,7 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                 </Link>
                 <Link href={route("project.statuses.index", project.id)}>
                   <Button className="w-full" variant="outline">
-                    <Tag className="h-5 w-5" />
+                    <Settings className="h-5 w-5" />
                     <span>Manage Task Statuses</span>
                   </Button>
                 </Link>
