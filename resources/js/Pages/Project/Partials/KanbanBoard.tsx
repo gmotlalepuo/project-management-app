@@ -147,7 +147,7 @@ export function KanbanBoard({ columns, projectId, permissions }: Props) {
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+      <div className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 md:p-1">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
