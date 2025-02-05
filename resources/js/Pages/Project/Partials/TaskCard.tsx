@@ -120,7 +120,7 @@ export function TaskCard({ task, permissions, isDragging = false, columns }: Pro
               </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               {task.assignedUser ? (
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
