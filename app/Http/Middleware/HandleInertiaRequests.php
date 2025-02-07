@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enum\RolesEnum;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -104,7 +105,7 @@ class HandleInertiaRequests extends Middleware {
         // Get recent tasks with optimized query
         $recentTasks = Task::query()
             ->where('assigned_user_id', $user->id)
-            ->select('id', 'name', 'project_id', 'status_id')
+            ->select('id', 'name', 'project_id', 'status_id', 'assigned_user_id')
             ->with([
                 'labels:id,name,variant',
                 'status:id,name,slug,color',
@@ -121,7 +122,7 @@ class HandleInertiaRequests extends Middleware {
                     'status' => $task->status,
                     'url' => route('task.show', $task->id),
                     'permissions' => [
-                        'canDelete' => $task->project->canDeleteTask($user),
+                        'canDelete' => $task->project->canDeleteTask($user, $task),
                     ],
                 ];
             });

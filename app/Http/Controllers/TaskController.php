@@ -250,7 +250,7 @@ class TaskController extends Controller {
         $user = Auth::user();
         $project = $task->project;
 
-        if (!$project->canDeleteTask($user)) {
+        if (!$project->canDeleteTask($user, $task)) {
             abort(403, 'You are not authorized to delete this task.');
         }
 

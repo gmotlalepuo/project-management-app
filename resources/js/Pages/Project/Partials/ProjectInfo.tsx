@@ -494,14 +494,14 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                     <span>Manage Task Statuses</span>
                   </Button>
                 </Link>
-                <Link href={route("kanban.show", project.id)}>
-                  <Button className="w-full" variant="outline">
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Kanban Board</span>
-                  </Button>
-                </Link>
               </>
             )}
+            <Link href={route("kanban.show", project.id)}>
+              <Button className="w-full" variant="outline">
+                <LayoutDashboard className="h-5 w-5" />
+                <span>Kanban Board</span>
+              </Button>
+            </Link>
 
             <Button variant="destructive" onClick={() => setDialogOpen(true)}>
               {project.createdBy.id === authUser.id ? (

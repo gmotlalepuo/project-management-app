@@ -4,14 +4,6 @@ import { Clock, PlayCircle, CheckCircle2, LucideIcon, Info } from "lucide-react"
 // Project constants
 export type StatusType = "pending" | "in_progress" | "completed" | string;
 
-export type TaskStatus = {
-  id: number;
-  name: string;
-  slug: StatusType;
-  color: string;
-  is_default: boolean;
-};
-
 type StatusConfig = {
   icon: LucideIcon;
   color: string;

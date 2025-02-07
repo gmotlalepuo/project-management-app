@@ -37,12 +37,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {
             title: "All Projects",
             url: route("project.index"),
-            prefetch: true,
           },
           {
             title: "Invitations",
             url: route("project.invitations"),
-            prefetch: true,
           },
         ],
       },
@@ -54,7 +52,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {
             title: "All Tasks",
             url: route("task.index"),
-            prefetch: true,
           },
           {
             title: "My Tasks",
@@ -69,7 +66,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               title: "Users",
               url: route("user.index"),
               icon: Users,
-              prefetch: true,
             },
           ]
         : []),

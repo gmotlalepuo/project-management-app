@@ -162,21 +162,15 @@ export function DataTableRowActions<TData>({
             </>
           )}
 
-          {((isProjectTable && isCreator) || (!isProjectTable && canEdit)) &&
-            onDelete && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-500"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>
-                    {isProjectTable && isCreator ? "Delete Project" : "Delete"}
-                  </span>
-                </DropdownMenuItem>
-              </>
-            )}
+          {!isProjectTable && task.can.delete && onDelete && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500" onClick={handleDeleteClick}>
+                <Trash2 className="h-4 w-4" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

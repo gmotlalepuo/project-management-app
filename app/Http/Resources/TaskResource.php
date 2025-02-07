@@ -60,7 +60,7 @@ class TaskResource extends JsonResource {
             'comments' => TaskCommentResource::collection($this->comments),
             'can' => [
                 'edit' => $project->canEditTask($user, $this->resource),
-                'delete' => $project->canDeleteTask($user),
+                'delete' => $project->canDeleteTask($user, $this->resource),
                 'move' => $this->assigned_user_id === $user->id,
                 'assign' => $this->canBeAssignedBy($user),
                 'unassign' => $this->canBeUnassignedBy($user),

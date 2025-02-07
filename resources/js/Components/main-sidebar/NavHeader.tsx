@@ -9,7 +9,7 @@ import { Link } from "@inertiajs/react";
 export function NavHeader() {
   return (
     <SidebarMenu>
-      <Link href="/" prefetch>
+      <Link href="/">
         <SidebarMenuItem>
           <SidebarMenuButton
             size="lg"
