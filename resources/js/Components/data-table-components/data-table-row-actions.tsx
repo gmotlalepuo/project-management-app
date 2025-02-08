@@ -95,6 +95,13 @@ export function DataTableRowActions<TData>({
     });
   };
 
+  // Determine if delete action should be shown
+  const shouldShowDelete =
+    onDelete &&
+    (isProjectTable
+      ? isCreator // For projects, only show if user is creator
+      : (task.can?.delete ?? true)); // For tasks and labels, show if explicitly allowed or default to true
+
   return (
     <>
       <DropdownMenu>
@@ -162,21 +169,17 @@ export function DataTableRowActions<TData>({
             </>
           )}
 
-          {((isProjectTable && isCreator) || (!isProjectTable && task.can.delete)) &&
-            onDelete && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-500"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span>
-                    {isProjectTable && isCreator ? "Delete Project" : "Delete"}
-                  </span>
-                </DropdownMenuItem>
-              </>
-            )}
+          {shouldShowDelete && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-500" onClick={handleDeleteClick}>
+                <Trash2 className="h-4 w-4" />
+                <span>
+                  {isProjectTable && isCreator ? "Delete Project" : "Delete"}
+                </span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
