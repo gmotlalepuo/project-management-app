@@ -52,10 +52,15 @@ class User extends Authenticatable implements MustVerifyEmail {
     protected static function boot() {
         parent::boot();
 
-        // Clear avatar cache when user model is updated
         static::updated(function ($user) {
             if ($user->isDirty('profile_picture')) {
+                // Clear individual user avatar cache
                 Cache::forget("user_{$user->id}_avatar");
+
+                // Clear project member caches where this user is a member
+                $user->projects->each(function ($project) {
+                    Cache::forget("project_{$project->id}_profile_pictures");
+                });
             }
         });
     }

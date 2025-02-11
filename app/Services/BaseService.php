@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Traits\ImageTrait;
 
 abstract class BaseService {
+  use ImageTrait;
+
   protected function handleImageUpload($image, string $folder, ?string $oldImagePath = null): string {
     if ($oldImagePath) {
-      Storage::disk('public')->deleteDirectory(dirname($oldImagePath));
+      $this->deleteImage($oldImagePath);
     }
-    return $image->store($folder . '/' . Str::random(10), 'public');
+    return $this->storeImage($image, $folder);
   }
 
   protected function formatDate(?string $date): ?string {

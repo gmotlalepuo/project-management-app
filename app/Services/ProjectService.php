@@ -157,13 +157,14 @@ class ProjectService extends BaseService {
         'updated_at' => now()
       ]);
 
-      // Clear the members cache when new user is invited
-      Cache::forget("project_{$project->id}_members");
-
       // Send notification
       $user->notify(new ProjectInvitationNotification($project));
 
       broadcast(new ProjectInvitationRequestReceived($project, $user));
+
+      // Clear project caches
+      $this->clearProjectCaches($project);
+
       return ['success' => true, 'message' => 'User invited successfully.'];
     }
 
@@ -211,8 +212,8 @@ class ProjectService extends BaseService {
     // Remove user from project
     $project->invitedUsers()->detach($user->id);
 
-    // Clear the members cache
-    Cache::forget("project_{$project->id}_members");
+    // Clear project caches
+    $this->clearProjectCaches($project);
 
     return ['success' => true, 'message' => 'You have left the project.'];
   }
@@ -230,8 +231,7 @@ class ProjectService extends BaseService {
     // Remove users from project
     $project->invitedUsers()->detach($userIds);
 
-    // Clear the members cache when new user is invited
-    Cache::forget("project_{$project->id}_members");
+    $this->clearProjectCaches($project);
 
     return ['success' => true, 'message' => 'Selected members have been removed from the project.'];
   }
@@ -299,8 +299,7 @@ class ProjectService extends BaseService {
       'updated_at' => now()
     ]);
 
-    // Clear the members cache when new user is invited
-    Cache::forget("project_{$project->id}_members");
+    $this->clearProjectCaches($project);
 
     // Generate appropriate success message
     $actionType = $role === RolesEnum::ProjectManager->value ? 'promoted to' : 'changed to';
@@ -310,5 +309,9 @@ class ProjectService extends BaseService {
       'success' => true,
       'message' => "{$targetUser->name} has been {$actionType} {$roleName}."
     ];
+  }
+
+  protected function clearProjectCaches(Project $project) {
+    Cache::forget("project_{$project->id}_profile_pictures");
   }
 }
