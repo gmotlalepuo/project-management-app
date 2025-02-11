@@ -560,26 +560,28 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
         <AlertDialogContent>
           <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to change {roleChangeConfirmation.userName}'s role
-            to{" "}
-            {roleChangeConfirmation.newRole === "project_manager"
-              ? "Project Manager"
-              : "Project Member"}
-            ?
+            <span>
+              Are you sure you want to change {roleChangeConfirmation.userName}'s
+              role to{" "}
+              {roleChangeConfirmation.newRole === "project_manager"
+                ? "Project Manager"
+                : "Project Member"}
+              ?
+            </span>
+            {roleChangeConfirmation.newRole === "project_manager" && (
+              <div className="mt-2 rounded-lg border border-yellow-500 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-400/30 dark:bg-yellow-900/30 dark:text-yellow-200">
+                <span>
+                  <strong>Warning:</strong> Project Managers can:
+                </span>
+                <ul className="ml-4 list-disc">
+                  <li>Manage tasks and labels</li>
+                  <li>Invite new members</li>
+                  <li>Promote other members to Project Managers</li>
+                  <li>Access sensitive project settings</li>
+                </ul>
+              </div>
+            )}
           </AlertDialogDescription>
-          {roleChangeConfirmation.newRole === "project_manager" && (
-            <div className="mt-2 rounded-lg border border-yellow-500 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-400/30 dark:bg-yellow-900/30 dark:text-yellow-200">
-              <span>
-                <strong>Warning:</strong> Project Managers can:
-              </span>
-              <ul className="ml-4 list-disc">
-                <li>Manage tasks and labels</li>
-                <li>Invite new members</li>
-                <li>Promote other members to Project Managers</li>
-                <li>Access sensitive project settings</li>
-              </ul>
-            </div>
-          )}
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() =>

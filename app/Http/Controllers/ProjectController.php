@@ -93,27 +93,23 @@ class ProjectController extends Controller {
             abort(403, 'You are not authorized to view this project.');
         }
 
-        // Cache key for profile pictures with URLs
+        // Cache key for profile pictures
         $profilePicturesCacheKey = "project_{$project->id}_profile_pictures";
 
-        // Cache full URLs, not just paths
+        // Get just the profile pictures with cache - now with explicit table name for id
         $profilePictures = Cache::remember($profilePicturesCacheKey, now()->addHours(24), function () use ($project) {
             return $project->acceptedUsers()
-                ->select(['users.profile_picture', 'users.id'])
-                ->get()
-                ->mapWithKeys(function ($user) {
-                    return [
-                        $user->id => $user->profile_picture ? Storage::url($user->profile_picture) : null
-                    ];
-                });
+                ->select(['users.profile_picture', 'users.id']) // Specify the table name for id
+                ->pluck('profile_picture', 'users.id'); // Specify the table name in pluck
         });
 
-        // Get fresh user data and merge with cached URLs
+        // Get fresh user data
         $projectMembers = $project->acceptedUsers()
             ->select('users.id', 'users.name', 'users.email')
             ->orderBy('name')
             ->get()
             ->map(function ($user) use ($profilePictures) {
+                // Merge cached profile picture with fresh user data
                 $user->profile_picture = $profilePictures[$user->id] ?? null;
                 return $user;
             });

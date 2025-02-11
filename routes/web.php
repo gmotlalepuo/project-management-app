@@ -2,20 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/storage/{path}', function ($path) {
-    $fullPath = storage_path('app/public/' . $path);
-
-    if (!file_exists($fullPath)) {
-        abort(404);
-    }
-
-    return response()->file($fullPath, [
-        'Cache-Control' => 'public, max-age=31536000, immutable',
-        'Pragma' => 'public',
-        'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + 31536000),
-    ]);
-})->where('path', '.*')->middleware('cache.images');
-
 Route::redirect('/', '/dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
