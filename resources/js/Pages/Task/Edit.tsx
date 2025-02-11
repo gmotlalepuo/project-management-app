@@ -75,19 +75,13 @@ export default function Edit({
     variant: label.variant as TaskLabelBadgeVariant,
   }));
 
-  const searchLabels = async (query: string) => {
-    const response = await axios.get(route("task_labels.search"), {
-      params: {
-        query,
-        project_id: data.project_id,
-      },
-    });
-    const labels = response.data;
-    return labels.map((label: any) => ({
-      label: label.name,
-      value: label.id.toString(),
-      variant: label.variant as TaskLabelBadgeVariant,
-    }));
+  const searchLabels = async (query: string): Promise<Option[]> => {
+    if (!data.project_id) return [];
+
+    // Return filtered labels immediately (no API call needed)
+    return labelOptions.filter((label) =>
+      label.label.toLowerCase().includes(query.toLowerCase()),
+    );
   };
 
   const { toast } = useToast();
@@ -228,6 +222,7 @@ export default function Edit({
                 <Input
                   id="task_name"
                   type="text"
+                  placeholder="Enter a task name"
                   value={data.name}
                   onChange={(e) => setData("name", e.target.value)}
                   required
@@ -249,6 +244,7 @@ export default function Edit({
                     placeholder="Select labels..."
                     emptyIndicator="No labels found"
                     onSearch={searchLabels}
+                    triggerSearchOnFocus
                     onChange={(selectedLabels) => {
                       setSelectedLabels(selectedLabels);
                       setData(

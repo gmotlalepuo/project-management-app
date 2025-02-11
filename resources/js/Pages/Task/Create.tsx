@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Button } from "@/Components/ui/button";
 import { Label } from "@/Components/ui/label";
@@ -16,8 +16,6 @@ import { DateTimePicker } from "@/Components/ui/time-picker/date-time-picker";
 import { PaginatedProject } from "@/types/project";
 import { PaginatedUser } from "@/types/user";
 import MultipleSelector, { Option } from "@/Components/ui/multiple-selector";
-import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert";
-import { Info } from "lucide-react";
 import { TaskLabelBadgeVariant } from "@/utils/constants";
 import axios from "axios";
 import { useState, useEffect } from "react";
@@ -42,7 +40,7 @@ type Props = {
 export default function Create({
   projects,
   users: initialUsers,
-  labels,
+  labels: initialLabels,
   currentUserId,
   selectedProjectId,
   fromProjectPage,
@@ -67,25 +65,52 @@ export default function Create({
     label_ids: [] as number[],
   });
 
-  const labelOptions: Option[] = labels.data.map((label) => ({
-    label: label.name as string,
-    value: (label.id ?? "").toString(),
-    variant: label.variant as TaskLabelBadgeVariant,
-  }));
-
-  const searchLabels = async (query: string) => {
-    const response = await axios.get(route("task_labels.search"), {
-      params: {
-        query,
-        project_id: data.project_id,
-      },
-    });
-    const labels = response.data;
-    return labels.map((label: any) => ({
-      label: label.name,
-      value: label.id.toString(),
+  // Add state for available labels
+  const [availableLabels, setAvailableLabels] = useState<Option[]>(
+    initialLabels.data.map((label) => ({
+      label: label.name as string,
+      value: (label.id ?? "").toString(),
       variant: label.variant as TaskLabelBadgeVariant,
-    }));
+    })),
+  );
+
+  const [key, setKey] = useState(0); //  state for forcing re-render
+
+  // Add loading states
+  const [isLoadingLabels, setIsLoadingLabels] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
+
+  const searchLabels = async (query: string): Promise<Option[]> => {
+    if (!data.project_id) return [];
+
+    // Return filtered labels immediately (no API call needed)
+    return availableLabels.filter((label) =>
+      label.label.toLowerCase().includes(query.toLowerCase()),
+    );
+  };
+
+  const fetchProjectLabels = async (projectId: string) => {
+    if (!projectId) return;
+
+    setIsLoadingLabels(true);
+    try {
+      const response = await axios.get(route("task.labels", projectId));
+
+      if (response.data.data) {
+        const labels = response.data.data.map((label: any) => ({
+          label: label.name,
+          value: label.id.toString(),
+          variant: label.variant as TaskLabelBadgeVariant,
+        }));
+        setAvailableLabels(labels);
+        setKey((prev) => prev + 1); // Force MultipleSelector to re-render with new options
+      }
+    } catch (error) {
+      console.error("Failed to fetch project labels:", error);
+    } finally {
+      setIsLoadingLabels(false);
+    }
   };
 
   const { toast } = useToast();
@@ -136,6 +161,7 @@ export default function Create({
   };
 
   const fetchProjectUsers = async (projectId: string) => {
+    setIsLoadingUsers(true);
     try {
       const response = await axios.get(route("task.users", projectId));
       setUsers(response.data.users || { data: [] });
@@ -147,25 +173,45 @@ export default function Create({
         description: "Failed to fetch project users",
         variant: "destructive",
       });
+    } finally {
+      setIsLoadingUsers(false);
     }
   };
 
+  const fetchProjectStatuses = async (projectId: string) => {
+    setIsLoadingStatuses(true);
+    try {
+      const response = await axios.get(route("task.statuses", projectId));
+      if (response.data.statusOptions) {
+        setStatusOptions(response.data.statusOptions);
+      }
+    } catch (error) {
+      console.error("Failed to fetch project statuses:", error);
+    } finally {
+      setIsLoadingStatuses(false);
+    }
+  };
+
+  const [showFields, setShowFields] = useState(Boolean(selectedProjectId));
+
   const handleProjectChange = async (projectId: string) => {
-    setData("project_id", projectId);
+    // Reset dependent fields
+    setData((prev) => ({
+      ...prev,
+      project_id: projectId,
+      label_ids: [],
+      status_id: "",
+      assigned_user_id: "",
+    }));
 
     try {
-      // Fetch project role and users
-      await checkProjectRole(projectId);
-      await fetchProjectUsers(projectId);
-
-      // Only fetch status options if we don't have a preselected status
-      if (!selectedStatusId) {
-        const response = await axios.get(route("task.statuses", projectId));
-        if (response.data.statusOptions) {
-          setStatusOptions(response.data.statusOptions);
-          setData("status_id", "");
-        }
-      }
+      await Promise.all([
+        checkProjectRole(projectId),
+        fetchProjectUsers(projectId),
+        fetchProjectLabels(projectId),
+        !selectedStatusId ? fetchProjectStatuses(projectId) : Promise.resolve(),
+      ]);
+      setShowFields(true); // Show fields after data is loaded
     } catch (error) {
       console.error("Failed to fetch project data:", error);
       toast({
@@ -195,8 +241,8 @@ export default function Create({
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
           Create New Task{" "}
-          {selectedProjectId
-            ? `for ${projects.data.find((p) => p.id === selectedProjectId)?.name}`
+          {data.project_id
+            ? `for ${projects.data.find((p) => p.id.toString() === data.project_id)?.name}`
             : ""}
         </h2>
       }
@@ -235,188 +281,203 @@ export default function Create({
                 <InputError message={errors.project_id} className="mt-2" />
               </div>
 
-              {/* Task Image */}
-              <div>
-                <Label htmlFor="task_image_path">
-                  Task Image{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                <Input
-                  id="task_image_path"
-                  type="file"
-                  className="mt-1 block w-full"
-                  accept=".jpg,.jpeg,.png,.webp,.svg"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setData("image", e.target.files[0]);
-                    }
-                  }}
-                />
-                <InputError message={errors.image} className="mt-2" />
-              </div>
+              {/* Conditional rendering for all other fields */}
+              {showFields && (
+                <>
+                  {/* Task Image */}
+                  <div>
+                    <Label htmlFor="task_image_path">
+                      Task Image{" "}
+                      <span className="text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="task_image_path"
+                      type="file"
+                      className="mt-1 block w-full"
+                      accept=".jpg,.jpeg,.png,.webp,.svg"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setData("image", e.target.files[0]);
+                        }
+                      }}
+                    />
+                    <InputError message={errors.image} className="mt-2" />
+                  </div>
 
-              {/* Task Name */}
-              <div className="space-y-2">
-                <Label htmlFor="task_name">
-                  Task Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="task_name"
-                  type="text"
-                  value={data.name}
-                  onChange={(e) => setData("name", e.target.value)}
-                  required
-                  autoFocus
-                />
-                <InputError message={errors.name} className="mt-2" />
-              </div>
+                  {/* Task Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_name">
+                      Task Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="task_name"
+                      type="text"
+                      placeholder="Enter a task name"
+                      value={data.name}
+                      onChange={(e) => setData("name", e.target.value)}
+                      required
+                      autoFocus
+                    />
+                    <InputError message={errors.name} className="mt-2" />
+                  </div>
 
-              {/* Task Labels */}
-              <div className="space-y-2">
-                <Label htmlFor="task_labels">
-                  Task Labels{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                {labels.data.length > 0 ? (
-                  <MultipleSelector
-                    defaultOptions={labelOptions}
-                    placeholder="Select labels..."
-                    emptyIndicator="No labels found"
-                    onSearch={searchLabels}
-                    onChange={(selectedLabels) =>
-                      setData(
-                        "label_ids",
-                        selectedLabels.map((label) => Number(label.value)),
-                      )
-                    }
-                  />
-                ) : (
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>No labels found</AlertTitle>
-                    <AlertDescription className="mb-1">
-                      If you want to label your tasks, please create labels from the
-                      button below.
-                    </AlertDescription>
-                    <Link
-                      href={route("task_labels.create", {
-                        project_id: data.project_id,
-                      })}
+                  {/* Task Labels */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_labels">
+                      Task Labels{" "}
+                      <span className="text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <MultipleSelector
+                      key={key}
+                      defaultOptions={availableLabels}
+                      placeholder={
+                        isLoadingLabels ? "Loading labels..." : "Select labels..."
+                      }
+                      emptyIndicator="No labels found"
+                      onSearch={searchLabels}
+                      triggerSearchOnFocus
+                      onChange={(selectedLabels) =>
+                        setData(
+                          "label_ids",
+                          selectedLabels.map((label) => Number(label.value)),
+                        )
+                      }
+                      value={
+                        data.label_ids
+                          .map((id) =>
+                            availableLabels.find(
+                              (label) => Number(label.value) === id,
+                            ),
+                          )
+                          .filter(Boolean) as Option[]
+                      }
+                      disabled={isLoadingLabels || !data.project_id}
+                    />
+                  </div>
+
+                  {/* Task Description */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_description">
+                      Task Description <span className="text-red-500">*</span>
+                    </Label>
+                    <RichTextEditor
+                      value={data.description}
+                      onChange={(content) => setData("description", content)}
+                    />
+                    <InputError message={errors.description} className="mt-2" />
+                  </div>
+
+                  {/* Task Deadline */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_due_date">
+                      Task Deadline{" "}
+                      <span className="text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <DateTimePicker
+                      className="w-full"
+                      value={data.due_date ? new Date(data.due_date) : undefined}
+                      onChange={(date) =>
+                        setData("due_date", date ? date.toISOString() : "")
+                      }
+                    />
+                    <InputError message={errors.due_date} className="mt-2" />
+                  </div>
+
+                  {/* Task Status */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_status">
+                      Task Status <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      onValueChange={(value) => setData("status_id", value)}
+                      value={data.status_id?.toString()}
+                      disabled={isLoadingStatuses}
+                      required
                     >
-                      <Button variant="secondary">Create Label</Button>
-                    </Link>
-                  </Alert>
-                )}
-              </div>
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={
+                            isLoadingStatuses
+                              ? "Loading statuses..."
+                              : "Select Status"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map(({ value, label }) => (
+                          <SelectItem key={value} value={value.toString()}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <InputError message={errors.status_id} className="mt-2" />
+                  </div>
 
-              {/* Task Description */}
-              <div className="space-y-2">
-                <Label htmlFor="task_description">
-                  Task Description{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                <RichTextEditor
-                  value={data.description}
-                  onChange={(content) => setData("description", content)}
-                />
-                <InputError message={errors.description} className="mt-2" />
-              </div>
+                  {/* Task Priority */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_priority">
+                      Task Priority <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      onValueChange={(value) => setData("priority", value)}
+                      defaultValue={data.priority}
+                      required
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <InputError message={errors.priority} className="mt-2" />
+                  </div>
 
-              {/* Task Deadline */}
-              <div className="space-y-2">
-                <Label htmlFor="task_due_date">
-                  Task Deadline{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                <DateTimePicker
-                  className="w-full"
-                  value={data.due_date ? new Date(data.due_date) : undefined}
-                  onChange={(date) =>
-                    setData("due_date", date ? date.toISOString() : "")
-                  }
-                />
-                <InputError message={errors.due_date} className="mt-2" />
-              </div>
-
-              {/* Task Status */}
-              <div className="space-y-2">
-                <Label htmlFor="task_status">
-                  Task Status <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  onValueChange={(value) => setData("status_id", value)}
-                  value={data.status_id?.toString()}
-                  required
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map(({ value, label }) => (
-                      <SelectItem key={value} value={value.toString()}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <InputError message={errors.status_id} className="mt-2" />
-              </div>
-
-              {/* Task Priority */}
-              <div className="space-y-2">
-                <Label htmlFor="task_priority">
-                  Task Priority <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  onValueChange={(value) => setData("priority", value)}
-                  defaultValue={data.priority}
-                  required
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                  </SelectContent>
-                </Select>
-                <InputError message={errors.priority} className="mt-2" />
-              </div>
-
-              {/* Assigned User */}
-              <div className="space-y-2">
-                <Label htmlFor="task_assigned_user">
-                  Assigned User{" "}
-                  <span className="text-muted-foreground">(Optional)</span>
-                </Label>
-                <Select
-                  onValueChange={(value) =>
-                    setData("assigned_user_id", value === "unassigned" ? "" : value)
-                  }
-                  value={data.assigned_user_id || "unassigned"}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select User" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {users.data.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name} ({user.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <InputError message={errors.assigned_user_id} className="mt-2" />
-              </div>
-
+                  {/* Assigned User */}
+                  <div className="space-y-2">
+                    <Label htmlFor="task_assigned_user">
+                      Assigned User{" "}
+                      <span className="text-muted-foreground">(Optional)</span>
+                    </Label>
+                    <Select
+                      onValueChange={(value) =>
+                        setData(
+                          "assigned_user_id",
+                          value === "unassigned" ? "" : value,
+                        )
+                      }
+                      value={data.assigned_user_id || "unassigned"}
+                      disabled={isLoadingUsers}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue
+                          placeholder={
+                            isLoadingUsers ? "Loading users..." : "Select User"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {users.data.map((user) => (
+                          <SelectItem key={user.id} value={user.id.toString()}>
+                            {user.name} ({user.email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <InputError message={errors.assigned_user_id} className="mt-2" />
+                  </div>
+                </>
+              )}
               {/* Actions */}
               <div className="flex justify-end space-x-4">
                 <Button variant="secondary" onClick={() => window.history.back()}>
                   Cancel
                 </Button>
-                <Button type="submit">Submit</Button>
+                {showFields && <Button type="submit">Submit</Button>}
               </div>
             </form>
           </div>

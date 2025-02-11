@@ -4,8 +4,6 @@ use App\Enum\PermissionsEnum;
 use App\Http\Controllers\TaskLabelController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/task_labels/search', [TaskLabelController::class, 'search'])->name('task_labels.search');
-
 Route::middleware('permission:' . PermissionsEnum::ManageProjects->value)->group(function () {
   Route::get('/projects/{project}/labels', [TaskLabelController::class, 'index'])->name('project.labels.index');
   Route::get('/projects/{project}/labels/create', [TaskLabelController::class, 'create'])->name('project.labels.create');

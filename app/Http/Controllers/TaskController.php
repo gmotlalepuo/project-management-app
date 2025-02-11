@@ -329,4 +329,21 @@ class TaskController extends Controller {
         $statusOptions = $this->taskService->getStatusOptions($project);
         return response()->json(['statusOptions' => $statusOptions]);
     }
+
+    public function getProjectLabels(Project $project) {
+        $query = request('query');
+
+        $labels = TaskLabel::query()
+            ->where(function ($queryBuilder) use ($project) {
+                $queryBuilder->whereNull('project_id')
+                    ->orWhere('project_id', $project->id);
+            })
+            ->when($query, function ($queryBuilder) use ($query) {
+                $queryBuilder->where('name', 'like', "%{$query}%");
+            })
+            ->orderBy('name')
+            ->get();
+
+        return TaskLabelResource::collection($labels);
+    }
 }

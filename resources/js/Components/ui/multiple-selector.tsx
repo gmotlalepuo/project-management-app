@@ -95,7 +95,7 @@ export function useDebounce<T>(value: T, delay?: number): T {
   const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
 
     return () => {
       clearTimeout(timer);
@@ -139,9 +139,7 @@ function removePickedOption(groupOption: GroupOption, picked: Option[]) {
 
 function isOptionsExist(groupOption: GroupOption, targetOption: Option[]) {
   for (const [, value] of Object.entries(groupOption)) {
-    if (
-      value.some((option) => targetOption.find((p) => p.value === option.value))
-    ) {
+    if (value.some((option) => targetOption.find((p) => p.value === option.value))) {
       return true;
     }
   }
@@ -218,7 +216,7 @@ const MultipleSelector = React.forwardRef<
       transToGroupOption(arrayDefaultOptions, groupBy),
     );
     const [inputValue, setInputValue] = React.useState("");
-    const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
+    const debouncedSearchTerm = useDebounce(inputValue, delay);
 
     React.useImperativeHandle(
       ref,
@@ -332,29 +330,25 @@ const MultipleSelector = React.forwardRef<
 
     useEffect(() => {
       /** async search */
-
       const doSearch = async () => {
-        setIsLoading(true);
-        const res = await onSearch?.(debouncedSearchTerm);
-        setOptions(transToGroupOption(res || [], groupBy));
-        setIsLoading(false);
-      };
-
-      const exec = async () => {
         if (!onSearch || !open) return;
 
-        if (triggerSearchOnFocus) {
-          await doSearch();
-        }
+        // Skip search if there's no search term and we shouldn't trigger on focus
+        if (!debouncedSearchTerm && !triggerSearchOnFocus) return;
 
-        if (debouncedSearchTerm) {
-          await doSearch();
+        setIsLoading(true);
+        try {
+          const res = await onSearch(debouncedSearchTerm);
+          setOptions(transToGroupOption(res || [], groupBy));
+        } catch (error) {
+          console.error("Search failed:", error);
+        } finally {
+          setIsLoading(false);
         }
       };
 
-      void exec();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
+      void doSearch();
+    }, [debouncedSearchTerm, groupBy, open, onSearch, triggerSearchOnFocus]);
 
     const CreatableItem = () => {
       if (!creatable) return undefined;
@@ -522,7 +516,6 @@ const MultipleSelector = React.forwardRef<
               }}
               onFocus={(event) => {
                 setOpen(true);
-                triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
                 inputProps?.onFocus?.(event);
               }}
               placeholder={
@@ -579,9 +572,7 @@ const MultipleSelector = React.forwardRef<
                 <>
                   {EmptyItem()}
                   {CreatableItem()}
-                  {!selectFirstItem && (
-                    <CommandItem value="-" className="hidden" />
-                  )}
+                  {!selectFirstItem && <CommandItem value="-" className="hidden" />}
                   {Object.entries(selectables).map(([key, dropdowns]) => (
                     <CommandGroup
                       key={key}

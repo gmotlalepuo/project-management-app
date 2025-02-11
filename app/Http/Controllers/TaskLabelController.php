@@ -75,10 +75,4 @@ class TaskLabelController extends Controller {
         return to_route('project.labels.index', $project)
             ->with('success', "Label '{$name}' deleted successfully.");
     }
-
-    public function search(Project $project) {
-        $labels = $this->taskLabelService->getProjectLabels($project);
-
-        return response()->json(TaskLabelResource::collection($labels));
-    }
 }
