@@ -123,11 +123,7 @@ export default function Show({
               />
             </TabsContent>
             <TabsContent value="invite">
-              <InviteUsers
-                project={project}
-                success={success}
-                serverError={serverError}
-              />
+              <InviteUsers project={project} serverError={serverError} />
             </TabsContent>
           </Tabs>
         </div>

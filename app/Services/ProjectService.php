@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Events\ProjectInvitationRequestReceived;
 use App\Notifications\ProjectInvitationNotification;
+use Illuminate\Support\Facades\Cache;
 
 class ProjectService extends BaseService {
   use FilterableTrait, SortableTrait;
@@ -156,6 +157,9 @@ class ProjectService extends BaseService {
         'updated_at' => now()
       ]);
 
+      // Clear the members cache when new user is invited
+      Cache::forget("project_{$project->id}_members");
+
       // Send notification
       $user->notify(new ProjectInvitationNotification($project));
 
@@ -206,6 +210,9 @@ class ProjectService extends BaseService {
 
     // Remove user from project
     $project->invitedUsers()->detach($user->id);
+
+    // Clear the members cache
+    Cache::forget("project_{$project->id}_members");
 
     return ['success' => true, 'message' => 'You have left the project.'];
   }

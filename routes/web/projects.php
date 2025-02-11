@@ -14,6 +14,7 @@ Route::post('/project/{project}/leave', [ProjectController::class, 'leaveProject
 Route::get('/project/{project}/check-role', [ProjectController::class, 'checkRole'])->name('project.check-role');
 Route::put('/project/{project}/update-user-role', [ProjectController::class, 'updateUserRole'])->name('project.update-user-role');
 Route::delete('/project/{project}/image', [ProjectController::class, 'deleteImage'])->name('project.delete-image');
+Route::get('/projects/{project}/check-invitation', [ProjectController::class, 'checkInvitation'])->name('project.check-invitation');
 
 // Project management routes
 Route::middleware('permission:' . PermissionsEnum::ManageProjects->value)->group(function () {

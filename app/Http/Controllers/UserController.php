@@ -126,52 +126,57 @@ class UserController extends Controller {
     public function search(Request $request, Project $project) {
         $query = $request->input('email');
 
-        // Validate the email input
-        $request->validate([
-            'email' => 'required|string|email',
-        ]);
+        if (empty($query)) {
+            return response()->json(['users' => []]);
+        }
 
-        $currentUserId = Auth::id();
-
-        // Check if the user exists by email
+        // First check if the email exists in our system
         $user = User::where('email', $query)->first();
 
         if ($user) {
-            // Check if there is an existing invitation with a "pending" status
-            $isPendingInvite = $project->invitedUsers()
-                ->where('user_id', $user->id)
-                ->wherePivot('status', 'pending')
-                ->exists();
-
-            if ($isPendingInvite) {
-                return response()->json(['error' => 'This user has already been invited and the invitation is pending.'], 409);
-            }
-
-            // Check if the user is already an active part of the project (not by invitation status)
-            $isProjectMember = $user->id == $project->created_by ||
+            // Check project membership first
+            $isMember = $user->id == $project->created_by ||
                 $project->invitedUsers()
                 ->where('user_id', $user->id)
                 ->wherePivot('status', 'accepted')
                 ->exists();
 
-            if ($isProjectMember) {
-                return response()->json(['error' => 'This user is already part of the project.'], 409);
+            if ($isMember) {
+                return response()->json([
+                    'error' => 'This user is already part of the project.',
+                    'users' => []
+                ], 409);
             }
+
+            // Then check pending invitations
+            $hasPendingInvite = $project->invitedUsers()
+                ->where('user_id', $user->id)
+                ->wherePivot('status', 'pending')
+                ->exists();
+
+            if ($hasPendingInvite) {
+                return response()->json([
+                    'error' => 'This user has already been invited and the invitation is pending.',
+                    'users' => []
+                ], 409);
+            }
+
+            // If user exists and isn't a member or pending, return them
+            return response()->json(['users' => [$user]]);
         }
 
-        // Search for users excluding the current user and users already in the project
-        $users = User::where('email', 'like', '%' . $query . '%')
-            ->whereNotIn('id', array_merge([$currentUserId], [$project->created_by]))
-            ->whereNotIn('id', $project->invitedUsers()
-                ->wherePivot('status', 'accepted')
-                ->pluck('users.id'))  // Specify 'users.id' to avoid ambiguity
-            ->get();
-
-        // Determine if any users were found
-        if ($users->isEmpty()) {
-            return response()->json(['error' => 'No users found with this email.'], 404);
+        // No user found with this email
+        if (filter_var($query, FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'error' => 'No users found with this email.',
+                'users' => []
+            ], 404);
         }
 
-        return response()->json(['users' => $users]);
+        // Invalid email format
+        return response()->json([
+            'error' => 'Please enter a valid email address.',
+            'users' => []
+        ], 422);
     }
 }

@@ -13,8 +13,8 @@ use App\Http\Requests\Project\StoreProjectRequest;
 use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 use App\Enum\RolesEnum;
-use App\Models\TaskLabel;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class ProjectController extends Controller {
     protected $projectService;
@@ -93,6 +93,19 @@ class ProjectController extends Controller {
             abort(403, 'You are not authorized to view this project.');
         }
 
+        // Cache key for project members
+        $cacheKey = "project_{$project->id}_members";
+
+        // Load project with cached members
+        $projectResource = new ProjectResource(
+            $project->load(['acceptedUsers' => function ($query) use ($project, $cacheKey) {
+                // Cache the members query for 30 minutes
+                return Cache::remember($cacheKey, 1800, function () use ($project) {
+                    return $project->acceptedUsers()->get();
+                });
+            }])
+        );
+
         // Get the requested tab, but don't force a default
         $requestedTab = request()->query('tab');
 
@@ -114,7 +127,7 @@ class ProjectController extends Controller {
         $options = $this->projectService->getProjectOptions($project);
 
         return Inertia::render('Project/Show', [
-            'project' => new ProjectResource($project->load(['acceptedUsers'])),
+            'project' => $projectResource,
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),
@@ -249,6 +262,9 @@ class ProjectController extends Controller {
 
         $result = $this->projectService->kickMembers($project, $userIds);
 
+        // Clear the members cache
+        Cache::forget("project_{$project->id}_members");
+
         return back()->with('success', $result['message']);
     }
 
@@ -266,6 +282,9 @@ class ProjectController extends Controller {
             $request->user_id,
             $request->role
         );
+
+        // Clear the members cache
+        Cache::forget("project_{$project->id}_members");
 
         if ($result['success']) {
             return back()->with('success', $result['message']);
@@ -288,5 +307,18 @@ class ProjectController extends Controller {
         $project->update(['image_path' => null]);
 
         return back()->with('success', 'Project image deleted successfully.');
+    }
+
+    public function checkInvitation(Request $request, Project $project) {
+        $email = $request->query('email');
+
+        $hasPendingInvitation = $project->invitedUsers()
+            ->where('email', 'LIKE', $email . '%') // Using LIKE for partial match
+            ->wherePivot('status', 'pending')
+            ->exists();
+
+        return response()->json([
+            'hasPendingInvitation' => $hasPendingInvitation
+        ]);
     }
 }
