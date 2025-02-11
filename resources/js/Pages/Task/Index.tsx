@@ -16,7 +16,7 @@ import { Badge } from "@/Components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, Layout } from "lucide-react";
 import { useTruncate } from "@/hooks/use-truncate";
 
 type IndexProps = {
@@ -280,6 +280,12 @@ export default function Index({
                   <Button className="w-full shadow sm:w-auto">
                     <CirclePlus className="h-5 w-5" />
                     <span>Create Task</span>
+                  </Button>
+                </Link>
+                <Link href={route("project.index")}>
+                  <Button variant="secondary" className="w-full shadow sm:w-auto">
+                    <Layout className="h-5 w-5" />
+                    <span>View Projects</span>
                   </Button>
                 </Link>
               </div>
