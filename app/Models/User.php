@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Cache;
 
 class User extends Authenticatable implements MustVerifyEmail {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -46,6 +47,17 @@ class User extends Authenticatable implements MustVerifyEmail {
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function boot() {
+        parent::boot();
+
+        // Clear avatar cache when user model is updated
+        static::updated(function ($user) {
+            if ($user->isDirty('profile_picture')) {
+                Cache::forget("user_{$user->id}_avatar");
+            }
+        });
     }
 
     /**

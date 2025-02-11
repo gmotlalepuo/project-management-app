@@ -230,6 +230,9 @@ class ProjectService extends BaseService {
     // Remove users from project
     $project->invitedUsers()->detach($userIds);
 
+    // Clear the members cache when new user is invited
+    Cache::forget("project_{$project->id}_members");
+
     return ['success' => true, 'message' => 'Selected members have been removed from the project.'];
   }
 
@@ -295,6 +298,9 @@ class ProjectService extends BaseService {
       'role' => $role,
       'updated_at' => now()
     ]);
+
+    // Clear the members cache when new user is invited
+    Cache::forget("project_{$project->id}_members");
 
     // Generate appropriate success message
     $actionType = $role === RolesEnum::ProjectManager->value ? 'promoted to' : 'changed to';

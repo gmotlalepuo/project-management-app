@@ -9,6 +9,7 @@ use Tighten\Ziggy\Ziggy;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 class HandleInertiaRequests extends Middleware {
     protected $rootView = 'app';
@@ -63,18 +64,28 @@ class HandleInertiaRequests extends Middleware {
     }
 
     protected function getAuthShare($user): array {
+        if (!$user) {
+            return ['auth' => ['user' => null]];
+        }
+
+        // Cache the user's avatar
+        $avatarCacheKey = "user_{$user->id}_avatar";
+        $avatar = Cache::remember($avatarCacheKey, now()->addDay(), function () use ($user) {
+            return $user->profile_picture;
+        });
+
         return [
             'auth' => [
-                'user' => $user ? [
+                'user' => [
                     ...$user->toArray(),
+                    'profile_picture' => $avatar,
                     'permissions' => $user->getPermissionNames()->toArray(),
                     'roles' => $user->getRoleNames()->toArray(),
-                ] : null,
+                ],
             ],
         ];
     }
 
-    // Add new method for minimal shared data
     // Add new method for minimal shared data
     protected function getMinimalDataShare($user): array {
         // Get recent projects with optimized query

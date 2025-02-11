@@ -93,17 +93,30 @@ class ProjectController extends Controller {
             abort(403, 'You are not authorized to view this project.');
         }
 
-        // Cache key for project members
-        $cacheKey = "project_{$project->id}_members";
+        // Cache key for profile pictures
+        $profilePicturesCacheKey = "project_{$project->id}_profile_pictures";
 
-        // Load project with cached members
+        // Get just the profile pictures with cache - now with explicit table name for id
+        $profilePictures = Cache::remember($profilePicturesCacheKey, now()->addHours(24), function () use ($project) {
+            return $project->acceptedUsers()
+                ->select(['users.profile_picture', 'users.id']) // Specify the table name for id
+                ->pluck('profile_picture', 'users.id'); // Specify the table name in pluck
+        });
+
+        // Get fresh user data
+        $projectMembers = $project->acceptedUsers()
+            ->select('users.id', 'users.name', 'users.email')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($user) use ($profilePictures) {
+                // Merge cached profile picture with fresh user data
+                $user->profile_picture = $profilePictures[$user->id] ?? null;
+                return $user;
+            });
+
+        // Create project resource with members
         $projectResource = new ProjectResource(
-            $project->load(['acceptedUsers' => function ($query) use ($project, $cacheKey) {
-                // Cache the members query for 30 minutes
-                return Cache::remember($cacheKey, 1800, function () use ($project) {
-                    return $project->acceptedUsers()->get();
-                });
-            }])
+            $project->setRelation('acceptedUsers', $projectMembers)
         );
 
         // Get the requested tab, but don't force a default
@@ -262,9 +275,6 @@ class ProjectController extends Controller {
 
         $result = $this->projectService->kickMembers($project, $userIds);
 
-        // Clear the members cache
-        Cache::forget("project_{$project->id}_members");
-
         return back()->with('success', $result['message']);
     }
 
@@ -282,9 +292,6 @@ class ProjectController extends Controller {
             $request->user_id,
             $request->role
         );
-
-        // Clear the members cache
-        Cache::forget("project_{$project->id}_members");
 
         if ($result['success']) {
             return back()->with('success', $result['message']);
