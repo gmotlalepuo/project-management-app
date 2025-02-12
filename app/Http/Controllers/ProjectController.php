@@ -14,7 +14,6 @@ use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Http\Resources\ProjectInvitationResource;
 use App\Enum\RolesEnum;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 
 class ProjectController extends Controller {
     protected $projectService;
@@ -93,32 +92,6 @@ class ProjectController extends Controller {
             abort(403, 'You are not authorized to view this project.');
         }
 
-        // Cache key for profile pictures
-        $profilePicturesCacheKey = "project_{$project->id}_profile_pictures";
-
-        // Get just the profile pictures with cache - now with explicit table name for id
-        $profilePictures = Cache::remember($profilePicturesCacheKey, now()->addHours(24), function () use ($project) {
-            return $project->acceptedUsers()
-                ->select(['users.profile_picture', 'users.id']) // Specify the table name for id
-                ->pluck('profile_picture', 'users.id'); // Specify the table name in pluck
-        });
-
-        // Get fresh user data
-        $projectMembers = $project->acceptedUsers()
-            ->select('users.id', 'users.name', 'users.email')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($user) use ($profilePictures) {
-                // Merge cached profile picture with fresh user data
-                $user->profile_picture = $profilePictures[$user->id] ?? null;
-                return $user;
-            });
-
-        // Create project resource with members
-        $projectResource = new ProjectResource(
-            $project->setRelation('acceptedUsers', $projectMembers)
-        );
-
         // Get the requested tab, but don't force a default
         $requestedTab = request()->query('tab');
 
@@ -140,7 +113,7 @@ class ProjectController extends Controller {
         $options = $this->projectService->getProjectOptions($project);
 
         return Inertia::render('Project/Show', [
-            'project' => $projectResource,
+            'project' => new ProjectResource($project->load(['acceptedUsers'])),
             'tasks' => TaskResource::collection($tasks),
             'queryParams' => request()->query() ?: null,
             'success' => session('success'),

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Enum\RolesEnum;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
