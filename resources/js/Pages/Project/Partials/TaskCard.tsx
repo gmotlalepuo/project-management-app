@@ -185,7 +185,7 @@ export function TaskCard({ task, permissions, isDragging = false, columns }: Pro
                     <span>Unassign</span>
                   </DropdownMenuItem>
                 )}
-                {task.can.move && (
+                {canDragTask && (
                   <MoveTaskDialog
                     taskId={task.id}
                     currentColumnId={task.kanban_column_id}

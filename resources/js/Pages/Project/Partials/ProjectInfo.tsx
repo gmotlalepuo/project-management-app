@@ -419,13 +419,16 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                           >
                             <div className="flex items-center space-x-2">
                               <Avatar>
-                                <AvatarImage
-                                  src={user.profile_picture}
-                                  alt={user.name}
-                                />
-                                <AvatarFallback>
-                                  {user.name.charAt(0)}
-                                </AvatarFallback>
+                                {user.profile_picture ? (
+                                  <AvatarImage
+                                    src={`/storage/${user.profile_picture}`}
+                                    alt={user.name}
+                                  />
+                                ) : (
+                                  <AvatarFallback>
+                                    {user.name.charAt(0)}
+                                  </AvatarFallback>
+                                )}
                               </Avatar>
                               <div>
                                 <p className="font-medium">{user.name}</p>
