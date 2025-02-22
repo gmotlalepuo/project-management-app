@@ -120,7 +120,7 @@ export function ReorderColumnsDialog({ columns: initialColumns, projectId }: Pro
           Reorder Columns
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Reorder Kanban Columns</DialogTitle>
         </DialogHeader>

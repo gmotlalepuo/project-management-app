@@ -319,7 +319,7 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                       Kick Members
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Select Members to Remove</DialogTitle>
                       <DialogDescription>
@@ -395,7 +395,7 @@ export default function ProjectInfo({ project, onInviteClick, permissions }: Pro
                       Manage Users
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-h-[80vh]">
+                  <DialogContent className="max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Manage User Roles</DialogTitle>
                       <DialogDescription>
